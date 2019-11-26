@@ -1,6 +1,6 @@
 /*************************************************************************
  *
- * File Name:  epoll_reactor.hpp
+ * File Name:  epoll_event_loop.hpp
  * Repository: https://github.com/TimeLooper/flute
  * Author:     why
  * Date:       2019/11/26 02:25:50
@@ -12,12 +12,13 @@
 #include <flute/noncopyable.hpp>
 
 namespace flute {
-namespace detail {
+namespace impl {
 
-class epoll_reactor : private noncopyable {
+class epoll_event_loop : private noncopyable {
 public:
-    epoll_reactor();
-    ~epoll_reactor();
+    epoll_event_loop();
+    ~epoll_event_loop();
+
 };
 
 } // namespace detail

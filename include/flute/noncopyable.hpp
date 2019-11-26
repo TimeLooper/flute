@@ -16,10 +16,8 @@ public:
     noncopyable() = default;
     ~noncopyable() = default;
 
-    noncopyable(noncopyable&&) = delete;
     noncopyable(const noncopyable&) = delete;
-    noncopyable& operator=(const noncopyable&) = delete;
-    noncopyable& operator=(noncopyable&&) = delete;
+    const noncopyable& operator=(const noncopyable&) = delete;
 };
 
 } // namespace flute
