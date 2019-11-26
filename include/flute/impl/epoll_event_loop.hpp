@@ -9,7 +9,9 @@
 
 #pragma once
 
+#include <flute/config.hpp>
 #include <flute/noncopyable.hpp>
+#include <flute/impl/channel.hpp>
 
 namespace flute {
 namespace impl {
@@ -19,7 +21,11 @@ public:
     epoll_event_loop();
     ~epoll_event_loop();
 
+    void registerChannel(channel* channel);
 };
 
+#ifdef FLUTE_HEADER_ONLY
+#include <flute/impl/epoll_event_loop.inl>
+#endif
 } // namespace detail
 } // namespace flute

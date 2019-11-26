@@ -2,6 +2,17 @@ cmake_minimum_required(VERSION 3.1)
 
 project(flute)
 
+# 设置默认为Release版本编译
+if (NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "Set build type to Debug o Release (default Release)" FORCE)
+endif ()
+
+string(TOLOWER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE_LOWER)
+
+set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "Limited configurations" FORCE)
+
+set(LIBS_EXPORT_TYPE "shared" CACHE STRING "set library export type to shared, static or inline (default shared)")
+
 set(CMAKE_CXX_STANDARD 11)
 
 include(CheckTypeSize)
@@ -58,5 +69,68 @@ include_directories(${PROJECT_SOURCE_DIR}/include ${CMAKE_CURRENT_BINARY_DIR}/in
 file(GLOB_RECURSE HEADERS "flute/*.hpp")
 add_custom_target(headers SOURCES ${HEADERS})
 
-file(GLOB_RECURSE INLINE_SOURCES "flute/*.inl")
-add_custom_target(inlines SOURCES ${INLINE_SOURCES})
+set(FLUTE_SOURCES src/flute/src.cpp)
+
+if (UNIX OR APPLE)
+set(LIB_PLATFORM pthread)
+add_definitions(-Wall)
+endif()
+if(WIN32)
+set(LIB_PLATFORM ws2_32 shell32 advapi32)
+add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE)
+endif()
+
+set(GNUC 0)
+set(CLANG 0)
+set(MSVC 0)
+if (("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang") OR
+    ("${CMAKE_C_COMPILER_ID}" STREQUAL "AppleClang"))
+    set(CLANG 1)
+endif()
+if (("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU") OR (${CLANG}))
+    set(GNUC 1)
+endif()
+if (("${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC") OR (${CLANG}))
+    set(MSVC 1)
+endif()
+
+# 设置动态链接库名称
+set(LIB_NAME flute)
+
+if (${LIBS_EXPORT_TYPE} STREQUAL "shared")
+set(LIB_FULL_NAME "${LIB_NAME}_shared")
+set(LIB_BUILD_TYPE SHARED)
+elseif(${LIBS_EXPORT_TYPE} STREQUAL "static")
+set(LIB_FULL_NAME "${LIB_NAME}_static")
+set(LIB_BUILD_TYPE SHARED)
+endif(${LIBS_EXPORT_TYPE} STREQUAL "shared")
+
+if ((${LIBS_EXPORT_TYPE} STREQUAL "shared") OR (${LIBS_EXPORT_TYPE} STREQUAL "static"))
+# 编译动态链接库
+add_library(${LIB_FULL_NAME} ${LIB_BUILD_TYPE} ${FLUTE_SOURCES})
+
+if(${GNUC})
+set_target_properties(${LIB_FULL_NAME} PROPERTIES COMPILE_FLAGS -fvisibility=hidden)
+set_target_properties(${LIB_FULL_NAME} PROPERTIES LINK_FLAGS -fvisibility=hidden)
+endif()
+
+# 设置依赖选项
+target_link_libraries(${LIB_FULL_NAME}
+        ${CMAKE_THREAD_LIBS_INIT}
+        ${LIB_PLATFORM}
+        ${LIB_LIBRARIES}
+)
+
+# 设置库属性
+set_target_properties(${LIB_FULL_NAME} PROPERTIES
+        OUTPUT_NAME "${LIB_NAME}"
+        CLEAN_DIRECT_OUTPUT 1
+)
+
+# 设置动态链接库属性
+set_target_properties(${LIB_FULL_NAME} PROPERTIES CLEAN_DIRECT_OUTPUT 1)
+
+# 设置动态链接库版本号
+set_target_properties(${LIB_FULL_NAME} PROPERTIES VERSION 1.0.0 SOVERSION 1)
+
+endif()
