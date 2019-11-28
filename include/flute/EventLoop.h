@@ -11,6 +11,7 @@
 
 #include <flute/config.h>
 #include <flute/noncopyable.h>
+#include <flute/EventLoopInterrupter.h>
 
 namespace flute {
 class Reactor;
@@ -33,8 +34,12 @@ public:
     FLUTE_API_DECL void addEvent(Channel* channel, int events);
     FLUTE_API_DECL void removeEvent(Channel* channel, int events);
 
+    FLUTE_API_DECL void dispatch();
+    FLUTE_API_DECL void quit();
+
 private:
     Reactor* m_reactor;
+    EventLoopInterrupter m_interrupter;
 };
 
 } // namespace flute

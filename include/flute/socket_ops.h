@@ -9,8 +9,10 @@
 
 #pragma once
 #include <flute/socket_types.h>
+#include <flute/config.h>
 
 #include <cstdint>
+#include <cstddef>
 
 #ifdef FLUTE_HAVE_SYS_SOCKET_H
 #include <sys/socket.h>

@@ -13,7 +13,7 @@
 
 namespace flute {
 
-EventLoop::EventLoop() {
+EventLoop::EventLoop() : m_reactor(createReactor()), m_interrupter(this) {
 }
 
 EventLoop::~EventLoop() {

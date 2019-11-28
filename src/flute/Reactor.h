@@ -29,4 +29,6 @@ public:
     virtual int wait(std::vector<FileEvent>& events, int timeout) = 0;
 };
 
+Reactor* createReactor();
+
 } // namespace flute

@@ -12,23 +12,22 @@
 #include <flute/config.h>
 #include <flute/copyable.h>
 #include <flute/socket_types.h>
+#include <flute/EventLoop.h>
 
 #include <functional>
 
 namespace flute {
-class EventLoop;
 
 class Channel : private copyable {
 public:
-    Channel::Channel(socket_type descriptor, EventLoop* loop)
-        : m_descriptor(descriptor)
+    FLUTE_API_DECL Channel(socket_type descriptor, EventLoop* loop)
+        : m_events(FileEvent::NONE)
+        , m_descriptor(descriptor)
         , m_loop(loop)
         , m_readCallback()
-        , m_writeCallback()
-        , m_errorCallback()
-        , m_closeCallback() {
+        , m_writeCallback() {
     }
-    ~Channel() = default;
+    FLUTE_API_DECL ~Channel() = default;
 
     FLUTE_API_DECL void handleEvent(int events);
     FLUTE_API_DECL void disableRead();
@@ -49,18 +48,6 @@ public:
     inline void setWriteCallback(std::function<void()>&& cb) {
         m_writeCallback = std::move(cb);
     }
-    inline void setErrorCallback(const std::function<void()>& cb) {
-        m_errorCallback = cb;
-    }
-    inline void setErrorCallback(std::function<void()>&& cb) {
-        m_errorCallback = std::move(cb);
-    }
-    inline void setCloseCallback(const std::function<void()>& cb) {
-        m_closeCallback = cb;
-    }
-    inline void setCloseCallback(std::function<void()>&& cb) {
-        m_closeCallback = std::move(cb);
-    }
     inline socket_type descriptor() const {
         return m_descriptor;
     }
@@ -74,8 +61,6 @@ private:
     EventLoop* m_loop;
     std::function<void()> m_readCallback;
     std::function<void()> m_writeCallback;
-    std::function<void()> m_errorCallback;
-    std::function<void()> m_closeCallback;
 
     void handleEventWithGuard(int events);
 };

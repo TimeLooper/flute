@@ -13,12 +13,18 @@
 #ifdef FLUTE_HAVE_EPOLL
 #include <flute/impl/EpollReactor.h>
 #endif
+#ifdef FLUTE_HAVE_KQUEUE
+#include <flute/impl/KqueueReactor.h>
+#endif
 
 namespace flute {
 
 Reactor* createReactor() {
 #ifdef FLUTE_HAVE_EPOLL
     return new impl::EpollReactor();
+#endif
+#ifdef FLUTE_HAVE_KQUEUE
+    return new impl::KqueueReactor();
 #endif
     return nullptr;
 }

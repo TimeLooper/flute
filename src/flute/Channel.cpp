@@ -13,29 +13,47 @@
 namespace flute {
 
 void Channel::handleEvent(int events) {
-
+    if (events & FileEvent::READ) {
+        m_readCallback();
+    }
+    if (events & FileEvent::WRITE) {
+        m_writeCallback();
+    }
 }
 
 void Channel::disableRead() {
     if (m_events & FileEvent::READ) {
         m_loop->removeEvent(this, FileEvent::READ);
+        m_events &= (~FileEvent::READ);
     }
 }
 
 void Channel::enableRead() {
-
+    if (!(m_events & FileEvent::READ)) {
+        m_loop->addEvent(this, FileEvent::READ);
+        m_events |= FileEvent::READ;
+    }
 }
 
 void Channel::disableWrite() {
-
+    if (m_events & FileEvent::WRITE) {
+        m_loop->removeEvent(this, FileEvent::WRITE);
+        m_events &= (~FileEvent::WRITE);
+    }
 }
 
 void Channel::enableWrite() {
-
+    if (!(m_events & FileEvent::WRITE)) {
+        m_loop->addEvent(this, FileEvent::WRITE);
+        m_events |= FileEvent::WRITE;
+    }
 }
 
 void Channel::disableAll() {
-
+    if (m_events & (FileEvent::WRITE | FileEvent::READ)) {
+        m_loop->removeEvent(this, m_events);
+        m_events = FileEvent::NONE;
+    }
 }
 
 } // namespace flute
