@@ -1,7 +1,7 @@
 #!/bin/bash
 
-clang-format -i include/*.hpp
-clang-format -i include/flute/*.hpp
-clang-format -i include/flute/*.inl
-clang-format -i include/flute/detail/*.hpp
-clang-format -i include/flute/detail/*.inl
+clang-format -i include/*.h
+clang-format -i include/flute/*.h
+
+clang-format -i src/flute/*.cpp
+clang-format -i src/flute/impl/*.cpp

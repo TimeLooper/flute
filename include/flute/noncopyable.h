@@ -1,9 +1,9 @@
 /*************************************************************************
  *
- * File Name:  copyable.hpp
+ * File Name:  noncopyable.hpp
  * Repository: https://github.com/TimeLooper/flute
  * Author:     why
- * Date:       2019/11/26 01:18:37
+ * Date:       2019/11/26
  *
  *************************************************************************/
 
@@ -11,10 +11,13 @@
 
 namespace flute {
 
-class copyable {
+class noncopyable {
 public:
-    copyable() = default;
-    ~copyable() = default;
+    noncopyable() = default;
+    ~noncopyable() = default;
+
+    noncopyable(const noncopyable &) = delete;
+    const noncopyable &operator=(const noncopyable &) = delete;
 };
 
 } // namespace flute

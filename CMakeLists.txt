@@ -11,7 +11,13 @@ string(TOLOWER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE_LOWER)
 
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "Limited configurations" FORCE)
 
-set(LIBS_EXPORT_TYPE "shared" CACHE STRING "set library export type to shared, static or inline (default shared)")
+set(BUILD_SHARED_LIBS TRUE CACHE BOOL "if TRUE flute will build shared library")
+
+if (BUILD_SHARED_LIBS)
+set(LIBS_EXPORT_TYPE "shared")
+else(BUILD_SHARED_LIBS)
+set(LIBS_EXPORT_TYPE "static")
+endif(BUILD_SHARED_LIBS)
 
 set(CMAKE_CXX_STANDARD 11)
 
@@ -43,6 +49,7 @@ CHECK_INCLUDE_FILE(sys/uio.h FLUTE_HAVE_SYS_UIO_H)
 CHECK_INCLUDE_FILE(sys/ioctl.h FLUTE_HAVE_SYS_IOCTL_H)
 CHECK_INCLUDE_FILE(poll.h FLUTE_HAVE_POLL_H)
 CHECK_INCLUDE_FILE(sys/sendfile.h FLUTE_HAVE_SYS_SENDFILE_H)
+CHECK_INCLUDE_FILE(endian.h FLUTE_HAVE_ENDIAN_H)
 
 # 依赖的方法检测
 CHECK_FUNCTION_EXISTS(kqueue FLUTE_HAVE_KQUEUE)
@@ -59,17 +66,17 @@ CHECK_SYMBOL_EXISTS(F_SETFD fcntl.h FLUTE_HAVE_SETFD)
 
 # 配置文件生成
 configure_file(
-        ${CMAKE_CURRENT_SOURCE_DIR}/flute-config.hpp.cmake
-        ${CMAKE_CURRENT_BINARY_DIR}/include/flute/flute-config.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/flute-config.h.cmake
+        ${CMAKE_CURRENT_BINARY_DIR}/include/flute/flute-config.h
         NEWLINE_STYLE UNIX)
 
 # 设置头文件路径
-include_directories(${PROJECT_SOURCE_DIR}/include ${CMAKE_CURRENT_BINARY_DIR}/include)
+include_directories(${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR}/include)
 
-file(GLOB_RECURSE HEADERS "flute/*.hpp")
+file(GLOB_RECURSE HEADERS "include/*.h")
 add_custom_target(headers SOURCES ${HEADERS})
 
-set(FLUTE_SOURCES src/flute/src.cpp)
+file(GLOB_RECURSE FLUTE_SOURCES "src/*.cpp")
 
 if (UNIX OR APPLE)
 set(LIB_PLATFORM pthread)
@@ -97,17 +104,19 @@ endif()
 # 设置动态链接库名称
 set(LIB_NAME flute)
 
-if (${LIBS_EXPORT_TYPE} STREQUAL "shared")
+if ("${LIBS_EXPORT_TYPE}" STREQUAL "shared")
 set(LIB_FULL_NAME "${LIB_NAME}_shared")
 set(LIB_BUILD_TYPE SHARED)
-elseif(${LIBS_EXPORT_TYPE} STREQUAL "static")
+elseif("${LIBS_EXPORT_TYPE}" STREQUAL "static")
 set(LIB_FULL_NAME "${LIB_NAME}_static")
 set(LIB_BUILD_TYPE SHARED)
-endif(${LIBS_EXPORT_TYPE} STREQUAL "shared")
+endif("${LIBS_EXPORT_TYPE}" STREQUAL "shared")
 
-if ((${LIBS_EXPORT_TYPE} STREQUAL "shared") OR (${LIBS_EXPORT_TYPE} STREQUAL "static"))
+if (("${LIBS_EXPORT_TYPE}" STREQUAL "shared") OR ("${LIBS_EXPORT_TYPE}" STREQUAL "static"))
 # 编译动态链接库
 add_library(${LIB_FULL_NAME} ${LIB_BUILD_TYPE} ${FLUTE_SOURCES})
+
+target_compile_definitions(${LIB_FULL_NAME} PRIVATE FLUTE_INSIDE_LIBRARY)
 
 if(${GNUC})
 set_target_properties(${LIB_FULL_NAME} PROPERTIES COMPILE_FLAGS -fvisibility=hidden)

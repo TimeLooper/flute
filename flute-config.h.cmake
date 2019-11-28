@@ -33,6 +33,8 @@
 
 #cmakedefine FLUTE_HAVE_SYS_SENDFILE_H 1
 
+#cmakedefine FLUTE_HAVE_ENDIAN_H 1
+
 #cmakedefine FLUTE_HAVE_KQUEUE 1
 
 #cmakedefine FLUTE_HAVE_EPOLL 1

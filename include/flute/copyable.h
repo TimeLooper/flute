@@ -1,10 +1,20 @@
 /*************************************************************************
  *
- * File Name:  epoll_event_loop.inl
+ * File Name:  copyable.hpp
  * Repository: https://github.com/TimeLooper/flute
  * Author:     why
- * Date:       2019/11/26 02:30:56
+ * Date:       2019/11/26
  *
  *************************************************************************/
 
-#include <flute/impl/epoll_event_loop.hpp>
+#pragma once
+
+namespace flute {
+
+class copyable {
+public:
+    copyable() = default;
+    ~copyable() = default;
+};
+
+} // namespace flute

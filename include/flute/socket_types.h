@@ -3,13 +3,13 @@
  * File Name:  socket_types.hpp
  * Repository: https://github.com/TimeLooper/flute
  * Author:     why
- * Date:       2019/11/26 02:15:33
+ * Date:       2019/11/26
  *
  *************************************************************************/
 
 #pragma once
 
-#include <flute/flute-config.hpp>
+#include <flute/flute-config.h>
 
 #if defined(_WIN32) || defined(WIN32)
 #include <winsock2.h>
