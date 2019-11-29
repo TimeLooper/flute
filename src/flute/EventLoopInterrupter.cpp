@@ -36,7 +36,7 @@ static int createInterrupterDescriptor(socket_type fds[2]) {
             flute::setSocketNonblocking(fds[0]) < 0 || flute::setSocketNonblocking(fds[1]) < 0) {
             flute::close(fds[0]);
             flute::close(fds[1]);
-            fds[0] = fds[1] = flute::INVALID_SOCKET;
+            fds[0] = fds[1] = flute::FLUTE_INVALID_SOCKET;
             return -1;
         }
         return 0;
@@ -47,7 +47,7 @@ static int createInterrupterDescriptor(socket_type fds[2]) {
     return -1;
 }
 
-EventLoopInterrupter::EventLoopInterrupter(EventLoop* loop) : m_read_descriptor(INVALID_SOCKET), m_write_descriptor(INVALID_SOCKET), m_channel(nullptr), m_loop(loop) {
+EventLoopInterrupter::EventLoopInterrupter(EventLoop* loop) : m_read_descriptor(FLUTE_INVALID_SOCKET), m_write_descriptor(FLUTE_INVALID_SOCKET), m_channel(nullptr), m_loop(loop) {
     open();
 }
 
@@ -56,7 +56,7 @@ EventLoopInterrupter::~EventLoopInterrupter() {
 }
 
 void EventLoopInterrupter::interrupt() {
-    if (m_write_descriptor != INVALID_SOCKET) {
+    if (m_write_descriptor != FLUTE_INVALID_SOCKET) {
         std::uint64_t num = 0;
         flute::write(m_write_descriptor, &num, sizeof(num));
     }
@@ -73,13 +73,13 @@ void EventLoopInterrupter::open() {
 }
 
 void EventLoopInterrupter::close() {
-    if (m_write_descriptor != INVALID_SOCKET && m_write_descriptor != m_read_descriptor) {
+    if (m_write_descriptor != FLUTE_INVALID_SOCKET && m_write_descriptor != m_read_descriptor) {
         flute::close(m_write_descriptor);
     }
-    if (m_read_descriptor != INVALID_SOCKET) {
+    if (m_read_descriptor != FLUTE_INVALID_SOCKET) {
         flute::close(m_read_descriptor);
     }
-    m_write_descriptor = m_read_descriptor = INVALID_SOCKET;
+    m_write_descriptor = m_read_descriptor = FLUTE_INVALID_SOCKET;
 }
 
 void EventLoopInterrupter::handleRead() {

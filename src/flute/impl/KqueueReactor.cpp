@@ -23,7 +23,7 @@ namespace impl {
 static const int INIT_EVENT_SIZE = 32;
 static const int MAX_EVENT_SIZE = 4096;
 
-KqueueReactor::KqueueReactor() : m_kqfd(INVALID_SOCKET), m_events() {
+KqueueReactor::KqueueReactor() : m_kqfd(FLUTE_INVALID_SOCKET), m_events() {
     m_events.resize(INIT_EVENT_SIZE);
     open();
 }
@@ -107,7 +107,7 @@ void KqueueReactor::open() {
 
 void KqueueReactor::close() {
     flute::close(m_kqfd);
-    m_kqfd = INVALID_SOCKET;
+    m_kqfd = FLUTE_INVALID_SOCKET;
 }
 
 } // namespace impl

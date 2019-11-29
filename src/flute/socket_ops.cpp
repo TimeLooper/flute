@@ -72,14 +72,14 @@ socket_type socket(int domain, int type, int protocol) {
 }
 
 socket_type createNonblockingSocket(unsigned short int family) {
-    socket_type result = INVALID_SOCKET;
+    socket_type result = FLUTE_INVALID_SOCKET;
 #if defined(SOCK_NONBLOCK) && defined(SOCK_CLOEXEC)
     result = flute::socket(family, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, IPPROTO_TCP);
 #else
     result = flute::socket(family, SOCK_STREAM, IPPROTO_TCP);
     setSocketNonblocking(result);
 #endif
-    if (result == INVALID_SOCKET) {
+    if (result == FLUTE_INVALID_SOCKET) {
         LOG_ERROR << "flute::createNonblockingSocket(" << family << ") failed.";
     }
     return result;
@@ -110,7 +110,7 @@ int listen(socket_type fd) {
 }
 
 socket_type accept(socket_type fd, sockaddr_storage& addr) {
-    socket_type connectFd = INVALID_SOCKET;
+    socket_type connectFd = FLUTE_INVALID_SOCKET;
     socklen_t length = sizeof(addr);
 #if defined(FLUTE_HAVE_ACCEPT4) && defined(SOCK_NONBLOCK) && defined(SOCK_CLOEXEC)
     connectFd = ::accept4(fd, reinterpret_cast<sockaddr*>(&addr), &length, SOCK_NONBLOCK | SOCK_CLOEXEC);

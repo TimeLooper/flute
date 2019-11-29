@@ -24,7 +24,7 @@ namespace impl {
 static const int INIT_EVENT_SIZE = 32;
 static const int MAX_EVENT_SIZE = 4096;
 
-EpollReactor::EpollReactor() : m_epfd(INVALID_SOCKET), m_events() {
+EpollReactor::EpollReactor() : m_epfd(FLUTE_INVALID_SOCKET), m_events() {
     m_events.resize(INIT_EVENT_SIZE);
     open();
 }
@@ -89,11 +89,11 @@ void EpollReactor::open() {
 #if defined(FLUTE_HAVE_EPOLL_CREATE1) && defined(EPOLL_CLOEXEC)
     m_epfd = epoll_create1(EPOLL_CLOEXEC);
 #endif
-    if (m_epfd != INVALID_SOCKET) {
+    if (m_epfd != FLUTE_INVALID_SOCKET) {
         return;
     }
     m_epfd = epoll_create(1024);
-    if (m_epfd == INVALID_SOCKET) {
+    if (m_epfd == FLUTE_INVALID_SOCKET) {
         LOG_FATAL << "epoll_create()";
         exit(-1);
     }
@@ -101,9 +101,9 @@ void EpollReactor::open() {
 }
 
 void EpollReactor::close() {
-    if (m_epfd != INVALID_SOCKET) {
+    if (m_epfd != FLUTE_INVALID_SOCKET) {
         flute::close(m_epfd);
-        m_epfd = INVALID_SOCKET;
+        m_epfd = FLUTE_INVALID_SOCKET;
     }
 }
 

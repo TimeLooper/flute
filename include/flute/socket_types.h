@@ -37,6 +37,6 @@ typedef SOCKET socket_type;
 typedef int socket_type;
 #endif
 
-const socket_type INVALID_SOCKET = static_cast<socket_type>(~0);
+const socket_type FLUTE_INVALID_SOCKET = static_cast<socket_type>(~0);
 
 } // namespace flute
