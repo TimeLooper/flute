@@ -115,6 +115,7 @@ void TimerQueue::handleTimerEvent() {
 
 void TimerQueue::postTimerInLoop(Timer* timer) {
     auto it = m_timerMap.find(timer->id);
+    (void)it;
     assert(it == m_timerMap.end());
     m_timerQueue.push_back(timer);
     std::push_heap(m_timerQueue.begin(), m_timerQueue.end(), timerCompare);
