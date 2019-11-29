@@ -17,6 +17,9 @@
 #ifdef FLUTE_HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+#ifdef FLUTE_HAVE_SYS_EVENTFD_H
+#include <sys/eventfd.h>
+#endif
 
 namespace flute {
 

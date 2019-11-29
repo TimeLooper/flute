@@ -18,8 +18,8 @@ class Channel;
 
 class EventLoopInterrupter : private noncopyable {
 public:
-    FLUTE_API_DECL EventLoopInterrupter(EventLoop* loop);
-    FLUTE_API_DECL ~EventLoopInterrupter();
+    EventLoopInterrupter(EventLoop* loop);
+    ~EventLoopInterrupter();
 
     void interrupt();
 

@@ -8,6 +8,7 @@
  *************************************************************************/
 
 #include <flute/impl/KqueueReactor.h>
+#ifdef FLUTE_HAVE_KQUEUE
 #include <flute/Logger.h>
 #include <flute/socket_ops.h>
 #include <flute/EventLoop.h>
@@ -111,3 +112,5 @@ void KqueueReactor::close() {
 
 } // namespace impl
 } // namespace flute
+
+#endif

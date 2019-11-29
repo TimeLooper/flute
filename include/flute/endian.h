@@ -19,57 +19,57 @@
 
 namespace flute {
 
-inline std::uint64_t host2Network(std::uint64_t host64) {
+inline std::uint64_t host2Network(std::uint64_t value) {
 #ifdef FLUTE_HAVE_ENDIAN_H
-    return htobe64(host64);
+    return htobe64(value);
 #endif
 #ifdef FLUTE_HAVE_MACHINE_ENDIAN_H
-    return htonll(host64);
+    return htonll(value);
 #endif
 }
 
-inline std::uint32_t host2Network(std::uint32_t host32) {
+inline std::uint32_t host2Network(std::uint32_t value) {
 #ifdef FLUTE_HAVE_ENDIAN_H
-    return htobe32(host32);
+    return htobe32(value);
 #endif
 #ifdef FLUTE_HAVE_MACHINE_ENDIAN_H
-    return htonl(host32);
+    return htonl(value);
 #endif
 }
 
-inline std::uint16_t host2Network(std::uint16_t host16) {
+inline std::uint16_t host2Network(std::uint16_t value) {
 #ifdef FLUTE_HAVE_ENDIAN_H
-    return htobe16(host16);
+    return htobe16(value);
 #endif
 #ifdef FLUTE_HAVE_MACHINE_ENDIAN_H
-    return htons(host16);
+    return htons(value);
 #endif
 }
 
-inline std::uint64_t network2Host(std::uint64_t net64) {
+inline std::uint64_t network2Host(std::uint64_t value) {
 #ifdef FLUTE_HAVE_ENDIAN_H
-    return be64toh(net64);
+    return be64toh(value);
 #endif
 #ifdef FLUTE_HAVE_MACHINE_ENDIAN_H
-    return ntohll(net64);
+    return ntohll(value);
 #endif
 }
 
-inline std::uint32_t network2Host(std::uint32_t net32) {
+inline std::uint32_t network2Host(std::uint32_t value) {
 #ifdef FLUTE_HAVE_ENDIAN_H
-    return be32toh(net32);
+    return be32toh(value);
 #endif
 #ifdef FLUTE_HAVE_MACHINE_ENDIAN_H
-    return ntohl(net32);
+    return ntohl(value);
 #endif
 }
 
-inline std::uint16_t network2Host(std::uint16_t net16) {
+inline std::uint16_t network2Host(std::uint16_t value) {
 #ifdef FLUTE_HAVE_ENDIAN_H
-    return be16toh(net16);
+    return be16toh(value);
 #endif
 #ifdef FLUTE_HAVE_MACHINE_ENDIAN_H
-    return ntohs(net16);
+    return ntohs(value);
 #endif
 }
 

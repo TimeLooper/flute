@@ -79,7 +79,7 @@ int EpollReactor::wait(std::vector<FileEvent>& events, int timeout) {
             fe.events |= FileEvent::WRITE;
         }
     }
-    if (ret > 0 && ret == m_events.size() && m_events.size() < MAX_EVENT_SIZE) {
+    if (ret > 0 && static_cast<std::size_t>(ret) == m_events.size() && m_events.size() < MAX_EVENT_SIZE) {
         m_events.resize(m_events.size() << 1);
     }
     return ret;
