@@ -10,10 +10,10 @@
 #include "EpollReactor.h"
 #ifdef FLUTE_HAVE_EPOLL
 
+#include <flute/EventLoop.h>
 #include <flute/Logger.h>
 #include <flute/socket_ops.h>
 #include <sys/epoll.h>
-#include <flute/EventLoop.h>
 
 #include <cerrno>
 #include <cstring>

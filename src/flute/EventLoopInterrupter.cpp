@@ -7,12 +7,12 @@
  *
  *************************************************************************/
 
-#include <flute/EventLoopInterrupter.h>
-#include <flute/socket_ops.h>
-#include <flute/flute-config.h>
-#include <flute/Logger.h>
 #include <flute/Channel.h>
 #include <flute/EventLoop.h>
+#include <flute/EventLoopInterrupter.h>
+#include <flute/Logger.h>
+#include <flute/flute-config.h>
+#include <flute/socket_ops.h>
 
 #ifdef FLUTE_HAVE_UNISTD_H
 #include <unistd.h>
@@ -47,7 +47,11 @@ static int createInterrupterDescriptor(socket_type fds[2]) {
     return -1;
 }
 
-EventLoopInterrupter::EventLoopInterrupter(EventLoop* loop) : m_read_descriptor(FLUTE_INVALID_SOCKET), m_write_descriptor(FLUTE_INVALID_SOCKET), m_channel(nullptr), m_loop(loop) {
+EventLoopInterrupter::EventLoopInterrupter(EventLoop* loop)
+    : m_read_descriptor(FLUTE_INVALID_SOCKET)
+    , m_write_descriptor(FLUTE_INVALID_SOCKET)
+    , m_channel(nullptr)
+    , m_loop(loop) {
     open();
 }
 
@@ -69,6 +73,7 @@ void EventLoopInterrupter::open() {
         m_read_descriptor = fds[0];
         m_write_descriptor = fds[1];
         m_channel = new Channel(m_read_descriptor, m_loop);
+        m_loop->addEvent(m_channel, FileEvent::READ);
     }
 }
 
@@ -80,6 +85,11 @@ void EventLoopInterrupter::close() {
         flute::close(m_read_descriptor);
     }
     m_write_descriptor = m_read_descriptor = FLUTE_INVALID_SOCKET;
+    if (m_channel) {
+        m_loop->removeEvent(m_channel, m_channel->events());
+        delete m_channel;
+        m_channel = nullptr;
+    }
 }
 
 void EventLoopInterrupter::handleRead() {

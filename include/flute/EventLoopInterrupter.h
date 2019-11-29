@@ -22,6 +22,9 @@ public:
     ~EventLoopInterrupter();
 
     void interrupt();
+    inline socket_type readDescriptor() const {
+        return m_read_descriptor;
+    }
 
 private:
     socket_type m_read_descriptor;

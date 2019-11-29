@@ -9,9 +9,9 @@
 
 #include <flute/impl/KqueueReactor.h>
 #ifdef FLUTE_HAVE_KQUEUE
+#include <flute/EventLoop.h>
 #include <flute/Logger.h>
 #include <flute/socket_ops.h>
-#include <flute/EventLoop.h>
 
 #include <cerrno>
 #include <cstring>
