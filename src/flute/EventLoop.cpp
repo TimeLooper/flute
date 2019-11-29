@@ -12,6 +12,9 @@
 #include <flute/Reactor.h>
 #include <flute/Logger.h>
 
+#include <cstring>
+#include <cerrno>
+
 namespace flute {
 
 EventLoop::EventLoop() : m_reactor(createReactor()), m_tid(), m_quit(true), m_interrupter(this), m_tasks(), m_mutex(), m_timerQueue(this) {
