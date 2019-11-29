@@ -14,7 +14,7 @@
 #include <cstdint>
 #include <functional>
 #include <map>
-#include <queue>
+#include <vector>
 
 namespace flute {
 
@@ -26,14 +26,16 @@ public:
     TimerQueue(EventLoop* loop);
     ~TimerQueue();
 
-    std::uint64_t postTimer(std::function<void()>&& callback, std::int64_t delay, int loopCount);
-    std::uint64_t postTimer(const std::function<void()>& callback, std::int64_t delay, int loopCount);
+    std::uint64_t schedule(std::function<void()>&& callback, std::int64_t delay, int loopCount);
+    std::uint64_t schedule(const std::function<void()>& callback, std::int64_t delay, int loopCount);
     void cancel(std::uint64_t timerId);
+    std::int64_t searchNearestTime();
+    void handleTimerEvent();
 
 private:
     EventLoop* m_loop;
-    std::priority_queue<Timer *> m_timerQueue;
-    std::map<std::int64_t, Timer *> m_timerMap;
+    std::vector<Timer*> m_timerQueue;
+    std::map<std::int64_t, Timer*> m_timerMap;
 
     void postTimerInLoop(Timer* timer);
     void cancelTimerInLoop(std::uint64_t timerId);
