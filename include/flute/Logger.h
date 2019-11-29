@@ -21,7 +21,7 @@ enum LogLevel { LEVEL_TRACE, LEVEL_DEBUG, LEVEL_INFO, LEVEL_WARN, LEVEL_ERROR, L
 
 typedef std::function<void(const char*, int)> LogCallback;
 
-class FLUTE_API_DECL Logger : private copyable {
+class Logger : private copyable {
 public:
     FLUTE_API_DECL Logger(LogLevel logLevel, const char* sourceFile, int line);
     FLUTE_API_DECL Logger(LogLevel logLevel, const char* sourceFile, int line, const char* func);
