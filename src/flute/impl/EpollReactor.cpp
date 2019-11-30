@@ -24,7 +24,12 @@ namespace impl {
 static const int INIT_EVENT_SIZE = 32;
 static const int MAX_EVENT_SIZE = 4096;
 
-EpollReactor::EpollReactor() : m_epfd(FLUTE_INVALID_SOCKET), m_events() {
+EpollReactor::EpollReactor()
+    : m_epfd(FLUTE_INVALID_SOCKET)
+#ifdef USING_TIMERFD
+    , m_timerfd(FLUTE_INVALID_SOCKET)
+#endif
+    , m_events() {
     m_events.resize(INIT_EVENT_SIZE);
     open();
 }
@@ -60,7 +65,21 @@ void EpollReactor::remove(socket_type fd, int old, int event, void* data) {
 }
 
 int EpollReactor::wait(std::vector<FileEvent>& events, int timeout) {
-    auto ret = ::epoll_wait(m_epfd, m_events.data(), m_events.size(), timeout);
+    auto epoll_timeout = timeout;
+#ifdef USING_TIMERFD
+    if (m_timerfd != FLUTE_INVALID_SOCKET) {
+        struct itimerspec newValue {};
+        newValue.it_value.tv_sec = timeout / 1000;
+        newValue.it_value.tv_nsec = (timeout % 1000) * 1000;
+        auto ret = ::timerfd_settime(m_timerfd, 0, &newValue, nullptr);
+        if (ret != 0) {
+            LOG_ERROR << "timerfd_settime error " << errno << ": " << std::strerror(errno);
+        } else {
+            epoll_timeout = -1;
+        }
+    }
+#endif
+    auto ret = ::epoll_wait(m_epfd, m_events.data(), m_events.size(), epoll_timeout);
     if (ret == -1) {
         LOG_ERROR << "epoll_wait error " << errno << ": " << std::strerror(errno);
     }
@@ -69,6 +88,10 @@ int EpollReactor::wait(std::vector<FileEvent>& events, int timeout) {
     }
     for (auto i = 0; i < ret; ++i) {
         auto& e = m_events[i];
+        // timerfd
+        if (e.data.ptr == &m_timerfd) {
+            continue;
+        }
         auto& fe = events[i];
         fe.data = e.data.ptr;
         fe.events = 0;
@@ -87,17 +110,25 @@ int EpollReactor::wait(std::vector<FileEvent>& events, int timeout) {
 
 void EpollReactor::open() {
 #if defined(FLUTE_HAVE_EPOLL_CREATE1) && defined(EPOLL_CLOEXEC)
-    m_epfd = epoll_create1(EPOLL_CLOEXEC);
+    m_epfd = ::epoll_create1(EPOLL_CLOEXEC);
 #endif
     if (m_epfd != FLUTE_INVALID_SOCKET) {
         return;
     }
-    m_epfd = epoll_create(1024);
+    m_epfd = ::epoll_create(1024);
     if (m_epfd == FLUTE_INVALID_SOCKET) {
-        LOG_FATAL << "epoll_create()";
-        exit(-1);
+        LOG_FATAL << "epoll_create error " << errno << ": " << std::strerror(errno);
+        ::exit(-1);
     }
     setSocketCloseOnExec(m_epfd);
+#ifdef USING_TIMERFD
+    m_timerfd = ::timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
+    if (m_timerfd == FLUTE_INVALID_SOCKET) {
+        LOG_WARN << "timerfd_create error " << errno << ": " << std::strerror(errno);
+    } else {
+        add(m_timerfd, FileEvent::NONE, FileEvent::READ, &m_timerfd);
+    }
+#endif
 }
 
 void EpollReactor::close() {
@@ -105,6 +136,13 @@ void EpollReactor::close() {
         flute::close(m_epfd);
         m_epfd = FLUTE_INVALID_SOCKET;
     }
+#ifdef USING_TIMERFD
+    if (m_timerfd != FLUTE_INVALID_SOCKET) {
+        flute::close(m_timerfd);
+        remove(m_timerfd, FileEvent::READ, FileEvent::READ, &m_timerfd);
+        m_timerfd = FLUTE_INVALID_SOCKET;
+    }
+#endif
 }
 
 } // namespace impl

@@ -137,7 +137,7 @@ int close(socket_type fd) {
 sockaddr_storage getLocalAddr(socket_type fd) {
     sockaddr_storage addr{};
     socklen_t size = static_cast<socklen_t>(sizeof(sockaddr_in6));
-    if (::getsockname(fd, (sockaddr*)&addr, &size) < 0) {
+    if (::getsockname(fd, reinterpret_cast<sockaddr*>(&addr), &size) < 0) {
         LOG_ERROR << "getsocketname(" << fd << ") failed.";
     }
     return addr;
@@ -146,7 +146,7 @@ sockaddr_storage getLocalAddr(socket_type fd) {
 sockaddr_storage getRemoteAddr(socket_type fd) {
     sockaddr_storage addr{};
     socklen_t size = static_cast<socklen_t>(sizeof(sockaddr_in6));
-    if (::getpeername(fd, (sockaddr*)&addr, &size) < 0) {
+    if (::getpeername(fd, reinterpret_cast<sockaddr*>(&addr), &size) < 0) {
         LOG_ERROR << "getpeername(" << fd << ") failed.";
     }
     return addr;
@@ -173,7 +173,7 @@ void fromIpPort(const char* ip, std::uint16_t port, sockaddr_in* addr) {
     addr->sin_family = AF_INET;
     addr->sin_port = host2Network(port);
     if (::inet_pton(AF_INET, ip, &addr->sin_addr) <= 0) {
-        LOG_ERROR << "sockops::fromIpPort";
+        LOG_ERROR << "flute::fromIpPort";
     }
 }
 
@@ -181,7 +181,7 @@ void fromIpPort(const char* ip, std::uint16_t port, sockaddr_in6* addr) {
     addr->sin6_family = AF_INET6;
     addr->sin6_port = host2Network(port);
     if (::inet_pton(AF_INET6, ip, &addr->sin6_addr) <= 0) {
-        LOG_ERROR << "sockops::fromIpPort";
+        LOG_ERROR << "flute::fromIpPort";
     }
 }
 
