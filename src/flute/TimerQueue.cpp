@@ -9,6 +9,7 @@
 
 #include <flute/EventLoop.h>
 #include <flute/TimerQueue.h>
+#include <flute/Logger.h>
 
 #include <algorithm>
 #include <atomic>
@@ -46,6 +47,12 @@ public:
 
 struct TimerCompare : public std::greater<Timer*> {
     bool operator()(const Timer* lhs, const Timer* rhs) {
+        if (lhs->loopCount == 0 && rhs->loopCount != 0) {
+            return true;
+        }
+        if (rhs->loopCount ==  0 && lhs->loopCount != 0) {
+            return false;
+        }
         return lhs->delay + lhs->startTime > rhs->delay + rhs->startTime;
     }
 } timerCompare;
@@ -86,30 +93,35 @@ std::int64_t TimerQueue::searchNearestTime() {
 }
 
 void TimerQueue::handleTimerEvent() {
+    if (m_timerQueue.empty()) {
+        return;
+    }
     auto currentTime = currentMilliseconds();
-    std::vector<Timer*> temp;
-    for (auto it = m_timerQueue.begin(); it != m_timerQueue.end(); ++it) {
-        auto& top = *it;
-        auto offset = top->delay + top->startTime - currentTime;
+    auto newSize = m_timerQueue.size();
+    while (newSize > 0) {
+        auto it = m_timerQueue.begin();
+        auto offset = (*it)->delay + (*it)->startTime - currentTime;
         if (offset <= 0) {
-            if (top->callback) {
-                top->callback();
+            if ((*it)->callback) {
+                (*it)->callback();
             }
-            if (top->loopCount > 0) {
-                top->loopCount -= 1;
+            if ((*it)->loopCount > 0) {
+                (*it)->loopCount -= 1;
             }
-            if (top->loopCount == 0) {
+            if ((*it)->loopCount == 0) {
                 m_timerMap.erase((*it)->id);
-                delete (*it);
+                auto tmp = *it;
+                m_timerQueue.erase(it);
+                delete tmp;
+                newSize -= 1;
             } else {
-                temp.push_back(*it);
+                (*it)->startTime += (*it)->delay;
             }
         } else {
             break;
         }
-        std::make_heap(it, m_timerQueue.end(), timerCompare);
+        std::pop_heap(m_timerQueue.data(), m_timerQueue.data() + newSize, timerCompare);
     }
-    m_timerQueue.swap(temp);
     std::make_heap(m_timerQueue.begin(), m_timerQueue.end(), timerCompare);
 }
 
@@ -135,7 +147,6 @@ void TimerQueue::cancelTimerInLoop(std::uint64_t timerId) {
         std::make_heap(m_timerQueue.begin(), m_timerQueue.end(), timerCompare);
     }
     delete it->second;
-    m_loop->wakeup();
 }
 
 } // namespace flute

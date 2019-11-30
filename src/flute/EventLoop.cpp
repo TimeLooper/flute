@@ -49,6 +49,8 @@ void EventLoop::dispatch() {
             auto ch = static_cast<Channel*>(e.data);
             ch->handleEvent(e.events);
         }
+        executeTasks();
+        m_timerQueue.handleTimerEvent();
     }
 }
 
@@ -110,6 +112,17 @@ void EventLoop::queueInLoop(std::function<void()>&& task) {
     }
     if (!isInLoopThread()) {
         wakeup();
+    }
+}
+
+void EventLoop::executeTasks() {
+    std::vector<std::function<void()>> temp;
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        temp.swap(m_tasks);
+    }
+    for (auto& t : temp) {
+        t();
     }
 }
 

@@ -62,6 +62,7 @@ private:
 
     void queueInLoop(const std::function<void()>& task);
     void queueInLoop(std::function<void()>&& task);
+    void executeTasks();
 };
 
 } // namespace flute
