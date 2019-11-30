@@ -88,10 +88,12 @@ int EpollReactor::wait(std::vector<FileEvent>& events, int timeout) {
     }
     for (auto i = 0; i < ret; ++i) {
         auto& e = m_events[i];
+#ifdef USING_TIMERFD
         // timerfd
         if (e.data.ptr == &m_timerfd) {
             continue;
         }
+#endif
         auto& fe = events[i];
         fe.data = e.data.ptr;
         fe.events = 0;
