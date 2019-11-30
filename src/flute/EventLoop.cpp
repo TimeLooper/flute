@@ -9,15 +9,16 @@
 
 #include <flute/Channel.h>
 #include <flute/EventLoop.h>
-#include <flute/Reactor.h>
 #include <flute/Logger.h>
+#include <flute/Reactor.h>
 
-#include <cstring>
 #include <cerrno>
+#include <cstring>
 
 namespace flute {
 
-EventLoop::EventLoop() : m_reactor(createReactor()), m_tid(), m_quit(true), m_interrupter(this), m_tasks(), m_mutex(), m_timerQueue(this) {
+EventLoop::EventLoop()
+    : m_reactor(createReactor()), m_tid(), m_quit(true), m_interrupter(this), m_tasks(), m_mutex(), m_timerQueue(this) {
 }
 
 EventLoop::~EventLoop() {
@@ -46,7 +47,7 @@ void EventLoop::dispatch() {
         }
         for (auto i = 0; i < ret; ++i) {
             auto& e = events[i];
-            auto ch = static_cast<Channel *>(e.data);
+            auto ch = static_cast<Channel*>(e.data);
             ch->handleEvent(e.events);
         }
     }

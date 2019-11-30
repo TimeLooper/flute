@@ -10,10 +10,10 @@
 #include <flute/EventLoop.h>
 #include <flute/TimerQueue.h>
 
+#include <algorithm>
 #include <atomic>
 #include <cassert>
 #include <chrono>
-#include <algorithm>
 
 namespace flute {
 

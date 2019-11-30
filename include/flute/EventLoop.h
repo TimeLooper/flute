@@ -10,15 +10,15 @@
 #pragma once
 
 #include <flute/EventLoopInterrupter.h>
+#include <flute/TimerQueue.h>
 #include <flute/config.h>
 #include <flute/noncopyable.h>
-#include <flute/TimerQueue.h>
 
 #include <atomic>
 #include <functional>
+#include <mutex>
 #include <thread>
 #include <vector>
-#include <mutex>
 
 namespace flute {
 class Reactor;
