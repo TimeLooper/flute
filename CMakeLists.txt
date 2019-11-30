@@ -113,7 +113,6 @@ set(LIB_FULL_NAME "${LIB_NAME}_static")
 set(LIB_BUILD_TYPE SHARED)
 endif("${LIBS_EXPORT_TYPE}" STREQUAL "shared")
 
-if (("${LIBS_EXPORT_TYPE}" STREQUAL "shared") OR ("${LIBS_EXPORT_TYPE}" STREQUAL "static"))
 # 编译动态链接库
 add_library(${LIB_FULL_NAME} ${LIB_BUILD_TYPE} ${FLUTE_SOURCES})
 
@@ -143,4 +142,4 @@ set_target_properties(${LIB_FULL_NAME} PROPERTIES CLEAN_DIRECT_OUTPUT 1)
 # 设置动态链接库版本号
 set_target_properties(${LIB_FULL_NAME} PROPERTIES VERSION 1.0.0 SOVERSION 1)
 
-endif()
+add_subdirectory(test)

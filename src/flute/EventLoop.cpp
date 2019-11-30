@@ -38,7 +38,6 @@ void EventLoop::removeEvent(Channel* channel, int events) {
 
 void EventLoop::dispatch() {
     m_quit = false;
-    m_tid = std::this_thread::get_id();
     static std::vector<FileEvent> events;
     while (!m_quit) {
         auto ret = m_reactor->wait(events, m_timerQueue.searchNearestTime());
@@ -88,6 +87,10 @@ std::uint64_t EventLoop::schedule(std::function<void()>&& callback, std::int64_t
 
 std::uint64_t EventLoop::schedule(const std::function<void()>& callback, std::int64_t delay, int loopCount) {
     return m_timerQueue.schedule(callback, delay, loopCount);
+}
+
+void EventLoop::attachThread() {
+    m_tid = std::this_thread::get_id();
 }
 
 void EventLoop::queueInLoop(const std::function<void()>& task) {
