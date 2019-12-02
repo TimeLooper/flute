@@ -27,22 +27,19 @@ class Timer {
 public:
     Timer(std::function<void()>&& callback, std::int64_t delay, int loopCount)
         : loopCount(loopCount)
-        , id(++s_numCreated)
         , startTime(currentMilliseconds())
         , delay(delay)
         , callback(std::move(callback)) {
     }
     Timer(const std::function<void()>& callback, std::int64_t delay, int loopCount)
-        : loopCount(loopCount), id(++s_numCreated), startTime(currentMilliseconds()), delay(delay), callback(callback) {
+        : loopCount(loopCount), startTime(currentMilliseconds()), delay(delay), callback(callback) {
     }
 
     int loopCount;
-    std::uint64_t id;
+    // std::uint64_t id;
     std::int64_t startTime;
     std::int64_t delay;
     std::function<void()> callback;
-
-    static std::atomic<std::uint64_t> s_numCreated;
 };
 
 struct TimerCompare : public std::greater<Timer*> {
@@ -60,7 +57,7 @@ struct TimerCompare : public std::greater<Timer*> {
 class TimerQueue::timer_queue : public std::priority_queue<Timer *, std::vector<Timer *>, TimerCompare> {
 public:
     bool remove(const Timer* value) {
-        auto it = std::find(this->c.begin(), this->c.end(), value);
+        auto it = search(value);
         if (it != this->c.end()) {
             this->c.erase(it);
             std::make_heap(this->c.begin(), this->c.end(), this->comp);
@@ -72,29 +69,31 @@ public:
     void rebuild_heap() {
         std::make_heap(this->c.begin(), this->c.end(), this->comp);
     }
+
+private:
+    inline std::vector<Timer *>::iterator search(const Timer* value) {
+        return std::find(c.begin(), c.end(), value);
+    }
 };
 
-std::atomic<std::uint64_t> Timer::s_numCreated;
-
-TimerQueue::TimerQueue(EventLoop* loop) : m_loop(loop), m_timerQueue(new timer_queue()), m_timerMap() {
+TimerQueue::TimerQueue(EventLoop* loop) : m_loop(loop), m_timerQueue(new timer_queue()) {
 }
 
 TimerQueue::~TimerQueue() {
     assert(m_timerQueue->empty());
-    assert(m_timerMap.empty());
     delete m_timerQueue;
 }
 
 std::uint64_t TimerQueue::schedule(std::function<void()>&& callback, std::int64_t delay, int loopCount) {
     auto timer = new Timer(std::move(callback), delay, loopCount);
     m_loop->runInLoop(std::bind(&TimerQueue::postTimerInLoop, this, timer));
-    return timer->id;
+    return reinterpret_cast<std::uint64_t>(timer);
 }
 
 std::uint64_t TimerQueue::schedule(const std::function<void()>& callback, std::int64_t delay, int loopCount) {
     auto timer = new Timer(callback, delay, loopCount);
     m_loop->runInLoop(std::bind(&TimerQueue::postTimerInLoop, this, timer));
-    return timer->id;
+    return reinterpret_cast<std::uint64_t>(timer);
 }
 
 void TimerQueue::cancel(std::uint64_t timerId) {
@@ -126,7 +125,6 @@ void TimerQueue::handleTimerEvent() {
                 timer->loopCount -= 1;
             }
             if (timer->loopCount == 0) {
-                m_timerMap.erase(timer->id);
                 m_timerQueue->remove(timer);
                 delete timer;
             } else {
@@ -140,21 +138,13 @@ void TimerQueue::handleTimerEvent() {
 }
 
 void TimerQueue::postTimerInLoop(Timer* timer) {
-    auto it = m_timerMap.find(timer->id);
-    (void)it;
-    assert(it == m_timerMap.end());
     m_timerQueue->push(timer);
-    m_timerMap[timer->id] = timer;
 }
 
 void TimerQueue::cancelTimerInLoop(std::uint64_t timerId) {
-    auto it = m_timerMap.find(timerId);
-    if (it == m_timerMap.end()) {
-        return;
-    }
-    m_timerMap.erase(it);
-    m_timerQueue->remove(it->second);
-    delete it->second;
+    auto timer = reinterpret_cast<Timer *>(timerId);
+    m_timerQueue->remove(timer);
+    delete timer;
 }
 
 } // namespace flute

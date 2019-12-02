@@ -37,7 +37,6 @@ private:
     EventLoop* m_loop;
     class timer_queue;
     timer_queue* m_timerQueue;
-    std::map<std::int64_t, Timer*> m_timerMap;
 
     void postTimerInLoop(Timer* timer);
     void cancelTimerInLoop(std::uint64_t timerId);
