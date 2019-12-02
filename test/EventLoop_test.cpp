@@ -15,15 +15,15 @@ int main(int argc, char* argv[]) {
     loop.attachThread();
     auto delay = 1000;
     loop.schedule([=] {
-        LOG_DEBUG << "timer" << delay;
+        LOG_DEBUG << "timer " << delay;
     }, delay, -1);
     delay = 500;
     loop.schedule([=] {
-        LOG_DEBUG << "timer" << delay;
+        LOG_DEBUG << "timer " << delay;
     }, delay, 10);
     delay = 500;
     loop.schedule([=] {
-        LOG_DEBUG << "timer" << delay;
+        LOG_DEBUG << "timer " << delay;
     }, delay, 2);
     loop.dispatch();
     return 0;

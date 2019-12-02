@@ -55,16 +55,34 @@ struct TimerCompare : public std::greater<Timer*> {
         }
         return lhs->delay + lhs->startTime > rhs->delay + rhs->startTime;
     }
-} timerCompare;
+};
+
+class TimerQueue::timer_queue : public std::priority_queue<Timer *, std::vector<Timer *>, TimerCompare> {
+public:
+    bool remove(const Timer* value) {
+        auto it = std::find(this->c.begin(), this->c.end(), value);
+        if (it != this->c.end()) {
+            this->c.erase(it);
+            std::make_heap(this->c.begin(), this->c.end(), this->comp);
+            return true;
+        } else {
+            return false;
+        }
+    }
+    void rebuild_heap() {
+        std::make_heap(this->c.begin(), this->c.end(), this->comp);
+    }
+};
 
 std::atomic<std::uint64_t> Timer::s_numCreated;
 
-TimerQueue::TimerQueue(EventLoop* loop) : m_loop(loop), m_timerQueue(), m_timerMap() {
+TimerQueue::TimerQueue(EventLoop* loop) : m_loop(loop), m_timerQueue(new timer_queue()), m_timerMap() {
 }
 
 TimerQueue::~TimerQueue() {
-    assert(m_timerQueue.empty());
+    assert(m_timerQueue->empty());
     assert(m_timerMap.empty());
+    delete m_timerQueue;
 }
 
 std::uint64_t TimerQueue::schedule(std::function<void()>&& callback, std::int64_t delay, int loopCount) {
@@ -84,53 +102,48 @@ void TimerQueue::cancel(std::uint64_t timerId) {
 }
 
 std::int64_t TimerQueue::searchNearestTime() {
-    if (m_timerQueue.empty()) {
+    if (m_timerQueue->empty()) {
         return -1;
     }
-    auto& top = m_timerQueue.front();
+    auto& top = m_timerQueue->top();
     auto delay = top->delay - currentMilliseconds() + top->startTime;
     return delay;
 }
 
 void TimerQueue::handleTimerEvent() {
-    if (m_timerQueue.empty()) {
+    if (m_timerQueue->empty()) {
         return;
     }
     auto currentTime = currentMilliseconds();
-    auto newSize = m_timerQueue.size();
-    while (newSize > 0) {
-        auto it = m_timerQueue.begin();
-        auto offset = (*it)->delay + (*it)->startTime - currentTime;
+    while (!m_timerQueue->empty()) {
+        auto timer = m_timerQueue->top();
+        auto offset = timer->delay + timer->startTime - currentTime;
         if (offset <= 0) {
-            if ((*it)->callback) {
-                (*it)->callback();
+            if (timer->callback) {
+                timer->callback();
             }
-            if ((*it)->loopCount > 0) {
-                (*it)->loopCount -= 1;
+            if (timer->loopCount > 0) {
+                timer->loopCount -= 1;
             }
-            if ((*it)->loopCount == 0) {
-                m_timerMap.erase((*it)->id);
-                auto tmp = *it;
-                m_timerQueue.erase(it);
-                delete tmp;
-                newSize -= 1;
+            if (timer->loopCount == 0) {
+                m_timerMap.erase(timer->id);
+                m_timerQueue->remove(timer);
+                delete timer;
             } else {
-                (*it)->startTime += (*it)->delay;
+                timer->startTime += timer->delay;
+                m_timerQueue->rebuild_heap();
             }
         } else {
             break;
         }
-        std::pop_heap(m_timerQueue.data(), m_timerQueue.data() + newSize, timerCompare);
     }
-    std::make_heap(m_timerQueue.begin(), m_timerQueue.end(), timerCompare);
 }
 
 void TimerQueue::postTimerInLoop(Timer* timer) {
     auto it = m_timerMap.find(timer->id);
     (void)it;
     assert(it == m_timerMap.end());
-    m_timerQueue.push_back(timer);
-    std::push_heap(m_timerQueue.begin(), m_timerQueue.end(), timerCompare);
+    m_timerQueue->push(timer);
     m_timerMap[timer->id] = timer;
 }
 
@@ -140,12 +153,7 @@ void TimerQueue::cancelTimerInLoop(std::uint64_t timerId) {
         return;
     }
     m_timerMap.erase(it);
-    auto temp =
-        std::find_if(m_timerQueue.begin(), m_timerQueue.end(), [&](const Timer* t) { return t->id == timerId; });
-    if (temp != m_timerQueue.end()) {
-        m_timerQueue.erase(temp);
-        std::make_heap(m_timerQueue.begin(), m_timerQueue.end(), timerCompare);
-    }
+    m_timerQueue->remove(it->second);
     delete it->second;
 }
 
