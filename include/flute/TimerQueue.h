@@ -20,7 +20,7 @@ namespace flute {
 
 class Timer;
 class EventLoop;
-struct TimerCompare;
+class TimerHeap;
 
 class TimerQueue : private noncopyable {
 public:
@@ -36,7 +36,7 @@ public:
 private:
     EventLoop* m_loop;
     class timer_queue;
-    timer_queue* m_timerQueue;
+    TimerHeap* m_timerQueue;
 
     void postTimerInLoop(Timer* timer);
     void cancelTimerInLoop(std::uint64_t timerId);

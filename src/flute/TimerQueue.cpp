@@ -10,6 +10,8 @@
 #include <flute/EventLoop.h>
 #include <flute/TimerQueue.h>
 #include <flute/Logger.h>
+#include <flute/Timer.h>
+#include <flute/TimerHeap.h>
 
 #include <algorithm>
 #include <atomic>
@@ -17,30 +19,6 @@
 #include <chrono>
 
 namespace flute {
-
-static inline std::int64_t currentMilliseconds() {
-    return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch())
-        .count();
-}
-
-class Timer {
-public:
-    Timer(std::function<void()>&& callback, std::int64_t delay, int loopCount)
-        : loopCount(loopCount)
-        , startTime(currentMilliseconds())
-        , delay(delay)
-        , callback(std::move(callback)) {
-    }
-    Timer(const std::function<void()>& callback, std::int64_t delay, int loopCount)
-        : loopCount(loopCount), startTime(currentMilliseconds()), delay(delay), callback(callback) {
-    }
-
-    int loopCount;
-    // std::uint64_t id;
-    std::int64_t startTime;
-    std::int64_t delay;
-    std::function<void()> callback;
-};
 
 struct TimerCompare : public std::greater<Timer*> {
     bool operator()(const Timer* lhs, const Timer* rhs) {
@@ -76,7 +54,7 @@ private:
     }
 };
 
-TimerQueue::TimerQueue(EventLoop* loop) : m_loop(loop), m_timerQueue(new timer_queue()) {
+TimerQueue::TimerQueue(EventLoop* loop) : m_loop(loop), m_timerQueue(new TimerHeap()) {
 }
 
 TimerQueue::~TimerQueue() {
@@ -104,7 +82,7 @@ std::int64_t TimerQueue::searchNearestTime() {
     if (m_timerQueue->empty()) {
         return -1;
     }
-    auto& top = m_timerQueue->top();
+    auto top = m_timerQueue->top();
     auto delay = top->delay - currentMilliseconds() + top->startTime;
     return delay;
 }
@@ -129,7 +107,7 @@ void TimerQueue::handleTimerEvent() {
                 delete timer;
             } else {
                 timer->startTime += timer->delay;
-                m_timerQueue->rebuild_heap();
+                m_timerQueue->update(timer);
             }
         } else {
             break;

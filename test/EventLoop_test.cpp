@@ -21,10 +21,14 @@ int main(int argc, char* argv[]) {
     loop.schedule([=] {
         LOG_DEBUG << "timer " << delay;
     }, delay, 10);
-    delay = 500;
+    delay = 2000;
     loop.schedule([=] {
         LOG_DEBUG << "timer " << delay;
-    }, delay, 2);
+    }, delay, -1);
+    delay = 1500;
+    loop.schedule([=] {
+        LOG_DEBUG << "timer " << delay;
+    }, delay, -1);
     loop.dispatch();
     return 0;
 }
