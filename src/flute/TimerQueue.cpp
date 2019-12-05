@@ -8,10 +8,10 @@
  *************************************************************************/
 
 #include <flute/EventLoop.h>
-#include <flute/TimerQueue.h>
 #include <flute/Logger.h>
 #include <flute/Timer.h>
 #include <flute/TimerHeap.h>
+#include <flute/TimerQueue.h>
 
 #include <algorithm>
 #include <atomic>
@@ -86,7 +86,7 @@ void TimerQueue::postTimerInLoop(Timer* timer) {
 }
 
 void TimerQueue::cancelTimerInLoop(std::uint64_t timerId) {
-    auto timer = reinterpret_cast<Timer *>(timerId);
+    auto timer = reinterpret_cast<Timer*>(timerId);
     m_timerQueue->remove(timer);
     delete timer;
 }
