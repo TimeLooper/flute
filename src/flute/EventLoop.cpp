@@ -91,6 +91,10 @@ std::uint64_t EventLoop::schedule(const std::function<void()>& callback, std::in
     return m_timerQueue.schedule(callback, delay, loopCount);
 }
 
+void EventLoop::cancel(std::uint64_t timerId) {
+    m_timerQueue.cancel(timerId);
+}
+
 void EventLoop::attachThread() {
     m_tid = std::this_thread::get_id();
 }

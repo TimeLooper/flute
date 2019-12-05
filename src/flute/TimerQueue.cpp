@@ -20,40 +20,6 @@
 
 namespace flute {
 
-struct TimerCompare : public std::greater<Timer*> {
-    bool operator()(const Timer* lhs, const Timer* rhs) {
-        if (lhs->loopCount == 0 && rhs->loopCount != 0) {
-            return true;
-        }
-        if (rhs->loopCount ==  0 && lhs->loopCount != 0) {
-            return false;
-        }
-        return lhs->delay + lhs->startTime > rhs->delay + rhs->startTime;
-    }
-};
-
-class TimerQueue::timer_queue : public std::priority_queue<Timer *, std::vector<Timer *>, TimerCompare> {
-public:
-    bool remove(const Timer* value) {
-        auto it = search(value);
-        if (it != this->c.end()) {
-            this->c.erase(it);
-            std::make_heap(this->c.begin(), this->c.end(), this->comp);
-            return true;
-        } else {
-            return false;
-        }
-    }
-    void rebuild_heap() {
-        std::make_heap(this->c.begin(), this->c.end(), this->comp);
-    }
-
-private:
-    inline std::vector<Timer *>::iterator search(const Timer* value) {
-        return std::find(c.begin(), c.end(), value);
-    }
-};
-
 TimerQueue::TimerQueue(EventLoop* loop) : m_loop(loop), m_timerQueue(new TimerHeap()) {
 }
 

@@ -49,6 +49,7 @@ public:
     FLUTE_API_DECL void runInLoop(std::function<void()>&& task);
     FLUTE_API_DECL std::uint64_t schedule(std::function<void()>&& callback, std::int64_t delay, int loopCount);
     FLUTE_API_DECL std::uint64_t schedule(const std::function<void()>& callback, std::int64_t delay, int loopCount);
+    FLUTE_API_DECL void cancel(std::uint64_t timerId);
     FLUTE_API_DECL void attachThread();
 
 private:
