@@ -13,11 +13,14 @@
 #include <flute/socket_types.h>
 #include <flute/socket_ops.h>
 
+#include <memory>
+#include <atomic>
 #include <cstddef>
 
 namespace flute {
 
 class EventLoop;
+class Channel;
 
 class Connection : private noncopyable {
 public:
@@ -25,9 +28,12 @@ public:
     ~Connection();
 
 private:
+    enum ConnectionState { DISCONNECTED, CONNECTING, CONNECTED, DISCONNECTING };
     socket_type m_sockfd;
     std::size_t m_highWaterMark;
     EventLoop* m_loop;
+    std::atomic<bool> m_state;
+    std::unique_ptr<Channel> m_channel;
     const sockaddr_storage m_localAddress;
     const sockaddr_storage m_remoteAddress;
 };
