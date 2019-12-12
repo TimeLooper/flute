@@ -17,7 +17,7 @@
 
 namespace flute {
 
-static const int DEFAULT_BUFFER_SIZE = 4096;
+static const int DEFAULT_BUFFER_SIZE = 4;
 
 #define UPDATE_READ_INDEX(capacity, readIndex, bufferSize, size) \
     do {                                                         \
@@ -139,9 +139,9 @@ void Buffer::read(std::uint8_t *buffer, std::size_t length) {
 }
 
 void Buffer::append(const std::uint8_t *buffer, std::size_t length) {
-    if (length > m_bufferSize) {
+    if (length > writeableBytes()) {
         // expand buffer
-        auto capacity = getCapacity();
+        auto capacity = getCapacity(length);
         auto new_buffer = static_cast<std::uint8_t *>(std::realloc(m_buffer, capacity));
         if (!new_buffer) {
             LOG_ERROR << "out of memory";
@@ -170,6 +170,7 @@ void Buffer::append(const std::uint8_t *buffer, std::size_t length) {
     } else {
         std::memcpy(m_buffer + m_writeIndex, buffer, length);
     }
+    m_bufferSize += length;
 }
 
 void Buffer::appendInt8(std::int8_t value) {
@@ -199,8 +200,12 @@ void Buffer::setLineSeparator(const std::string &separator) {
     m_lineSeparator = separator;
 }
 
-std::size_t Buffer::getCapacity() {
-    return 0;
+std::size_t Buffer::getCapacity(std::size_t length) {
+    std::size_t result = m_capacity ? m_capacity : 1;
+    while (result < length + m_capacity) {
+        result <<= 1;
+    }
+    return result;
 }
 
 } // namespace flute

@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include <flute/config.h>
+
 #include <list>
 #include <string>
 
@@ -16,30 +18,30 @@ namespace flute {
 
 class Buffer {
 public:
-    Buffer();
-    ~Buffer();
+    FLUTE_API_DECL Buffer();
+    FLUTE_API_DECL ~Buffer();
 
-    std::size_t readableBytes() const;
-    std::size_t writeableBytes() const;
-    std::int8_t peekInt8() const;
-    std::int16_t peekInt16() const;
-    std::int32_t peekInt32() const;
-    std::int64_t peekInt64() const;
-    std::string peekLine() const;
-    void peek(std::uint8_t* buffer, std::size_t length) const;
-    std::int8_t readInt8();
-    std::int16_t readInt16();
-    std::int32_t readInt32();
-    std::int64_t readInt64();
-    std::string readLine();
-    void read(std::uint8_t* buffer, std::size_t length);
-    void append(const std::uint8_t* buffer, std::size_t length);
-    void appendInt8(std::int8_t value);
-    void appendInt16(std::int16_t value);
-    void appendInt32(std::int32_t value);
-    void appendInt64(std::int64_t value);
-    void setLineSeparator(std::string&& separator);
-    void setLineSeparator(const std::string& separator);
+    FLUTE_API_DECL std::size_t readableBytes() const;
+    FLUTE_API_DECL std::size_t writeableBytes() const;
+    FLUTE_API_DECL std::int8_t peekInt8() const;
+    FLUTE_API_DECL std::int16_t peekInt16() const;
+    FLUTE_API_DECL std::int32_t peekInt32() const;
+    FLUTE_API_DECL std::int64_t peekInt64() const;
+    FLUTE_API_DECL std::string peekLine() const;
+    FLUTE_API_DECL void peek(std::uint8_t* buffer, std::size_t length) const;
+    FLUTE_API_DECL std::int8_t readInt8();
+    FLUTE_API_DECL std::int16_t readInt16();
+    FLUTE_API_DECL std::int32_t readInt32();
+    FLUTE_API_DECL std::int64_t readInt64();
+    FLUTE_API_DECL std::string readLine();
+    FLUTE_API_DECL void read(std::uint8_t* buffer, std::size_t length);
+    FLUTE_API_DECL void append(const std::uint8_t* buffer, std::size_t length);
+    FLUTE_API_DECL void appendInt8(std::int8_t value);
+    FLUTE_API_DECL void appendInt16(std::int16_t value);
+    FLUTE_API_DECL void appendInt32(std::int32_t value);
+    FLUTE_API_DECL void appendInt64(std::int64_t value);
+    FLUTE_API_DECL void setLineSeparator(std::string&& separator);
+    FLUTE_API_DECL void setLineSeparator(const std::string& separator);
 
 private:
     std::size_t m_readIndex;
@@ -49,7 +51,7 @@ private:
     std::uint8_t* m_buffer;
     std::string m_lineSeparator;
 
-    std::size_t getCapacity();
+    std::size_t getCapacity(std::size_t length);
 };
 
 } // namespace flute
