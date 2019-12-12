@@ -11,17 +11,12 @@
 
 namespace flute {
 
-Connection::Connection(socket_type sockfd, EventLoop* loop, const sockaddr_storage& localAddress, const sockaddr_storage& remoteAddress)
-    : m_sockfd(sockfd)
-    , m_highWaterMark(0)
-    , m_loop(loop)
-    , m_localAddress(localAddress)
-    , m_remoteAddress(remoteAddress) {
-
+Connection::Connection(socket_type sockfd, EventLoop* loop, const sockaddr_storage& localAddress,
+                       const sockaddr_storage& remoteAddress)
+    : m_sockfd(sockfd), m_highWaterMark(0), m_loop(loop), m_localAddress(localAddress), m_remoteAddress(remoteAddress) {
 }
 
 Connection::~Connection() {
-
 }
 
 } // namespace flute

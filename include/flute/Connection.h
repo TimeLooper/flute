@@ -9,14 +9,14 @@
 
 #pragma once
 
-#include <flute/noncopyable.h>
-#include <flute/socket_types.h>
-#include <flute/socket_ops.h>
 #include <flute/Channel.h>
+#include <flute/noncopyable.h>
+#include <flute/socket_ops.h>
+#include <flute/socket_types.h>
 
-#include <memory>
 #include <atomic>
 #include <cstddef>
+#include <memory>
 
 namespace flute {
 
@@ -24,7 +24,8 @@ class EventLoop;
 
 class Connection : private noncopyable {
 public:
-    Connection(socket_type sockfd, EventLoop* loop, const sockaddr_storage& localAddress, const sockaddr_storage& remoteAddress);
+    Connection(socket_type sockfd, EventLoop* loop, const sockaddr_storage& localAddress,
+               const sockaddr_storage& remoteAddress);
     ~Connection();
 
 private:
