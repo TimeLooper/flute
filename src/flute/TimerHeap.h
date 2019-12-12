@@ -27,7 +27,7 @@ static inline bool compare(const Timer* lhs, const Timer* rhs) {
 
 class TimerHeap {
 public:
-    typedef std::vector<Timer *>::size_type size_type;
+    using size_type = typename std::vector<Timer *>::size_type;
 
     TimerHeap() = default;
     ~TimerHeap() = default;
@@ -110,12 +110,12 @@ void TimerHeap::shift_down(TimerHeap::size_type index) {
             break;
         }
         m_timers[index] = m_timers[min_child];
-        m_timers[index]->index = index;
+        m_timers[index]->index = static_cast<int>(index);
         index = min_child;
         min_child = 2 * (index + 1);
     }
     m_timers[index] = temp;
-    temp->index = index;
+    temp->index = static_cast<int>(index);
 }
 
 void TimerHeap::shift_up(TimerHeap::size_type index) {
@@ -123,12 +123,12 @@ void TimerHeap::shift_up(TimerHeap::size_type index) {
     auto parent = (index - 1) / 2;
     while (index && compare(m_timers[parent], temp)) {
         m_timers[index] = m_timers[parent];
-        m_timers[index]->index = index;
+        m_timers[index]->index = static_cast<int>(index);
         index = parent;
         parent = (index - 1) / 2;
     }
     m_timers[index] = temp;
-    temp->index = index;
+    temp->index = static_cast<int>(index);
 }
 
 } // namespace flute

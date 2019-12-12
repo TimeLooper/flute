@@ -12,6 +12,7 @@
 #include <flute/noncopyable.h>
 #include <flute/socket_types.h>
 #include <flute/socket_ops.h>
+#include <flute/Channel.h>
 
 #include <memory>
 #include <atomic>
@@ -20,7 +21,6 @@
 namespace flute {
 
 class EventLoop;
-class Channel;
 
 class Connection : private noncopyable {
 public:
