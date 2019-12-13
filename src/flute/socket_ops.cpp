@@ -130,8 +130,16 @@ std::int32_t write(socket_type fd, void* buffer, std::size_t size) {
     return ::write(fd, buffer, size);
 }
 
-int close(socket_type fd) {
+int close(int fd) {
     return ::close(fd);
+}
+
+int closeSocket(socket_type socket) {
+#if defined(WIN32) || defined(_WIN32)
+
+#else
+    return ::close(socket);
+#endif
 }
 
 sockaddr_storage getLocalAddr(socket_type fd) {

@@ -29,6 +29,9 @@
 #ifdef FLUTE_HAVE_ARPA_INET_H
 #include <arpa/inet.h>
 #endif
+#ifdef FLUTE_HAVE_NETINET_TCP_H
+#include <netinet/tcp.h>
+#endif
 
 namespace flute {
 
@@ -57,7 +60,9 @@ FLUTE_API_DECL socket_type accept(socket_type fd, sockaddr_storage& addr);
 
 FLUTE_API_DECL std::int32_t write(socket_type fd, void* buffer, std::size_t size);
 
-FLUTE_API_DECL int close(socket_type fd);
+FLUTE_API_DECL int close(int fd);
+
+FLUTE_API_DECL int closeSocket(socket_type socket);
 
 FLUTE_API_DECL sockaddr_storage getLocalAddr(socket_type fd);
 
