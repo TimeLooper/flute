@@ -146,22 +146,25 @@ void Buffer::append(const std::uint8_t *buffer, std::size_t length) {
         if (!new_buffer) {
             LOG_ERROR << "out of memory";
         } else {
-            auto headCnt = readableBytes() + m_readIndex - m_capacity;
-            if (headCnt <= capacity - m_capacity) {
-                std::memmove(new_buffer + m_capacity, m_buffer, headCnt);
-            } else {
-                std::memmove(new_buffer + m_capacity, m_buffer, capacity - m_capacity);
-                std::memmove(new_buffer, m_buffer + capacity - m_capacity, headCnt + m_capacity - capacity);
+            if (readableBytes() > m_capacity - m_readIndex) {
+                auto headCnt = readableBytes() + m_readIndex - m_capacity;
+                if (headCnt <= capacity - m_capacity) {
+                    std::memmove(new_buffer + m_capacity, m_buffer, headCnt);
+                } else {
+                    std::memmove(new_buffer + m_capacity, m_buffer, capacity - m_capacity);
+                    std::memmove(new_buffer, m_buffer + capacity - m_capacity, headCnt + m_capacity - capacity);
+                }
             }
-            std::free(m_buffer);
+            if (new_buffer != m_buffer) {
+                std::free(m_buffer);
+            }
             m_buffer = new_buffer;
-            m_writeIndex += headCnt;
+            m_writeIndex += m_readIndex + m_bufferSize;
             m_capacity = capacity;
-            m_writeIndex &= capacity - 1;
         }
     }
     if (m_readIndex < m_writeIndex) {
-        if (m_capacity - m_writeIndex < length) {
+        if (m_capacity - m_writeIndex >= length) {
             std::memcpy(m_buffer + m_writeIndex, buffer, length);
         } else {
             std::memcpy(m_buffer + m_writeIndex, buffer, m_capacity - m_writeIndex);
@@ -171,6 +174,8 @@ void Buffer::append(const std::uint8_t *buffer, std::size_t length) {
         std::memcpy(m_buffer + m_writeIndex, buffer, length);
     }
     m_bufferSize += length;
+    m_writeIndex += length;
+    m_writeIndex &= m_capacity - 1;
 }
 
 void Buffer::appendInt8(std::int8_t value) {
