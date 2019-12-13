@@ -78,7 +78,7 @@ std::string Buffer::peekLine() const {
     char buffer[65536];
     while (true) {
         bool match = true;
-        for (auto i = 0; i < length; ++i) {
+        for (std::size_t i = 0; i < length; ++i) {
             if (*(m_buffer + ((m_readIndex + index + i) & (m_capacity - 1))) != temp[i]) {
                 match = false;
             }
