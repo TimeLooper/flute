@@ -83,7 +83,7 @@ std::string Buffer::peekLine() const {
                 match = false;
             }
         }
-        if (match) {
+        if (match || ((m_readIndex + index) & (m_capacity - 1)) == m_writeIndex) {
             break;
         }
         *(buffer + index) = *(m_buffer + ((m_readIndex + index) & (m_capacity - 1)));
@@ -129,7 +129,7 @@ std::int64_t Buffer::readInt64() {
 
 std::string Buffer::readLine() {
     auto result = peekLine();
-    UPDATE_READ_INDEX(m_capacity, m_readIndex, m_bufferSize, result.length());
+    UPDATE_READ_INDEX(m_capacity, m_readIndex, m_bufferSize, result.length() + m_lineSeparator.length());
     return result;
 }
 
@@ -159,7 +159,7 @@ void Buffer::append(const std::uint8_t *buffer, std::size_t length) {
                 std::free(m_buffer);
             }
             m_buffer = new_buffer;
-            m_writeIndex += m_readIndex + m_bufferSize;
+            m_writeIndex = m_readIndex + m_bufferSize;
             m_capacity = capacity;
         }
     }
