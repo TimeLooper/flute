@@ -11,7 +11,8 @@
 
 int main(int argc, char* argv[]) {
     flute::Buffer buf;
-    char str[] = "Hello World\r\n";
+    char str[] = "Hello World\n";
+    buf.setLineSeparator("\n");
     buf.appendInt32(4);
     auto ret = buf.readInt32();
     buf.appendInt32(8);

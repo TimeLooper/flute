@@ -42,6 +42,7 @@ public:
     FLUTE_API_DECL void appendInt64(std::int64_t value);
     FLUTE_API_DECL void setLineSeparator(std::string&& separator);
     FLUTE_API_DECL void setLineSeparator(const std::string& separator);
+    FLUTE_API_DECL const std::string& getLineSeparator() const;
 
 private:
     std::size_t m_readIndex;

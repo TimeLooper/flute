@@ -14,6 +14,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <cstring>
+#include <sstream>
 
 namespace flute {
 
@@ -75,22 +76,21 @@ std::string Buffer::peekLine() const {
     auto temp = m_lineSeparator.c_str();
     auto length = m_lineSeparator.length();
     std::size_t index = 0;
-    char buffer[65536];
+    std::size_t idx = 0;
+    std::stringstream ss;
     while (true) {
-        bool match = true;
-        for (std::size_t i = 0; i < length; ++i) {
-            if (*(m_buffer + ((m_readIndex + index + i) & (m_capacity - 1))) != temp[i]) {
-                match = false;
-            }
+        ss <<  *(m_buffer + ((m_readIndex + index) & (m_capacity - 1)));
+        if (*(m_buffer + ((m_readIndex + index) & (m_capacity - 1))) == temp[idx]) {
+            idx += 1;
+        } else {
+            idx = 0;
         }
-        if (match || ((m_readIndex + index) & (m_capacity - 1)) == m_writeIndex) {
+        if (idx >= length) {
             break;
         }
-        *(buffer + index) = *(m_buffer + ((m_readIndex + index) & (m_capacity - 1)));
         index += 1;
     }
-    *(buffer + index) = '\0';
-    return buffer;
+    return ss.str();
 }
 
 void Buffer::peek(std::uint8_t *buffer, std::size_t length) const {
@@ -129,7 +129,7 @@ std::int64_t Buffer::readInt64() {
 
 std::string Buffer::readLine() {
     auto result = peekLine();
-    UPDATE_READ_INDEX(m_capacity, m_readIndex, m_bufferSize, result.length() + m_lineSeparator.length());
+    UPDATE_READ_INDEX(m_capacity, m_readIndex, m_bufferSize, result.length());
     return result;
 }
 
@@ -163,12 +163,12 @@ void Buffer::append(const std::uint8_t *buffer, std::size_t length) {
             m_capacity = capacity;
         }
     }
-    if (m_readIndex < m_writeIndex) {
+    if (m_readIndex <= m_writeIndex) {
         if (m_capacity - m_writeIndex >= length) {
             std::memcpy(m_buffer + m_writeIndex, buffer, length);
         } else {
             std::memcpy(m_buffer + m_writeIndex, buffer, m_capacity - m_writeIndex);
-            std::memcpy(m_buffer + m_capacity, buffer + m_capacity - m_writeIndex, length + m_writeIndex - m_capacity);
+            std::memcpy(m_buffer, buffer + m_capacity - m_writeIndex, length + m_writeIndex - m_capacity);
         }
     } else {
         std::memcpy(m_buffer + m_writeIndex, buffer, length);
@@ -203,6 +203,10 @@ void Buffer::setLineSeparator(std::string &&separator) {
 
 void Buffer::setLineSeparator(const std::string &separator) {
     m_lineSeparator = separator;
+}
+
+const std::string& Buffer::getLineSeparator() const {
+    return m_lineSeparator;
 }
 
 std::size_t Buffer::getCapacity(std::size_t length) {
