@@ -44,13 +44,17 @@ public:
     FLUTE_API_DECL void dispatch();
     FLUTE_API_DECL void quit();
     FLUTE_API_DECL void wakeup();
-    FLUTE_API_DECL bool isInLoopThread();
+    FLUTE_API_DECL bool isInLoopThread() const;
     FLUTE_API_DECL void runInLoop(const std::function<void()>& task);
     FLUTE_API_DECL void runInLoop(std::function<void()>&& task);
+    FLUTE_API_DECL void queueInLoop(const std::function<void()>& task);
+    FLUTE_API_DECL void queueInLoop(std::function<void()>&& task);
     FLUTE_API_DECL std::uint64_t schedule(std::function<void()>&& callback, std::int64_t delay, int loopCount);
     FLUTE_API_DECL std::uint64_t schedule(const std::function<void()>& callback, std::int64_t delay, int loopCount);
     FLUTE_API_DECL void cancel(std::uint64_t timerId);
     FLUTE_API_DECL void attachThread();
+    FLUTE_API_DECL void assertInLoopThread() const;
+    FLUTE_API_DECL void abortNotInLoopThread() const;
 
 private:
     Reactor* m_reactor;
@@ -61,8 +65,6 @@ private:
     std::mutex m_mutex;
     TimerQueue m_timerQueue;
 
-    void queueInLoop(const std::function<void()>& task);
-    void queueInLoop(std::function<void()>&& task);
     void executeTasks();
 };
 

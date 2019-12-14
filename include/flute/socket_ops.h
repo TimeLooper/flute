@@ -32,8 +32,20 @@
 #ifdef FLUTE_HAVE_NETINET_TCP_H
 #include <netinet/tcp.h>
 #endif
+#ifdef FLUTE_HAVE_SYS_UIO_H
+#include <sys/uio.h>
+#endif
 
 namespace flute {
+
+#ifdef FLUTE_HAVE_SYS_UIO_H
+using ::iovec;
+#else
+struct iovec {
+    void* iov_base;      /* Pointer to data.  */
+    std::size_t iov_len; /* Length of data.  */
+};
+#endif
 
 using ::getsockopt;
 using ::open;
@@ -52,6 +64,8 @@ FLUTE_API_DECL int bind(socket_type fd, const sockaddr_storage& addr);
 
 FLUTE_API_DECL std::int32_t read(socket_type fd, void* buffer, std::size_t size);
 
+FLUTE_API_DECL std::int32_t readv(socket_type fd, const struct iovec* vec, int count);
+
 FLUTE_API_DECL int connect(socket_type fd, const sockaddr_storage& addr);
 
 FLUTE_API_DECL int listen(socket_type fd);
@@ -60,7 +74,11 @@ FLUTE_API_DECL socket_type accept(socket_type fd, sockaddr_storage& addr);
 
 FLUTE_API_DECL std::int32_t write(socket_type fd, void* buffer, std::size_t size);
 
+FLUTE_API_DECL std::int32_t writev(socket_type fd, const struct iovec* vec, int count);
+
 FLUTE_API_DECL int close(int fd);
+
+FLUTE_API_DECL std::int32_t getByteAvaliableOnSocket(socket_type descriptor);
 
 FLUTE_API_DECL int closeSocket(socket_type socket);
 

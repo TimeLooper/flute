@@ -63,7 +63,7 @@ void EventLoop::wakeup() {
     m_interrupter.interrupt();
 }
 
-bool EventLoop::isInLoopThread() {
+bool EventLoop::isInLoopThread() const {
     return m_tid == std::this_thread::get_id();
 }
 
@@ -97,6 +97,17 @@ void EventLoop::cancel(std::uint64_t timerId) {
 
 void EventLoop::attachThread() {
     m_tid = std::this_thread::get_id();
+}
+
+void EventLoop::assertInLoopThread() const {
+    if (!isInLoopThread()) {
+        abortNotInLoopThread();
+    }
+}
+
+void EventLoop::abortNotInLoopThread() const {
+    LOG_FATAL << "EventLoop " << this << " was attached thread " << m_tid << ", current thread id "
+              << std::this_thread::get_id() << ".";
 }
 
 void EventLoop::queueInLoop(const std::function<void()>& task) {

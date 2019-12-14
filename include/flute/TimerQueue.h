@@ -35,7 +35,6 @@ public:
 
 private:
     EventLoop* m_loop;
-    class timer_queue;
     TimerHeap* m_timerQueue;
 
     void postTimerInLoop(Timer* timer);

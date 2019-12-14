@@ -33,6 +33,8 @@ namespace flute {
 
 #if defined(WIN32) || defined(_WIN32)
 typedef SOCKET socket_type;
+#define SHUT_WR SD_SEND
+#define SHUT_RD SD_RECEIVE
 #else
 typedef int socket_type;
 #endif

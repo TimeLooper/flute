@@ -10,15 +10,17 @@
 #include <flute/Buffer.h>
 #include <flute/Logger.h>
 #include <flute/endian.h>
+#include <flute/socket_ops.h>
 
 #include <cassert>
+#include <cerrno>
 #include <cstdlib>
 #include <cstring>
 #include <sstream>
 
 namespace flute {
 
-static const int DEFAULT_BUFFER_SIZE = 4;
+static const int DEFAULT_BUFFER_SIZE = 4096;
 
 #define UPDATE_READ_INDEX(capacity, readIndex, bufferSize, size) \
     do {                                                         \
@@ -26,6 +28,21 @@ static const int DEFAULT_BUFFER_SIZE = 4;
         readIndex &= capacity - 1;                               \
         bufferSize -= size;                                      \
     } while (0)
+
+#define UPDATE_WRITE_INDEX(capacity, writeIndex, bufferSize, size) \
+    do {                                                           \
+        writeIndex += size;                                        \
+        writeIndex &= capacity - 1;                                \
+        bufferSize += size;                                        \
+    } while (0)
+
+inline std::int32_t getCapacity(std::int32_t length, std::int32_t capacity) {
+    int result = capacity ? capacity : 1;
+    while (result < length + capacity) {
+        result <<= 1;
+    }
+    return result;
+}
 
 Buffer::Buffer()
     : m_readIndex(0)
@@ -40,11 +57,11 @@ Buffer::~Buffer() {
     std::free(m_buffer);
 }
 
-std::size_t Buffer::readableBytes() const {
+std::int32_t Buffer::readableBytes() const {
     return m_bufferSize;
 }
 
-std::size_t Buffer::writeableBytes() const {
+std::int32_t Buffer::writeableBytes() const {
     return m_capacity - m_bufferSize;
 }
 
@@ -75,8 +92,9 @@ std::int64_t Buffer::peekInt64() const {
 std::string Buffer::peekLine() const {
     auto temp = m_lineSeparator.c_str();
     auto length = m_lineSeparator.length();
-    std::size_t index = 0;
-    std::size_t idx = 0;
+    auto bytesAvailable = readableBytes();
+    int index = 0;
+    int idx = 0;
     std::stringstream ss;
     while (true) {
         ss << *(m_buffer + ((m_readIndex + index) & (m_capacity - 1)));
@@ -85,7 +103,7 @@ std::string Buffer::peekLine() const {
         } else {
             idx = 0;
         }
-        if (idx >= length) {
+        if (idx >= length || index >= bytesAvailable) {
             break;
         }
         index += 1;
@@ -93,7 +111,7 @@ std::string Buffer::peekLine() const {
     return ss.str();
 }
 
-void Buffer::peek(std::uint8_t *buffer, std::size_t length) const {
+void Buffer::peek(std::uint8_t *buffer, std::int32_t length) const {
     assert(length <= readableBytes());
     if (m_capacity - m_readIndex >= length) {
         std::memcpy(buffer, m_buffer + m_readIndex, length);
@@ -133,35 +151,15 @@ std::string Buffer::readLine() {
     return result;
 }
 
-void Buffer::read(std::uint8_t *buffer, std::size_t length) {
+void Buffer::read(std::uint8_t *buffer, std::int32_t length) {
     peek(buffer, length);
     UPDATE_READ_INDEX(m_capacity, m_readIndex, m_bufferSize, length);
 }
 
-void Buffer::append(const std::uint8_t *buffer, std::size_t length) {
+void Buffer::append(const std::uint8_t *buffer, std::int32_t length) {
     if (length > writeableBytes()) {
         // expand buffer
-        auto capacity = getCapacity(length);
-        auto new_buffer = static_cast<std::uint8_t *>(std::realloc(m_buffer, capacity));
-        if (!new_buffer) {
-            LOG_ERROR << "out of memory";
-        } else {
-            if (readableBytes() > m_capacity - m_readIndex) {
-                auto headCnt = readableBytes() + m_readIndex - m_capacity;
-                if (headCnt <= capacity - m_capacity) {
-                    std::memmove(new_buffer + m_capacity, m_buffer, headCnt);
-                } else {
-                    std::memmove(new_buffer + m_capacity, m_buffer, capacity - m_capacity);
-                    std::memmove(new_buffer, m_buffer + capacity - m_capacity, headCnt + m_capacity - capacity);
-                }
-            }
-            if (new_buffer != m_buffer) {
-                std::free(m_buffer);
-            }
-            m_buffer = new_buffer;
-            m_writeIndex = m_readIndex + m_bufferSize;
-            m_capacity = capacity;
-        }
+        expand(length);
     }
     if (m_readIndex <= m_writeIndex) {
         if (m_capacity - m_writeIndex >= length) {
@@ -173,9 +171,7 @@ void Buffer::append(const std::uint8_t *buffer, std::size_t length) {
     } else {
         std::memcpy(m_buffer + m_writeIndex, buffer, length);
     }
-    m_bufferSize += length;
-    m_writeIndex += length;
-    m_writeIndex &= m_capacity - 1;
+    UPDATE_WRITE_INDEX(m_capacity, m_writeIndex, m_bufferSize, length);
 }
 
 void Buffer::appendInt8(std::int8_t value) {
@@ -209,12 +205,83 @@ const std::string &Buffer::getLineSeparator() const {
     return m_lineSeparator;
 }
 
-std::size_t Buffer::getCapacity(std::size_t length) {
-    std::size_t result = m_capacity ? m_capacity : 1;
-    while (result < length + m_capacity) {
-        result <<= 1;
+std::int32_t Buffer::readFromSocket(socket_type descriptor) {
+    auto writeableSize = writeableBytes();
+    auto bytesAvailable = flute::getByteAvaliableOnSocket(descriptor);
+    if (bytesAvailable >= writeableSize) {
+        // expand buffer
+        expand(bytesAvailable);
+    }
+    iovec vec[2]{};
+    int count = 1;
+    if (m_readIndex <= m_writeIndex) {
+        if (m_capacity - m_writeIndex >= bytesAvailable) {
+            vec[0].iov_base = m_buffer + m_writeIndex;
+            vec[0].iov_len = writeableSize;
+            count = 1;
+        } else {
+            vec[0].iov_base = m_buffer + m_writeIndex;
+            vec[0].iov_len = m_capacity - m_writeIndex;
+            vec[1].iov_base = m_buffer;
+            vec[1].iov_len = bytesAvailable + m_writeIndex - m_capacity;
+            count = 2;
+        }
+    } else {
+        vec[0].iov_base = m_buffer + m_writeIndex;
+        vec[0].iov_len = bytesAvailable;
+        count = 1;
+    }
+    auto result = flute::readv(descriptor, vec, count);
+    if (result > 0) {
+        UPDATE_WRITE_INDEX(m_capacity, m_writeIndex, m_bufferSize, result);
     }
     return result;
+}
+
+std::int32_t Buffer::sendToSocket(socket_type descriptor) {
+    auto length = readableBytes();
+    iovec vec[2]{};
+    int count;
+    if (m_capacity - m_readIndex >= length) {
+        vec[0].iov_base = m_buffer + m_readIndex;
+        vec[0].iov_len = length;
+        count = 1;
+    } else {
+        vec[0].iov_base = m_buffer + m_readIndex;
+        vec[0].iov_len = m_capacity - m_readIndex;
+        vec[1].iov_base = m_buffer;
+        vec[1].iov_len = length + m_readIndex - m_capacity;
+        count = 2;
+    }
+    auto result = flute::writev(descriptor, vec, count);
+    if (result > 0) {
+        UPDATE_READ_INDEX(m_capacity, m_readIndex, m_bufferSize, result);
+    }
+    return result;
+}
+
+void Buffer::expand(std::int32_t length) {
+    auto capacity = getCapacity(length, m_capacity);
+    auto new_buffer = static_cast<std::uint8_t *>(std::realloc(m_buffer, capacity));
+    if (!new_buffer) {
+        LOG_ERROR << "out of memory";
+    } else {
+        if (readableBytes() > m_capacity - m_readIndex) {
+            auto headCnt = readableBytes() + m_readIndex - m_capacity;
+            if (headCnt <= capacity - m_capacity) {
+                std::memmove(new_buffer + m_capacity, m_buffer, headCnt);
+            } else {
+                std::memmove(new_buffer + m_capacity, m_buffer, capacity - m_capacity);
+                std::memmove(new_buffer, m_buffer + capacity - m_capacity, headCnt + m_capacity - capacity);
+            }
+        }
+        if (new_buffer != m_buffer) {
+            std::free(m_buffer);
+        }
+        m_buffer = new_buffer;
+        m_writeIndex = m_readIndex + m_bufferSize;
+        m_capacity = capacity;
+    }
 }
 
 } // namespace flute

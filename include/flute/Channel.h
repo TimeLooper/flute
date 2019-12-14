@@ -31,25 +31,12 @@ public:
     FLUTE_API_DECL void disableWrite();
     FLUTE_API_DECL void enableWrite();
     FLUTE_API_DECL void disableAll();
-
-    inline void setReadCallback(const std::function<void()>& cb) {
-        m_readCallback = cb;
-    }
-    inline void setReadCallback(std::function<void()>&& cb) {
-        m_readCallback = std::move(cb);
-    }
-    inline void setWriteCallback(const std::function<void()>& cb) {
-        m_writeCallback = cb;
-    }
-    inline void setWriteCallback(std::function<void()>&& cb) {
-        m_writeCallback = std::move(cb);
-    }
-    inline socket_type descriptor() const {
-        return m_descriptor;
-    }
-    inline int events() const {
-        return m_events;
-    }
+    FLUTE_API_DECL void setReadCallback(const std::function<void()>& cb);
+    FLUTE_API_DECL void setReadCallback(std::function<void()>&& cb);
+    FLUTE_API_DECL void setWriteCallback(const std::function<void()>& cb);
+    FLUTE_API_DECL void setWriteCallback(std::function<void()>&& cb);
+    FLUTE_API_DECL socket_type descriptor() const;
+    FLUTE_API_DECL int events() const;
 
 private:
     int m_events;

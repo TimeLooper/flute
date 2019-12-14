@@ -24,6 +24,11 @@
 #ifdef FLUTE_HAVE_NETINET_TCP_H
 #include <netinet/tcp.h>
 #endif
+#ifdef FLUTE_HAVE_SYS_IOCTL_H
+#include <sys/ioctl.h>
+#endif
+
+#define BUFFER_MAX_READ_DEFAULT 4096
 
 namespace flute {
 
@@ -126,12 +131,53 @@ std::int32_t read(socket_type fd, void* buffer, std::size_t size) {
     return ::read(fd, buffer, size);
 }
 
+std::int32_t readv(socket_type fd, const struct iovec* vec, int count) {
+#ifdef FLUTE_HAVE_SYS_UIO_H
+    return ::readv(fd, vec, count);
+#else
+    auto result = 0;
+    DWORD bytesRead;
+    DWORD flags = 0;
+    WSABUF buf{};
+    buf.buf = static_cast<char*>(vec->iov_base);
+    buf.len = vec->iov_len;
+    if (WSARecv(fd, &buf, count, &bytesRead, &flags, nullptr, nullptr)) {
+        if (WSAGetLastError() == WSAECONNABORTED)
+            result = 0;
+        else
+            result = -1;
+    } else {
+        result = bytesRead;
+    }
+    return result;
+#endif
+}
+
 std::int32_t write(socket_type fd, void* buffer, std::size_t size) {
     return ::write(fd, buffer, size);
 }
 
+std::int32_t writev(socket_type fd, const struct iovec* vec, int count) {
+    return ::writev(fd, vec, count);
+}
+
 int close(int fd) {
     return ::close(fd);
+}
+
+std::int32_t getByteAvaliableOnSocket(socket_type descriptor) {
+#if defined(FIONREAD) && defined(_WIN32)
+    std::int32_t lng = BUFFER_MAX_READ_DEFAULT;
+    if (ioctlsocket(descriptor, FIONREAD, &lng) < 0) return -1;
+    /* Can overflow, but mostly harmlessly. XXXX */
+    return lng;
+#elif defined(FIONREAD)
+    std::int32_t n = BUFFER_MAX_READ_DEFAULT;
+    if (ioctl(descriptor, FIONREAD, &n) < 0) return -1;
+    return n;
+#else
+    return BUFFER_MAX_READ_DEFAULT;
+#endif
 }
 
 int closeSocket(socket_type socket) {

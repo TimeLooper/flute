@@ -14,19 +14,19 @@ int main(int argc, char* argv[]) {
     flute::EventLoop loop;
     loop.attachThread();
     auto delay = 1000;
-    auto t1 = loop.schedule([=] {
+    loop.schedule([=] {
         LOG_DEBUG << "timer " << delay;
     }, delay, -1);
     delay = 500;
-    auto t2 = loop.schedule([=] {
+    loop.schedule([=] {
         LOG_DEBUG << "timer " << delay;
     }, delay, 10);
     delay = 2000;
-    auto t3 = loop.schedule([=] {
+    loop.schedule([=] {
         LOG_DEBUG << "timer " << delay;
     }, delay, -1);
     delay = 1500;
-    auto t4 = loop.schedule([=] {
+    loop.schedule([=] {
         LOG_DEBUG << "timer " << delay;
     }, delay, -1);
     loop.dispatch();
