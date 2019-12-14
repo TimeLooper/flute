@@ -12,8 +12,8 @@
 #include <flute/Logger.h>
 #include <flute/socket_ops.h>
 
-#include <cerrno>
 #include <cassert>
+#include <cerrno>
 #include <cstring>
 
 namespace flute {
@@ -106,7 +106,6 @@ void Connection::send(const void* buffer, std::int32_t length) const {
 }
 
 void Connection::send(const std::string& message) const {
-
 }
 
 void Connection::handleRead() {
@@ -177,11 +176,9 @@ void Connection::setTcpNoDelay(bool on) const {
 }
 
 void Connection::sendInLoop(const void* buffer, std::int32_t length) const {
-
 }
 
 void Connection::sendInLoop(const std::string& message) const {
-
 }
 
 } // namespace flute
