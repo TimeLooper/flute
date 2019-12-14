@@ -91,10 +91,10 @@ std::int64_t Buffer::peekInt64() const {
 
 std::string Buffer::peekLine() const {
     auto temp = m_lineSeparator.c_str();
-    auto length = m_lineSeparator.length();
+	std::int32_t length = m_lineSeparator.length();
     auto bytesAvailable = readableBytes();
-    int index = 0;
-    int idx = 0;
+	std::int32_t index = 0;
+	std::int32_t idx = 0;
     std::stringstream ss;
     while (true) {
         ss << *(m_buffer + ((m_readIndex + index) & (m_capacity - 1)));

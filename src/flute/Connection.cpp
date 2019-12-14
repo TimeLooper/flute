@@ -13,6 +13,8 @@
 #include <flute/socket_ops.h>
 
 #include <cerrno>
+#include <cassert>
+#include <cstring>
 
 namespace flute {
 
