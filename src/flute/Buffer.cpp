@@ -57,11 +57,11 @@ Buffer::~Buffer() {
     std::free(m_buffer);
 }
 
-std::int32_t Buffer::readableBytes() const {
+flute::ssize_t Buffer::readableBytes() const {
     return m_bufferSize;
 }
 
-std::int32_t Buffer::writeableBytes() const {
+flute::ssize_t Buffer::writeableBytes() const {
     return m_capacity - m_bufferSize;
 }
 
@@ -111,13 +111,14 @@ std::string Buffer::peekLine() const {
     return ss.str();
 }
 
-void Buffer::peek(std::uint8_t *buffer, std::int32_t length) const {
+void Buffer::peek(void *buffer, flute::ssize_t length) const {
     assert(length <= readableBytes());
     if (m_capacity - m_readIndex >= length) {
         std::memcpy(buffer, m_buffer + m_readIndex, length);
     } else {
         std::memcpy(buffer, m_buffer + m_readIndex, m_capacity - m_readIndex);
-        std::memcpy(buffer + m_capacity - m_readIndex, m_buffer, length + m_readIndex - m_capacity);
+        std::memcpy(reinterpret_cast<std::uint8_t *>(buffer) + m_capacity - m_readIndex, m_buffer,
+                    length + m_readIndex - m_capacity);
     }
 }
 
@@ -151,12 +152,28 @@ std::string Buffer::readLine() {
     return result;
 }
 
-void Buffer::read(std::uint8_t *buffer, std::int32_t length) {
+void Buffer::read(void *buffer, flute::ssize_t length) {
     peek(buffer, length);
     UPDATE_READ_INDEX(m_capacity, m_readIndex, m_bufferSize, length);
 }
 
-void Buffer::append(const std::uint8_t *buffer, std::int32_t length) {
+void Buffer::append(Buffer &buffer) {
+    auto length = buffer.readableBytes();
+    if (length > writeableBytes()) {
+        // expand buffer
+        expand(length);
+    }
+    if (buffer.m_readIndex < buffer.m_writeIndex) {
+        append(buffer.m_buffer + buffer.m_readIndex, length);
+    } else {
+        append(buffer.m_buffer + buffer.m_readIndex, buffer.m_capacity - buffer.m_readIndex);
+        append(buffer.m_buffer, length + buffer.m_readIndex - buffer.m_capacity);
+    }
+    buffer.m_readIndex = buffer.m_writeIndex = 0;
+    UPDATE_WRITE_INDEX(m_capacity, m_writeIndex, m_bufferSize, length);
+}
+
+void Buffer::append(const void *buffer, flute::ssize_t length) {
     if (length > writeableBytes()) {
         // expand buffer
         expand(length);
@@ -166,7 +183,8 @@ void Buffer::append(const std::uint8_t *buffer, std::int32_t length) {
             std::memcpy(m_buffer + m_writeIndex, buffer, length);
         } else {
             std::memcpy(m_buffer + m_writeIndex, buffer, m_capacity - m_writeIndex);
-            std::memcpy(m_buffer, buffer + m_capacity - m_writeIndex, length + m_writeIndex - m_capacity);
+            std::memcpy(m_buffer, reinterpret_cast<const std::uint8_t *>(buffer) + m_capacity - m_writeIndex,
+                        length + m_writeIndex - m_capacity);
         }
     } else {
         std::memcpy(m_buffer + m_writeIndex, buffer, length);
@@ -205,7 +223,7 @@ const std::string &Buffer::getLineSeparator() const {
     return m_lineSeparator;
 }
 
-std::int32_t Buffer::readFromSocket(socket_type descriptor) {
+flute::ssize_t Buffer::readFromSocket(socket_type descriptor) {
     auto writeableSize = writeableBytes();
     auto bytesAvailable = flute::getByteAvaliableOnSocket(descriptor);
     if (bytesAvailable >= writeableSize) {
@@ -238,7 +256,7 @@ std::int32_t Buffer::readFromSocket(socket_type descriptor) {
     return result;
 }
 
-std::int32_t Buffer::sendToSocket(socket_type descriptor) {
+flute::ssize_t Buffer::sendToSocket(socket_type descriptor) {
     auto length = readableBytes();
     iovec vec[2]{};
     int count;
@@ -260,7 +278,7 @@ std::int32_t Buffer::sendToSocket(socket_type descriptor) {
     return result;
 }
 
-void Buffer::expand(std::int32_t length) {
+void Buffer::expand(flute::ssize_t length) {
     auto capacity = getCapacity(length, m_capacity);
     auto new_buffer = static_cast<std::uint8_t *>(std::realloc(m_buffer, capacity));
     if (!new_buffer) {

@@ -12,7 +12,7 @@
 #include <flute/EventLoop.h>
 #include <flute/config.h>
 #include <flute/copyable.h>
-#include <flute/socket_types.h>
+#include <flute/flute_types.h>
 
 #include <functional>
 
@@ -37,6 +37,8 @@ public:
     FLUTE_API_DECL void setWriteCallback(std::function<void()>&& cb);
     FLUTE_API_DECL socket_type descriptor() const;
     FLUTE_API_DECL int events() const;
+    FLUTE_API_DECL bool isWriteable() const;
+    FLUTE_API_DECL bool isReadable() const;
 
 private:
     int m_events;

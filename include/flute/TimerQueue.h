@@ -8,8 +8,8 @@
  *************************************************************************/
 
 #pragma once
+#include <flute/flute_types.h>
 #include <flute/noncopyable.h>
-#include <flute/socket_types.h>
 
 #include <cstdint>
 #include <functional>
@@ -24,7 +24,7 @@ class TimerHeap;
 
 class TimerQueue : private noncopyable {
 public:
-    TimerQueue(EventLoop* loop);
+    explicit TimerQueue(EventLoop* loop);
     ~TimerQueue();
 
     std::uint64_t schedule(std::function<void()>&& callback, std::int64_t delay, int loopCount);

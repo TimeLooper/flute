@@ -10,8 +10,8 @@
 #pragma once
 
 #include <flute/config.h>
+#include <flute/flute_types.h>
 #include <flute/noncopyable.h>
-#include <flute/socket_types.h>
 
 #include <cstdint>
 #include <vector>

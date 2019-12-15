@@ -8,17 +8,19 @@
  *************************************************************************/
 
 #pragma once
+
 #include <flute/config.h>
+#include <flute/flute_types.h>
 #include <flute/noncopyable.h>
-#include <flute/socket_types.h>
 
 namespace flute {
+
 class EventLoop;
 class Channel;
 
 class EventLoopInterrupter : private noncopyable {
 public:
-    EventLoopInterrupter(EventLoop* loop);
+    explicit EventLoopInterrupter(EventLoop* loop);
     ~EventLoopInterrupter();
 
     void interrupt();

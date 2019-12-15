@@ -1,6 +1,6 @@
 /*************************************************************************
  *
- * File Name:  socket_types.hpp
+ * File Name:  flute_types.hpp
  * Repository: https://github.com/TimeLooper/flute
  * Author:     why
  * Date:       2019/11/26
@@ -40,5 +40,13 @@ typedef int socket_type;
 #endif
 
 const socket_type FLUTE_INVALID_SOCKET = static_cast<socket_type>(~0);
+
+#ifdef WIN32
+typedef int ssize_t;
+#elif _WIN64
+typedef long int ssize_t;
+#else
+typedef ::ssize_t ssize_t;
+#endif
 
 } // namespace flute

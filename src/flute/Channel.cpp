@@ -80,4 +80,12 @@ int Channel::events() const {
     return m_events;
 }
 
+bool Channel::isWriteable() const {
+    return m_events & FileEvent::WRITE;
+}
+
+bool Channel::isReadable() const {
+    return m_events & FileEvent::READ;
+}
+
 } // namespace flute

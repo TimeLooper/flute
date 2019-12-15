@@ -11,9 +11,9 @@
 
 #include <flute/Buffer.h>
 #include <flute/Channel.h>
+#include <flute/flute_types.h>
 #include <flute/noncopyable.h>
 #include <flute/socket_ops.h>
-#include <flute/socket_types.h>
 
 #include <atomic>
 #include <cstddef>
@@ -28,7 +28,7 @@ public:
     typedef std::function<void(const std::shared_ptr<Connection>&, Buffer&)> MessageCallback;
     typedef std::function<void(const std::shared_ptr<Connection>&)> CloseCallback;
     typedef std::function<void(const std::shared_ptr<Connection>&)> WriteCompleteCallback;
-    typedef std::function<void(const std::shared_ptr<Connection>&, std::int32_t)> HighWaterMarkCallback;
+    typedef std::function<void(const std::shared_ptr<Connection>&, flute::ssize_t)> HighWaterMarkCallback;
 
     FLUTE_API_DECL Connection(socket_type descriptor, EventLoop* loop, const sockaddr_storage& localAddress,
                               const sockaddr_storage& remoteAddress);
@@ -47,13 +47,14 @@ public:
     FLUTE_API_DECL const sockaddr_storage& getLocalAddress() const;
     FLUTE_API_DECL const sockaddr_storage& getRemoteAddress() const;
     FLUTE_API_DECL int shutdown(int flags) const;
-    FLUTE_API_DECL void send(const void* buffer, std::int32_t length) const;
-    FLUTE_API_DECL void send(const std::string& message) const;
+    FLUTE_API_DECL void send(const void* buffer, flute::ssize_t length);
+    FLUTE_API_DECL void send(const std::string& message);
+    FLUTE_API_DECL void send(Buffer& buffer);
 
 private:
     enum ConnectionState { DISCONNECTED, CONNECTING, CONNECTED, DISCONNECTING };
     socket_type m_descriptor;
-    std::int32_t m_highWaterMark;
+    flute::ssize_t m_highWaterMark;
     EventLoop* m_loop;
     std::atomic<ConnectionState> m_state;
     std::unique_ptr<Channel> m_channel;
@@ -69,10 +70,12 @@ private:
     void handleRead();
     void handleWrite();
     void handleClose();
+    void handleError();
     void shutdownInLoop();
     void setTcpNoDelay(bool on) const;
-    void sendInLoop(const void* buffer, std::int32_t length) const;
-    void sendInLoop(const std::string& message) const;
+    void sendInLoop(const void* buffer, flute::ssize_t length);
+    void sendInLoop(const std::string& message);
+    void sendInLoop(Buffer& buffer);
 };
 
 } // namespace flute
