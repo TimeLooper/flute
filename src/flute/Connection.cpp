@@ -126,6 +126,7 @@ void Connection::send(Buffer& buffer) {
         sendInLoop(buffer);
     } else {
         void (Connection::*func)(Buffer & buffer) = &Connection::sendInLoop;
+        m_loop->runInLoop(std::bind(func, this, buffer));
     }
 }
 
