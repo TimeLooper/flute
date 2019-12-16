@@ -19,7 +19,7 @@ static inline bool compare(const Timer* lhs, const Timer* rhs) {
     if (lhs->loopCount == 0 && rhs->loopCount != 0) {
         return true;
     }
-    if (rhs->loopCount ==  0 && lhs->loopCount != 0) {
+    if (rhs->loopCount == 0 && lhs->loopCount != 0) {
         return false;
     }
     return lhs->delay + lhs->startTime > rhs->delay + rhs->startTime;
@@ -27,7 +27,7 @@ static inline bool compare(const Timer* lhs, const Timer* rhs) {
 
 class TimerHeap {
 public:
-    using size_type = typename std::vector<Timer *>::size_type;
+    using size_type = typename std::vector<Timer*>::size_type;
 
     TimerHeap() = default;
     ~TimerHeap() = default;
@@ -40,15 +40,13 @@ public:
     bool empty() const;
 
 private:
-    std::vector<Timer *> m_timers;
+    std::vector<Timer*> m_timers;
 
     void shift_down(size_type index);
     void shift_up(size_type index);
 };
 
-Timer* TimerHeap::top() {
-    return m_timers.front();
-}
+Timer* TimerHeap::top() { return m_timers.front(); }
 
 void TimerHeap::pop() {
     if (m_timers.empty()) {
@@ -93,10 +91,7 @@ void TimerHeap::push(Timer* timer) {
     shift_up(m_timers.size() - 1);
 }
 
-
-bool TimerHeap::empty() const {
-    return m_timers.empty();
-}
+bool TimerHeap::empty() const { return m_timers.empty(); }
 
 void TimerHeap::shift_down(TimerHeap::size_type index) {
     auto temp = m_timers[index];

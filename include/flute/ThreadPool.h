@@ -44,12 +44,9 @@ private:
     void run();
 };
 
-ThreadPool::ThreadPool() : m_running(false), m_workers(), m_tasks(), m_mutex(), m_condition() {
-}
+ThreadPool::ThreadPool() : m_running(false), m_workers(), m_tasks(), m_mutex(), m_condition() {}
 
-ThreadPool::~ThreadPool() {
-    assert(!m_running);
-}
+ThreadPool::~ThreadPool() { assert(!m_running); }
 
 void ThreadPool::start(std::size_t size) {
     assert(!m_running);

@@ -24,8 +24,7 @@ EventLoopGroup::EventLoopGroup(std::size_t size) : m_eventLoops(), m_threadPool(
     }
 }
 
-EventLoopGroup::~EventLoopGroup() {
-}
+EventLoopGroup::~EventLoopGroup() {}
 
 EventLoop* EventLoopGroup::chooseEventLoop(std::uint64_t hash) {
     auto size = m_eventLoops.size();
@@ -34,7 +33,6 @@ EventLoop* EventLoopGroup::chooseEventLoop(std::uint64_t hash) {
     } else {
         return m_eventLoops[hash % size].get();
     }
-    return nullptr;
 }
 
 void EventLoopGroup::shutdown() {

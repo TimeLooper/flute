@@ -28,9 +28,7 @@ KqueueReactor::KqueueReactor() : m_kqfd(FLUTE_INVALID_SOCKET), m_events() {
     open();
 }
 
-KqueueReactor::~KqueueReactor() {
-    close();
-}
+KqueueReactor::~KqueueReactor() { close(); }
 
 void KqueueReactor::add(socket_type fd, int old, int event, void* data) {
     struct timespec now;

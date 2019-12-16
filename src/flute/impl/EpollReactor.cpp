@@ -34,9 +34,7 @@ EpollReactor::EpollReactor()
     open();
 }
 
-EpollReactor::~EpollReactor() {
-    close();
-}
+EpollReactor::~EpollReactor() { close(); }
 
 void EpollReactor::add(socket_type fd, int old, int event, void* data) {
     epoll_event ev{};

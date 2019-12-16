@@ -31,9 +31,7 @@ inline std::uint64_t host2Network(std::uint64_t value) {
 #endif
 }
 
-inline std::int64_t host2Network(std::int64_t value) {
-    return host2Network(static_cast<std::uint64_t>(value));
-}
+inline std::int64_t host2Network(std::int64_t value) { return host2Network(static_cast<std::uint64_t>(value)); }
 
 inline std::uint32_t host2Network(std::uint32_t value) {
 #ifdef FLUTE_HAVE_ENDIAN_H
@@ -44,9 +42,7 @@ inline std::uint32_t host2Network(std::uint32_t value) {
 #endif
 }
 
-inline std::int32_t host2Network(std::int32_t value) {
-    return host2Network(static_cast<std::uint32_t>(value));
-}
+inline std::int32_t host2Network(std::int32_t value) { return host2Network(static_cast<std::uint32_t>(value)); }
 
 inline std::uint16_t host2Network(std::uint16_t value) {
 #ifdef FLUTE_HAVE_ENDIAN_H
@@ -57,9 +53,7 @@ inline std::uint16_t host2Network(std::uint16_t value) {
 #endif
 }
 
-inline std::int16_t host2Network(std::int16_t value) {
-    return host2Network(static_cast<std::uint16_t>(value));
-}
+inline std::int16_t host2Network(std::int16_t value) { return host2Network(static_cast<std::uint16_t>(value)); }
 
 inline std::uint64_t network2Host(std::uint64_t value) {
 #ifdef FLUTE_HAVE_ENDIAN_H
@@ -70,9 +64,7 @@ inline std::uint64_t network2Host(std::uint64_t value) {
 #endif
 }
 
-inline std::int64_t network2Host(std::int64_t value) {
-    return network2Host(static_cast<std::uint64_t>(value));
-}
+inline std::int64_t network2Host(std::int64_t value) { return network2Host(static_cast<std::uint64_t>(value)); }
 
 inline std::uint32_t network2Host(std::uint32_t value) {
 #ifdef FLUTE_HAVE_ENDIAN_H
@@ -83,9 +75,7 @@ inline std::uint32_t network2Host(std::uint32_t value) {
 #endif
 }
 
-inline std::int32_t network2Host(std::int32_t value) {
-    return network2Host(static_cast<std::uint32_t>(value));
-}
+inline std::int32_t network2Host(std::int32_t value) { return network2Host(static_cast<std::uint32_t>(value)); }
 
 inline std::uint16_t network2Host(std::uint16_t value) {
 #ifdef FLUTE_HAVE_ENDIAN_H
@@ -96,8 +86,6 @@ inline std::uint16_t network2Host(std::uint16_t value) {
 #endif
 }
 
-inline std::int16_t network2Host(std::int16_t value) {
-    return network2Host(static_cast<std::uint16_t>(value));
-}
+inline std::int16_t network2Host(std::int16_t value) { return network2Host(static_cast<std::uint16_t>(value)); }
 
 } // namespace flute

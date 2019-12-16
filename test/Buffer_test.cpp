@@ -18,7 +18,7 @@ int main(int argc, char* argv[]) {
     buf.appendInt32(8);
     buf.appendInt32(16);
     buf.appendInt32(32);
-    buf.append(reinterpret_cast<std::uint8_t *>(str), sizeof(str) - 1);
+    buf.append(reinterpret_cast<std::uint8_t*>(str), sizeof(str) - 1);
     ret = buf.readInt32();
     ret = buf.readInt32();
     ret = buf.readInt32();

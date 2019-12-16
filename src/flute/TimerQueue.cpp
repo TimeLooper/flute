@@ -20,8 +20,7 @@
 
 namespace flute {
 
-TimerQueue::TimerQueue(EventLoop* loop) : m_loop(loop), m_timerQueue(new TimerHeap()) {
-}
+TimerQueue::TimerQueue(EventLoop* loop) : m_loop(loop), m_timerQueue(new TimerHeap()) {}
 
 TimerQueue::~TimerQueue() {
     assert(m_timerQueue->empty());
@@ -81,9 +80,7 @@ void TimerQueue::handleTimerEvent() {
     }
 }
 
-void TimerQueue::postTimerInLoop(Timer* timer) {
-    m_timerQueue->push(timer);
-}
+void TimerQueue::postTimerInLoop(Timer* timer) { m_timerQueue->push(timer); }
 
 void TimerQueue::cancelTimerInLoop(std::uint64_t timerId) {
     auto timer = reinterpret_cast<Timer*>(timerId);

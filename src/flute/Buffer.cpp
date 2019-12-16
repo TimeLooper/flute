@@ -3,7 +3,7 @@
  * File Name:  Buffer.cpp
  * Repository: https://github.com/TimeLooper/flute
  * Author:     why
- * Date:       2019/12/08 21:31:01
+ * Date:       2019/12/08
  *
  *************************************************************************/
 
@@ -50,20 +50,13 @@ Buffer::Buffer()
     , m_bufferSize(0)
     , m_capacity(DEFAULT_BUFFER_SIZE)
     , m_buffer(static_cast<std::uint8_t *>(std::malloc(sizeof(std::uint8_t) * DEFAULT_BUFFER_SIZE)))
-    , m_lineSeparator("\r\n") {
-}
+    , m_lineSeparator("\r\n") {}
 
-Buffer::Buffer(const Buffer &buffer) : Buffer() {
-    appendInternal(buffer);
-}
+Buffer::Buffer(const Buffer &buffer) : Buffer() { appendInternal(buffer); }
 
-Buffer::Buffer(Buffer &&buffer) : Buffer() {
-    this->swap(buffer);
-}
+Buffer::Buffer(Buffer &&buffer) : Buffer() { this->swap(buffer); }
 
-Buffer::~Buffer() {
-    std::free(m_buffer);
-}
+Buffer::~Buffer() { std::free(m_buffer); }
 
 Buffer &Buffer::operator=(const Buffer &buffer) {
     this->m_readIndex = this->m_writeIndex = this->m_bufferSize = 0;
@@ -85,13 +78,9 @@ void Buffer::swap(Buffer &buf) {
     m_lineSeparator.swap(buf.m_lineSeparator);
 }
 
-flute::ssize_t Buffer::readableBytes() const {
-    return m_bufferSize;
-}
+flute::ssize_t Buffer::readableBytes() const { return m_bufferSize; }
 
-flute::ssize_t Buffer::writeableBytes() const {
-    return m_capacity - m_bufferSize;
-}
+flute::ssize_t Buffer::writeableBytes() const { return m_capacity - m_bufferSize; }
 
 std::int8_t Buffer::peekInt8() const {
     std::int8_t result = 0;
@@ -210,9 +199,7 @@ void Buffer::append(const void *buffer, flute::ssize_t length) {
     UPDATE_WRITE_INDEX(m_capacity, m_writeIndex, m_bufferSize, length);
 }
 
-void Buffer::appendInt8(std::int8_t value) {
-    append(reinterpret_cast<std::uint8_t *>(&value), sizeof(value));
-}
+void Buffer::appendInt8(std::int8_t value) { append(reinterpret_cast<std::uint8_t *>(&value), sizeof(value)); }
 
 void Buffer::appendInt16(std::int16_t value) {
     value = host2Network(value);
@@ -229,17 +216,11 @@ void Buffer::appendInt64(std::int64_t value) {
     append(reinterpret_cast<std::uint8_t *>(&value), sizeof(value));
 }
 
-void Buffer::setLineSeparator(std::string &&separator) {
-    m_lineSeparator = std::move(separator);
-}
+void Buffer::setLineSeparator(std::string &&separator) { m_lineSeparator = std::move(separator); }
 
-void Buffer::setLineSeparator(const std::string &separator) {
-    m_lineSeparator = separator;
-}
+void Buffer::setLineSeparator(const std::string &separator) { m_lineSeparator = separator; }
 
-const std::string &Buffer::getLineSeparator() const {
-    return m_lineSeparator;
-}
+const std::string &Buffer::getLineSeparator() const { return m_lineSeparator; }
 
 flute::ssize_t Buffer::readFromSocket(socket_type descriptor) {
     auto writeableSize = writeableBytes();

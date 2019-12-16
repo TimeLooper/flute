@@ -10,9 +10,7 @@
 #include <flute/Logger.h>
 #include <flute/ThreadPool.h>
 
-int add(int a, int b) {
-    return a + b;
-}
+int add(int a, int b) { return a + b; }
 
 int main(int argc, char* argv[]) {
     flute::ThreadPool threadPool;

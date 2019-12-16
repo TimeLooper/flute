@@ -11,7 +11,7 @@ MaxEmptyLinesToKeep: 1
 # 圆括号的换行方式
 BreakBeforeBraces: Attach
 # 是否允许短方法单行
-AllowShortFunctionsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: true
 # 支持一行的if
 AllowShortIfStatementsOnASingleLine: true
 # 在未封闭(括号的开始和结束不在同一行)的括号中的代码是否对齐

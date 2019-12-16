@@ -3,7 +3,7 @@
  * File Name:  EventLoopInterrupter.h
  * Repository: https://github.com/TimeLooper/flute
  * Author:     why
- * Date:       2019/11/29 00:58:36
+ * Date:       2019/11/29
  *
  *************************************************************************/
 
@@ -24,9 +24,7 @@ public:
     ~EventLoopInterrupter();
 
     void interrupt();
-    inline socket_type readDescriptor() const {
-        return m_read_descriptor;
-    }
+    inline socket_type readDescriptor() const { return m_read_descriptor; }
 
 private:
     socket_type m_read_descriptor;

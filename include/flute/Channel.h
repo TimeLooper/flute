@@ -21,8 +21,7 @@ namespace flute {
 class Channel : private copyable {
 public:
     FLUTE_API_DECL Channel(socket_type descriptor, EventLoop* loop)
-        : m_events(FileEvent::NONE), m_descriptor(descriptor), m_loop(loop), m_readCallback(), m_writeCallback() {
-    }
+        : m_events(FileEvent::NONE), m_descriptor(descriptor), m_loop(loop), m_readCallback(), m_writeCallback() {}
     FLUTE_API_DECL ~Channel() = default;
 
     FLUTE_API_DECL void handleEvent(int events);
@@ -31,14 +30,15 @@ public:
     FLUTE_API_DECL void disableWrite();
     FLUTE_API_DECL void enableWrite();
     FLUTE_API_DECL void disableAll();
-    FLUTE_API_DECL void setReadCallback(const std::function<void()>& cb);
-    FLUTE_API_DECL void setReadCallback(std::function<void()>&& cb);
-    FLUTE_API_DECL void setWriteCallback(const std::function<void()>& cb);
-    FLUTE_API_DECL void setWriteCallback(std::function<void()>&& cb);
-    FLUTE_API_DECL socket_type descriptor() const;
-    FLUTE_API_DECL int events() const;
-    FLUTE_API_DECL bool isWriteable() const;
-    FLUTE_API_DECL bool isReadable() const;
+
+    inline void setReadCallback(const std::function<void()>& cb) { m_readCallback = cb; }
+    inline void setReadCallback(std::function<void()>&& cb) { m_readCallback = std::move(cb); }
+    inline void setWriteCallback(const std::function<void()>& cb) { m_writeCallback = cb; }
+    inline void setWriteCallback(std::function<void()>&& cb) { m_writeCallback = std::move(cb); }
+    inline socket_type descriptor() const { return m_descriptor; }
+    inline int events() const { return m_events; }
+    inline bool isWriteable() const { return m_events & FileEvent::WRITE; }
+    inline bool isReadable() const { return m_events & FileEvent::READ; }
 
 private:
     int m_events;

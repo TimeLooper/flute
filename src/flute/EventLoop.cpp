@@ -18,8 +18,13 @@
 namespace flute {
 
 EventLoop::EventLoop()
-    : m_reactor(createReactor()), m_tid(), m_quit(true), m_interrupter(this), m_tasks(), m_mutex(), m_timerQueue(this) {
-}
+    : m_reactor(createReactor())
+    , m_tid()
+    , m_quit(true)
+    , m_interrupter(this)
+    , m_tasks()
+    , m_mutex()
+    , m_timerQueue(this) {}
 
 EventLoop::~EventLoop() {
     if (m_reactor) {
@@ -59,13 +64,9 @@ void EventLoop::quit() {
     m_interrupter.interrupt();
 }
 
-void EventLoop::wakeup() {
-    m_interrupter.interrupt();
-}
+void EventLoop::wakeup() { m_interrupter.interrupt(); }
 
-bool EventLoop::isInLoopThread() const {
-    return m_tid == std::this_thread::get_id();
-}
+bool EventLoop::isInLoopThread() const { return m_tid == std::this_thread::get_id(); }
 
 void EventLoop::runInLoop(const std::function<void()>& task) {
     if (isInLoopThread()) {
@@ -91,13 +92,9 @@ std::uint64_t EventLoop::schedule(const std::function<void()>& callback, std::in
     return m_timerQueue.schedule(callback, delay, loopCount);
 }
 
-void EventLoop::cancel(std::uint64_t timerId) {
-    m_timerQueue.cancel(timerId);
-}
+void EventLoop::cancel(std::uint64_t timerId) { m_timerQueue.cancel(timerId); }
 
-void EventLoop::attachThread() {
-    m_tid = std::this_thread::get_id();
-}
+void EventLoop::attachThread() { m_tid = std::this_thread::get_id(); }
 
 void EventLoop::assertInLoopThread() const {
     if (!isInLoopThread()) {

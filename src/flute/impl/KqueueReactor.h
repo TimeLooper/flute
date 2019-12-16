@@ -10,8 +10,8 @@
 #pragma once
 #include <flute/flute-config.h>
 #ifdef FLUTE_HAVE_KQUEUE
-#include <flute/config.h>
 #include <flute/Reactor.h>
+#include <flute/config.h>
 #include <sys/event.h>
 
 namespace flute {

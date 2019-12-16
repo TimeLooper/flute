@@ -1,15 +1,14 @@
 /*************************************************************************
  *
- * File Name:  Connection.cpp
+ * File Name:  TcpConnection.cpp
  * Repository: https://github.com/TimeLooper/flute
  * Author:     why
- * Date:       2019/12/05 23:46:29
+ * Date:       2019/12/05
  *
  *************************************************************************/
 
-#include <flute/Channel.h>
-#include <flute/Connection.h>
 #include <flute/Logger.h>
+#include <flute/TcpConnection.h>
 #include <flute/socket_ops.h>
 
 #include <cassert>
@@ -18,10 +17,9 @@
 
 namespace flute {
 
-Connection::Connection(socket_type descriptor, EventLoop* loop, const sockaddr_storage& localAddress,
-                       const sockaddr_storage& remoteAddress)
-    : m_descriptor(descriptor)
-    , m_highWaterMark(0)
+TcpConnection::TcpConnection(socket_type descriptor, EventLoop* loop, const sockaddr_storage& localAddress,
+                             const sockaddr_storage& remoteAddress)
+    : m_highWaterMark(0)
     , m_loop(loop)
     , m_state(ConnectionState::DISCONNECTED)
     , m_channel(new Channel(descriptor, loop))
@@ -31,108 +29,66 @@ Connection::Connection(socket_type descriptor, EventLoop* loop, const sockaddr_s
     , m_closeCallback()
     , m_writeCompleteCallback()
     , m_highWaterMarkCallback()
+    , m_connectionEstablishedCallback()
+    , m_connectionDestroyCallback()
     , m_inputBuffer()
     , m_outputBuffer() {
     setTcpNoDelay(true);
-    m_channel->setReadCallback(std::bind(&Connection::handleRead, this));
-    m_channel->setWriteCallback(std::bind(&Connection::handleWrite, this));
+    m_channel->setReadCallback(std::bind(&TcpConnection::handleRead, this));
+    m_channel->setWriteCallback(std::bind(&TcpConnection::handleWrite, this));
 }
 
-Connection::~Connection() {
-    assert(m_state == ConnectionState::DISCONNECTED);
-}
+TcpConnection::~TcpConnection() { assert(m_state == ConnectionState::DISCONNECTED); }
 
-void Connection::setMessageCallback(const MessageCallback& cb) {
-    m_messageCallback = cb;
-}
+int TcpConnection::shutdown(int flags) const { return flute::shutdown(m_channel->descriptor(), flags); }
 
-void Connection::setMessageCallback(MessageCallback&& cb) {
-    m_messageCallback = std::move(cb);
-}
-
-void Connection::setCloseCallback(const CloseCallback& cb) {
-    m_closeCallback = cb;
-}
-
-void Connection::setCloseCallback(CloseCallback&& cb) {
-    m_closeCallback = std::move(cb);
-}
-
-void Connection::setWriteCompleteCallback(const WriteCompleteCallback& cb) {
-    m_writeCompleteCallback = cb;
-}
-
-void Connection::setWriteCompleteCallback(WriteCompleteCallback&& cb) {
-    m_writeCompleteCallback = std::move(cb);
-}
-
-void Connection::setHighWaterMarkCallback(const HighWaterMarkCallback& cb) {
-    m_highWaterMarkCallback = cb;
-}
-
-void Connection::setHighWaterMarkCallback(HighWaterMarkCallback&& cb) {
-    m_highWaterMarkCallback = std::move(cb);
-}
-
-socket_type Connection::descriptor() const {
-    return m_descriptor;
-}
-
-EventLoop* Connection::getEventLoop() const {
-    return m_loop;
-}
-
-const sockaddr_storage& Connection::getLocalAddress() const {
-    return m_localAddress;
-}
-
-const sockaddr_storage& Connection::getRemoteAddress() const {
-    return m_remoteAddress;
-}
-
-int Connection::shutdown(int flags) const {
-    return flute::shutdown(m_descriptor, flags);
-}
-
-void Connection::send(const void* buffer, flute::ssize_t length) {
+void TcpConnection::send(const void* buffer, flute::ssize_t length) {
     if (m_state != ConnectionState::CONNECTED) {
         return;
     }
     if (m_loop->isInLoopThread()) {
         sendInLoop(buffer, length);
     } else {
-        void (Connection::*func)(const void*, flute::ssize_t) = &Connection::sendInLoop;
+        void (TcpConnection::*func)(const void*, flute::ssize_t) = &TcpConnection::sendInLoop;
         m_loop->runInLoop(std::bind(func, this, buffer, length));
     }
 }
 
-void Connection::send(const std::string& message) {
+void TcpConnection::send(const std::string& message) {
     if (m_state == ConnectionState::CONNECTED) {
         return;
     }
     if (m_loop->isInLoopThread()) {
         sendInLoop(message);
     } else {
-        void (Connection::*func)(const std::string&) = &Connection::sendInLoop;
+        void (TcpConnection::*func)(const std::string&) = &TcpConnection::sendInLoop;
         m_loop->runInLoop(std::bind(func, this, message));
     }
 }
 
-void Connection::send(Buffer& buffer) {
+void TcpConnection::send(Buffer& buffer) {
     if (m_state != ConnectionState::CONNECTED) {
         return;
     }
     if (m_loop->isInLoopThread()) {
         sendInLoop(buffer);
     } else {
-        void (Connection::*func)(Buffer & buffer) = &Connection::sendInLoop;
+        void (TcpConnection::*func)(Buffer & buffer) = &TcpConnection::sendInLoop;
         m_loop->runInLoop(std::bind(func, this, buffer));
     }
 }
 
-void Connection::handleRead() {
+void TcpConnection::handleConnectionEstablished() {
+    m_loop->runInLoop(std::bind(&TcpConnection::handleConnectionEstablishedInLoop, this));
+}
+
+void TcpConnection::handleConnectionDestroy() {
+    m_loop->runInLoop(std::bind(&TcpConnection::handleConnectionDestroyInLoop, this));
+}
+
+void TcpConnection::handleRead() {
     m_loop->assertInLoopThread();
-    auto result = m_inputBuffer.readFromSocket(m_descriptor);
+    auto result = m_inputBuffer.readFromSocket(m_channel->descriptor());
     if (result > 0) {
         if (m_messageCallback) {
             m_messageCallback(shared_from_this(), m_inputBuffer);
@@ -144,10 +100,10 @@ void Connection::handleRead() {
     }
 }
 
-void Connection::handleWrite() {
+void TcpConnection::handleWrite() {
     m_loop->assertInLoopThread();
     if (m_channel->isWriteable()) {
-        auto count = m_outputBuffer.sendToSocket(m_descriptor);
+        auto count = m_outputBuffer.sendToSocket(m_channel->descriptor());
         if (count > 0) {
             m_channel->disableWrite();
             if (m_outputBuffer.readableBytes() <= 0) {
@@ -159,14 +115,14 @@ void Connection::handleWrite() {
                 }
             }
         } else {
-            LOG_ERROR << "Connection::handleWrite with error " << errno << ":" << std::strerror(errno) << ".";
+            LOG_ERROR << "TcpConnection::handleWrite with error " << errno << ":" << std::strerror(errno) << ".";
         }
     } else {
-        LOG_ERROR << "Connection descriptor " << m_descriptor << " is down.";
+        LOG_ERROR << "TcpConnection descriptor " << m_channel->descriptor() << " is down.";
     }
 }
 
-void Connection::handleClose() {
+void TcpConnection::handleClose() {
     assert(m_state == ConnectionState::CONNECTED || m_state == ConnectionState::DISCONNECTING);
     m_state = ConnectionState::DISCONNECTED;
     m_channel->disableAll();
@@ -176,24 +132,26 @@ void Connection::handleClose() {
     }
 }
 
-void Connection::handleError() {
-    auto error = flute::getSocketError(m_descriptor);
-    LOG_ERROR << "Connection::handleError " << m_descriptor << " - SO_ERROR = " << error << " " << std::strerror(error);
+void TcpConnection::handleError() {
+    auto error = flute::getSocketError(m_channel->descriptor());
+    LOG_ERROR << "TcpConnection::handleError " << m_channel->descriptor() << " - SO_ERROR = " << error << " "
+              << std::strerror(error);
 }
 
-void Connection::shutdownInLoop() {
+void TcpConnection::shutdownInLoop() {
     m_loop->assertInLoopThread();
     if (!(m_channel->events() & FileEvent::WRITE)) {
         shutdown(SHUT_WR);
     }
 }
 
-void Connection::setTcpNoDelay(bool on) const {
+void TcpConnection::setTcpNoDelay(bool on) const {
     int option = on ? 1 : 0;
-    flute::setsockopt(m_descriptor, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char*>(&option), sizeof(option));
+    flute::setsockopt(m_channel->descriptor(), IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char*>(&option),
+                      sizeof(option));
 }
 
-void Connection::sendInLoop(const void* buffer, flute::ssize_t length) {
+void TcpConnection::sendInLoop(const void* buffer, flute::ssize_t length) {
     m_loop->assertInLoopThread();
     if (m_state == ConnectionState::DISCONNECTED) {
         LOG_WARN << "write bytes to a disconnected connection.";
@@ -205,7 +163,7 @@ void Connection::sendInLoop(const void* buffer, flute::ssize_t length) {
     if (!m_channel->isWriteable() && m_outputBuffer.readableBytes() == 0) {
         // try to write direct
         iovec vec = {const_cast<void*>(buffer), static_cast<std::size_t>(length)};
-        flute::writev(m_descriptor, &vec, 1);
+        flute::writev(m_channel->descriptor(), &vec, 1);
         if (count >= 0) {
             remain = length - count;
             if (remain <= 0 && m_writeCompleteCallback) {
@@ -215,7 +173,7 @@ void Connection::sendInLoop(const void* buffer, flute::ssize_t length) {
     } else {
         count = 0;
         if (errno != EWOULDBLOCK && errno != EAGAIN) {
-            LOG_ERROR << "Connection::sendInLoop";
+            LOG_ERROR << "TcpConnection::sendInLoop";
             if (errno == EPIPE || errno == ECONNRESET) {
                 error = true;
             }
@@ -235,11 +193,9 @@ void Connection::sendInLoop(const void* buffer, flute::ssize_t length) {
     }
 }
 
-void Connection::sendInLoop(const std::string& message) {
-    sendInLoop(message.c_str(), message.length());
-}
+void TcpConnection::sendInLoop(const std::string& message) { sendInLoop(message.c_str(), message.length()); }
 
-void Connection::sendInLoop(Buffer& buffer) {
+void TcpConnection::sendInLoop(Buffer& buffer) {
     m_loop->assertInLoopThread();
     auto length = buffer.readableBytes();
     if (m_state == ConnectionState::DISCONNECTED) {
@@ -250,7 +206,7 @@ void Connection::sendInLoop(Buffer& buffer) {
     flute::ssize_t count = 0;
     flute::ssize_t remain = length;
     if (!m_channel->isWriteable() && m_outputBuffer.readableBytes() == 0) {
-        count = buffer.sendToSocket(m_descriptor);
+        count = buffer.sendToSocket(m_channel->descriptor());
         if (count >= 0) {
             remain = length - count;
             if (remain <= 0 && m_writeCompleteCallback) {
@@ -260,7 +216,7 @@ void Connection::sendInLoop(Buffer& buffer) {
     } else {
         count = 0;
         if (errno != EWOULDBLOCK && errno != EAGAIN) {
-            LOG_ERROR << "Connection::sendInLoop";
+            LOG_ERROR << "TcpConnection::sendInLoop";
             if (errno == EPIPE || errno == ECONNRESET) {
                 error = true;
             }
@@ -276,6 +232,27 @@ void Connection::sendInLoop(Buffer& buffer) {
         m_outputBuffer.append(buffer);
         if (!m_channel->isWriteable()) {
             m_channel->enableWrite();
+        }
+    }
+}
+
+void TcpConnection::handleConnectionEstablishedInLoop() {
+    m_loop->assertInLoopThread();
+    assert(m_state == ConnectionState::CONNECTING);
+    m_state = ConnectionState::CONNECTED;
+    m_channel->enableRead();
+    if (m_connectionEstablishedCallback) {
+        m_connectionEstablishedCallback(shared_from_this());
+    }
+}
+
+void TcpConnection::handleConnectionDestroyInLoop() {
+    m_loop->assertInLoopThread();
+    if (m_state == ConnectionState::DISCONNECTING) {
+        m_state = ConnectionState::DISCONNECTED;
+        m_channel->disableAll();
+        if (m_connectionDestroyCallback) {
+            m_connectionDestroyCallback(shared_from_this());
         }
     }
 }

@@ -72,9 +72,7 @@ int setSocketNonblocking(socket_type fd) {
     return 0;
 }
 
-socket_type socket(int domain, int type, int protocol) {
-    return ::socket(domain, type, protocol);
-}
+socket_type socket(int domain, int type, int protocol) { return ::socket(domain, type, protocol); }
 
 socket_type createNonblockingSocket(unsigned short int family) {
     socket_type result = FLUTE_INVALID_SOCKET;
@@ -110,9 +108,7 @@ int connect(socket_type fd, const sockaddr_storage& addr) {
     return ::connect(fd, reinterpret_cast<const sockaddr*>(&addr), size);
 }
 
-int listen(socket_type fd) {
-    return ::listen(fd, SOMAXCONN);
-}
+int listen(socket_type fd) { return ::listen(fd, SOMAXCONN); }
 
 socket_type accept(socket_type fd, sockaddr_storage& addr) {
     socket_type connectFd = FLUTE_INVALID_SOCKET;
@@ -127,9 +123,7 @@ socket_type accept(socket_type fd, sockaddr_storage& addr) {
     return connectFd;
 }
 
-std::int32_t read(socket_type fd, void* buffer, std::size_t size) {
-    return ::read(fd, buffer, size);
-}
+std::int32_t read(socket_type fd, void* buffer, std::size_t size) { return ::read(fd, buffer, size); }
 
 std::int32_t readv(socket_type fd, const struct iovec* vec, int count) {
 #ifdef FLUTE_HAVE_SYS_UIO_H
@@ -153,17 +147,11 @@ std::int32_t readv(socket_type fd, const struct iovec* vec, int count) {
 #endif
 }
 
-std::int32_t write(socket_type fd, void* buffer, std::size_t size) {
-    return ::write(fd, buffer, size);
-}
+std::int32_t write(socket_type fd, void* buffer, std::size_t size) { return ::write(fd, buffer, size); }
 
-std::int32_t writev(socket_type fd, const struct iovec* vec, int count) {
-    return ::writev(fd, vec, count);
-}
+std::int32_t writev(socket_type fd, const struct iovec* vec, int count) { return ::writev(fd, vec, count); }
 
-int close(int fd) {
-    return ::close(fd);
-}
+int close(int fd) { return ::close(fd); }
 
 std::int32_t getByteAvaliableOnSocket(socket_type descriptor) {
 #if defined(FIONREAD) && defined(_WIN32)

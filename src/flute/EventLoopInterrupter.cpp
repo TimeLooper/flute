@@ -3,7 +3,7 @@
  * File Name:  EventLoopInterrupter.cpp
  * Repository: https://github.com/TimeLooper/flute
  * Author:     why
- * Date:       2019/11/29 00:59:02
+ * Date:       2019/11/29
  *
  *************************************************************************/
 
@@ -55,9 +55,7 @@ EventLoopInterrupter::EventLoopInterrupter(EventLoop* loop)
     open();
 }
 
-EventLoopInterrupter::~EventLoopInterrupter() {
-    close();
-}
+EventLoopInterrupter::~EventLoopInterrupter() { close(); }
 
 void EventLoopInterrupter::interrupt() {
     if (m_write_descriptor != FLUTE_INVALID_SOCKET) {

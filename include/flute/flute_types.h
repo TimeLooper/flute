@@ -11,6 +11,9 @@
 
 #include <flute/flute-config.h>
 
+#include <functional>
+#include <memory>
+
 #if defined(_WIN32) || defined(WIN32)
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -48,5 +51,16 @@ typedef long int ssize_t;
 #else
 typedef ::ssize_t ssize_t;
 #endif
+
+class TcpConnection;
+class Buffer;
+
+typedef std::function<void(const std::shared_ptr<TcpConnection>&, Buffer&)> MessageCallback;
+typedef std::function<void(const std::shared_ptr<TcpConnection>&)> CloseCallback;
+typedef std::function<void(const std::shared_ptr<TcpConnection>&)> WriteCompleteCallback;
+typedef std::function<void(const std::shared_ptr<TcpConnection>&, flute::ssize_t)> HighWaterMarkCallback;
+typedef std::function<void(const std::shared_ptr<TcpConnection>&)> ConnectionEstablishedCallback;
+typedef std::function<void(const std::shared_ptr<TcpConnection>&)> ConnectionDestroyCallback;
+typedef std::function<void(const socket_type descriptor)> AcceptCallback;
 
 } // namespace flute

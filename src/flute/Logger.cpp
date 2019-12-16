@@ -42,9 +42,7 @@ static inline const char* getLogLevelTag(int level) {
     }
 }
 
-static void defaultCallback(const char* msg, int length) {
-    fwrite(msg, 1, length, stdout);
-}
+static void defaultCallback(const char* msg, int length) { fwrite(msg, 1, length, stdout); }
 
 struct Logger::LoggerImpl {
     int m_line;
@@ -60,8 +58,7 @@ LogLevel Logger::s_logLevel = LogLevel::LEVEL_TRACE;
 LogCallback Logger::s_logCallback = defaultCallback;
 
 Logger::LoggerImpl::LoggerImpl(LogLevel level, const char* sourceFile, int line, const char* func)
-    : m_line(line), m_logLevel(level), m_buffer(), m_sourceFile(filename(sourceFile)), m_function(func) {
-}
+    : m_line(line), m_logLevel(level), m_buffer(), m_sourceFile(filename(sourceFile)), m_function(func) {}
 
 Logger::Logger(LogLevel level, const char* sourceFile, int line) : m_impl(new LoggerImpl(level, sourceFile, line, "")) {
     start();
@@ -81,17 +78,11 @@ Logger::~Logger() {
     delete m_impl;
 }
 
-std::stringstream& Logger::getStream() {
-    return m_impl->m_buffer;
-}
+std::stringstream& Logger::getStream() { return m_impl->m_buffer; }
 
-void Logger::setLogLevel(LogLevel level) {
-    s_logLevel = level;
-}
+void Logger::setLogLevel(LogLevel level) { s_logLevel = level; }
 
-LogLevel Logger::getLogLevel() {
-    return s_logLevel;
-}
+LogLevel Logger::getLogLevel() { return s_logLevel; }
 
 void Logger::start() {
     auto ms =
@@ -112,12 +103,8 @@ void Logger::finish() {
     }
 }
 
-void Logger::setLogCallback(LogCallback&& callback) {
-    s_logCallback = std::move(callback);
-}
+void Logger::setLogCallback(LogCallback&& callback) { s_logCallback = std::move(callback); }
 
-void Logger::setLogCallback(const LogCallback& callback) {
-    s_logCallback = callback;
-}
+void Logger::setLogCallback(const LogCallback& callback) { s_logCallback = callback; }
 
 } // namespace flute

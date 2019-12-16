@@ -23,11 +23,9 @@ public:
         , index(-1)
         , startTime(currentMilliseconds())
         , delay(delay)
-        , callback(std::move(callback)) {
-    }
+        , callback(std::move(callback)) {}
     Timer(const std::function<void()>& callback, std::int64_t delay, int loopCount)
-        : loopCount(loopCount), index(-1), startTime(currentMilliseconds()), delay(delay), callback(callback) {
-    }
+        : loopCount(loopCount), index(-1), startTime(currentMilliseconds()), delay(delay), callback(callback) {}
 
     int loopCount;
     int index;

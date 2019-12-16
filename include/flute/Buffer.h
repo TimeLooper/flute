@@ -3,7 +3,7 @@
  * File Name:  Buffer.h
  * Repository: https://github.com/TimeLooper/flute
  * Author:     why
- * Date:       2019/12/08 21:30:50
+ * Date:       2019/12/08
  *
  *************************************************************************/
 

@@ -56,36 +56,4 @@ void Channel::disableAll() {
     }
 }
 
-void Channel::setReadCallback(const std::function<void()>& cb) {
-    m_readCallback = cb;
-}
-
-void Channel::setReadCallback(std::function<void()>&& cb) {
-    m_readCallback = std::move(cb);
-}
-
-void Channel::setWriteCallback(const std::function<void()>& cb) {
-    m_writeCallback = cb;
-}
-
-void Channel::setWriteCallback(std::function<void()>&& cb) {
-    m_writeCallback = std::move(cb);
-}
-
-socket_type Channel::descriptor() const {
-    return m_descriptor;
-}
-
-int Channel::events() const {
-    return m_events;
-}
-
-bool Channel::isWriteable() const {
-    return m_events & FileEvent::WRITE;
-}
-
-bool Channel::isReadable() const {
-    return m_events & FileEvent::READ;
-}
-
 } // namespace flute
