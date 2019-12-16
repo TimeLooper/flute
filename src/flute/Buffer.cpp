@@ -20,7 +20,7 @@
 
 namespace flute {
 
-static const int DEFAULT_BUFFER_SIZE = 4096;
+static const int DEFAULT_BUFFER_SIZE = 1024;
 
 #define UPDATE_READ_INDEX(capacity, readIndex, bufferSize, size) \
     do {                                                         \
@@ -53,8 +53,36 @@ Buffer::Buffer()
     , m_lineSeparator("\r\n") {
 }
 
+Buffer::Buffer(const Buffer& buffer) : Buffer() {
+    appendInternal(buffer);
+}
+
+Buffer::Buffer(Buffer&& buffer) : Buffer() {
+    this->swap(buffer);
+}
+
 Buffer::~Buffer() {
     std::free(m_buffer);
+}
+
+Buffer& Buffer::operator=(const Buffer& buffer) {
+    this->m_readIndex = this->m_writeIndex = this->m_bufferSize = 0;
+    appendInternal(buffer);
+    return *this;
+}
+
+Buffer& Buffer::operator=(Buffer&& buffer) {
+    this->swap(buffer);
+    return *this;
+}
+
+void Buffer::swap(Buffer& buf) {
+    std::swap(m_readIndex, buf.m_readIndex);
+    std::swap(m_writeIndex, buf.m_writeIndex);
+    std::swap(m_bufferSize, buf.m_bufferSize);
+    std::swap(m_capacity, buf.m_capacity);
+    std::swap(m_buffer, buf.m_buffer);
+    m_lineSeparator.swap(buf.m_lineSeparator);
 }
 
 flute::ssize_t Buffer::readableBytes() const {
@@ -158,19 +186,9 @@ void Buffer::read(void *buffer, flute::ssize_t length) {
 }
 
 void Buffer::append(Buffer &buffer) {
-    auto length = buffer.readableBytes();
-    if (length > writeableBytes()) {
-        // expand buffer
-        expand(length);
-    }
-    if (buffer.m_readIndex < buffer.m_writeIndex) {
-        append(buffer.m_buffer + buffer.m_readIndex, length);
-    } else {
-        append(buffer.m_buffer + buffer.m_readIndex, buffer.m_capacity - buffer.m_readIndex);
-        append(buffer.m_buffer, length + buffer.m_readIndex - buffer.m_capacity);
-    }
-    buffer.m_readIndex = buffer.m_writeIndex = 0;
-    UPDATE_WRITE_INDEX(m_capacity, m_writeIndex, m_bufferSize, length);
+    appendInternal(buffer);
+    UPDATE_WRITE_INDEX(m_capacity, m_writeIndex, m_bufferSize, buffer.readableBytes());
+    buffer.m_readIndex = buffer.m_writeIndex = buffer.m_bufferSize = 0;
 }
 
 void Buffer::append(const void *buffer, flute::ssize_t length) {
@@ -299,6 +317,20 @@ void Buffer::expand(flute::ssize_t length) {
         m_buffer = new_buffer;
         m_writeIndex = m_readIndex + m_bufferSize;
         m_capacity = capacity;
+    }
+}
+
+void Buffer::appendInternal(const Buffer& buffer) {
+    auto length = buffer.readableBytes();
+    if (length > writeableBytes()) {
+        // expand buffer
+        expand(length);
+    }
+    if (buffer.m_readIndex < buffer.m_writeIndex) {
+        append(buffer.m_buffer + buffer.m_readIndex, length);
+    } else {
+        append(buffer.m_buffer + buffer.m_readIndex, buffer.m_capacity - buffer.m_readIndex);
+        append(buffer.m_buffer, length + buffer.m_readIndex - buffer.m_capacity);
     }
 }
 

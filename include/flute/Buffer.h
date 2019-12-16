@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include <flute/copyable.h>
 #include <flute/config.h>
 #include <flute/flute_types.h>
 
@@ -17,10 +18,16 @@
 
 namespace flute {
 
-class Buffer {
+class Buffer : private copyable {
 public:
     FLUTE_API_DECL Buffer();
+    FLUTE_API_DECL Buffer(const Buffer& buffer);
+    FLUTE_API_DECL Buffer(Buffer&& buffer);
     FLUTE_API_DECL ~Buffer();
+
+    FLUTE_API_DECL Buffer& operator=(const Buffer& buffer);
+    FLUTE_API_DECL Buffer& operator=(Buffer&& buffer);
+    FLUTE_API_DECL void swap(Buffer& buffer);
 
     FLUTE_API_DECL flute::ssize_t readableBytes() const;
     FLUTE_API_DECL flute::ssize_t writeableBytes() const;
@@ -57,6 +64,7 @@ private:
     std::string m_lineSeparator;
 
     void expand(flute::ssize_t length);
+    void appendInternal(const Buffer& buffer);
 };
 
 } // namespace flute

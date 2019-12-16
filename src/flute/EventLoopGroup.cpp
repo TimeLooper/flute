@@ -28,6 +28,12 @@ EventLoopGroup::~EventLoopGroup() {
 }
 
 EventLoop* EventLoopGroup::chooseEventLoop(std::uint64_t hash) {
+    auto size = m_eventLoops.size();
+    if ((size & -size) == size) {
+        return m_eventLoops[hash & (size - 1)].get();
+    } else {
+        return m_eventLoops[hash % size].get();
+    }
     return nullptr;
 }
 
