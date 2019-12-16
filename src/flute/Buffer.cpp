@@ -53,11 +53,11 @@ Buffer::Buffer()
     , m_lineSeparator("\r\n") {
 }
 
-Buffer::Buffer(const Buffer& buffer) : Buffer() {
+Buffer::Buffer(const Buffer &buffer) : Buffer() {
     appendInternal(buffer);
 }
 
-Buffer::Buffer(Buffer&& buffer) : Buffer() {
+Buffer::Buffer(Buffer &&buffer) : Buffer() {
     this->swap(buffer);
 }
 
@@ -65,18 +65,18 @@ Buffer::~Buffer() {
     std::free(m_buffer);
 }
 
-Buffer& Buffer::operator=(const Buffer& buffer) {
+Buffer &Buffer::operator=(const Buffer &buffer) {
     this->m_readIndex = this->m_writeIndex = this->m_bufferSize = 0;
     appendInternal(buffer);
     return *this;
 }
 
-Buffer& Buffer::operator=(Buffer&& buffer) {
+Buffer &Buffer::operator=(Buffer &&buffer) {
     this->swap(buffer);
     return *this;
 }
 
-void Buffer::swap(Buffer& buf) {
+void Buffer::swap(Buffer &buf) {
     std::swap(m_readIndex, buf.m_readIndex);
     std::swap(m_writeIndex, buf.m_writeIndex);
     std::swap(m_bufferSize, buf.m_bufferSize);
@@ -320,7 +320,7 @@ void Buffer::expand(flute::ssize_t length) {
     }
 }
 
-void Buffer::appendInternal(const Buffer& buffer) {
+void Buffer::appendInternal(const Buffer &buffer) {
     auto length = buffer.readableBytes();
     if (length > writeableBytes()) {
         // expand buffer

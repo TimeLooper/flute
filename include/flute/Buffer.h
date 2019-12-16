@@ -9,8 +9,8 @@
 
 #pragma once
 
-#include <flute/copyable.h>
 #include <flute/config.h>
+#include <flute/copyable.h>
 #include <flute/flute_types.h>
 
 #include <list>

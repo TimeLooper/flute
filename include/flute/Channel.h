@@ -46,8 +46,6 @@ private:
     EventLoop* m_loop;
     std::function<void()> m_readCallback;
     std::function<void()> m_writeCallback;
-
-    void handleEventWithGuard(int events);
 };
 
 } // namespace flute

@@ -10,7 +10,6 @@
 #pragma once
 
 #include <flute/Buffer.h>
-#include <flute/Channel.h>
 #include <flute/flute_types.h>
 #include <flute/noncopyable.h>
 #include <flute/socket_ops.h>
@@ -22,6 +21,7 @@
 namespace flute {
 
 class EventLoop;
+class Channel;
 
 class Connection : private noncopyable, public std::enable_shared_from_this<Connection> {
 public:
