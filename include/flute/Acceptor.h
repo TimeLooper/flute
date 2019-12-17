@@ -18,10 +18,12 @@ namespace flute {
 
 class EventLoop;
 class Channel;
+class Socket;
 
 class Acceptor : private noncopyable {
 public:
     Acceptor(EventLoop* loop, const sockaddr_storage& address, bool reusePort);
+    ~Acceptor();
 
     inline void setAcceptCallback(const AcceptCallback& cb) { m_acceptCallback = cb; }
     inline void setAcceptCallback(AcceptCallback&& cb) { m_acceptCallback = std::move(cb); }
@@ -34,6 +36,7 @@ private:
     bool m_listening;
     socket_type m_idleDescriptor;
     EventLoop* m_loop;
+    Socket* m_socket;
     Channel* m_channel;
     AcceptCallback m_acceptCallback;
 

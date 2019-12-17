@@ -12,6 +12,14 @@
 
 namespace flute {
 
+Channel::Channel(socket_type descriptor, EventLoop* loop) : m_events(FileEvent::NONE), m_descriptor(descriptor), m_loop(loop), m_readCallback(), m_writeCallback() {
+    
+}
+
+Channel::~Channel() {
+    disableAll();
+}
+
 void Channel::handleEvent(int events) {
     if (events & FileEvent::READ) {
         m_readCallback();

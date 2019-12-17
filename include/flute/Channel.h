@@ -20,9 +20,8 @@ namespace flute {
 
 class Channel : private copyable {
 public:
-    FLUTE_API_DECL Channel(socket_type descriptor, EventLoop* loop)
-        : m_events(FileEvent::NONE), m_descriptor(descriptor), m_loop(loop), m_readCallback(), m_writeCallback() {}
-    FLUTE_API_DECL ~Channel() = default;
+    FLUTE_API_DECL Channel(socket_type descriptor, EventLoop* loop);
+    FLUTE_API_DECL ~Channel();
 
     FLUTE_API_DECL void handleEvent(int events);
     FLUTE_API_DECL void disableRead();

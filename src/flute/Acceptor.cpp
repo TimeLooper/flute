@@ -10,6 +10,7 @@
 #include <flute/Acceptor.h>
 #include <flute/Channel.h>
 #include <flute/socket_ops.h>
+#include <flute/Socket.h>
 
 namespace flute {
 
@@ -17,14 +18,18 @@ Acceptor::Acceptor(flute::EventLoop* loop, const sockaddr_storage& address, bool
     : m_listening(false)
     , m_idleDescriptor(createNonblockingSocket(AF_INET))
     , m_loop(loop)
-    , m_channel(new Channel(createNonblockingSocket(address.ss_family), loop))
+    , m_socket(new Socket(createNonblockingSocket(address.ss_family)))
+    , m_channel(new Channel(m_socket->descriptor(), loop))
     , m_acceptCallback() {
-    int option = 1;
-    flute::setsockopt(m_channel->descriptor(), SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
-    option = reusePort ? 1 : 0;
-    flute::setsockopt(m_channel->descriptor(), SOL_SOCKET, SO_REUSEPORT, &option, sizeof(option));
-    flute::bind(m_channel->descriptor(), address);
+    m_socket->setReuseAddress(true);
+    m_socket->setReusePort(reusePort);
     m_channel->setReadCallback(std::bind(&Acceptor::handleRead, this));
+}
+
+Acceptor::~Acceptor() {
+    m_channel->disableAll();
+    delete m_channel;
+    delete m_socket;
 }
 
 void Acceptor::listen() {
