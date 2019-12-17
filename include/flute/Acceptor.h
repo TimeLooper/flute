@@ -19,24 +19,27 @@ namespace flute {
 class EventLoop;
 class Channel;
 class Socket;
+class EventLoopGroup;
+class InetAddress;
 
 class Acceptor : private noncopyable {
 public:
-    Acceptor(EventLoop* loop, const sockaddr_storage& address, bool reusePort);
-    ~Acceptor();
+    FLUTE_API_DECL Acceptor(EventLoopGroup* loopGroup, const InetAddress& address, bool reusePort);
+    FLUTE_API_DECL ~Acceptor();
 
     inline void setAcceptCallback(const AcceptCallback& cb) { m_acceptCallback = cb; }
     inline void setAcceptCallback(AcceptCallback&& cb) { m_acceptCallback = std::move(cb); }
     inline bool listening() const { return m_listening; }
+    inline EventLoop* getEventLoop() const { return m_loop; }
 
-    void listen();
-    void close();
+    FLUTE_API_DECL void listen();
+    FLUTE_API_DECL void close();
 
 private:
     bool m_listening;
     socket_type m_idleDescriptor;
-    EventLoop* m_loop;
     Socket* m_socket;
+    EventLoop* m_loop;
     Channel* m_channel;
     AcceptCallback m_acceptCallback;
 

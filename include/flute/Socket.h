@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include <flute/InetAddress.h>
 #include <flute/flute_types.h>
 #include <flute/socket_ops.h>
 
@@ -19,7 +20,7 @@ public:
     explicit Socket(socket_type descriptor);
     ~Socket();
 
-    void bind(const sockaddr_storage& address);
+    void bind(const InetAddress& address);
     void listen();
     inline socket_type descriptor() const { return m_descriptor; }
     inline int getSocketError() const { return flute::getSocketError(m_descriptor); }

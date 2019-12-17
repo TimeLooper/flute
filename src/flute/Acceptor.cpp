@@ -9,17 +9,19 @@
 
 #include <flute/Acceptor.h>
 #include <flute/Channel.h>
-#include <flute/socket_ops.h>
+#include <flute/EventLoopGroup.h>
+#include <flute/InetAddress.h>
 #include <flute/Socket.h>
+#include <flute/socket_ops.h>
 
 namespace flute {
 
-Acceptor::Acceptor(flute::EventLoop* loop, const sockaddr_storage& address, bool reusePort)
+Acceptor::Acceptor(EventLoopGroup* loopGroup, const InetAddress& address, bool reusePort)
     : m_listening(false)
     , m_idleDescriptor(createNonblockingSocket(AF_INET))
-    , m_loop(loop)
-    , m_socket(new Socket(createNonblockingSocket(address.ss_family)))
-    , m_channel(new Channel(m_socket->descriptor(), loop))
+    , m_socket(new Socket(createNonblockingSocket(address.getSocketAddress()->sa_family)))
+    , m_loop(loopGroup->chooseEventLoop(m_socket->descriptor()))
+    , m_channel(new Channel(m_socket->descriptor(), m_loop))
     , m_acceptCallback() {
     m_socket->setReuseAddress(true);
     m_socket->setReusePort(reusePort);
@@ -52,8 +54,7 @@ void Acceptor::close() {
 }
 
 void Acceptor::handleRead() {
-    sockaddr_storage address{};
-    auto conn = flute::accept(m_channel->descriptor(), address);
+    auto conn = m_socket->accept();
     if (conn >= 0) {
         if (m_acceptCallback) {
             m_acceptCallback(conn);
@@ -64,7 +65,7 @@ void Acceptor::handleRead() {
         if (errno == EMFILE) {
             LOG_WARN << "server busy.";
             flute::closeSocket(m_idleDescriptor);
-            conn = flute::accept(m_channel->descriptor(), address);
+            conn = m_socket->accept();
             flute::closeSocket(conn);
             m_idleDescriptor = flute::createNonblockingSocket(AF_INET);
         }

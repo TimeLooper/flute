@@ -44,11 +44,11 @@ private:
     void run();
 };
 
-ThreadPool::ThreadPool() : m_running(false), m_workers(), m_tasks(), m_mutex(), m_condition() {}
+inline ThreadPool::ThreadPool() : m_running(false), m_workers(), m_tasks(), m_mutex(), m_condition() {}
 
-ThreadPool::~ThreadPool() { assert(!m_running); }
+inline ThreadPool::~ThreadPool() { assert(!m_running); }
 
-void ThreadPool::start(std::size_t size) {
+inline void ThreadPool::start(std::size_t size) {
     assert(!m_running);
     m_running = true;
     m_workers.reserve(size);
@@ -58,7 +58,7 @@ void ThreadPool::start(std::size_t size) {
 }
 
 template <typename F, typename... Args>
-auto ThreadPool::execute(F&& f, Args&&... args) -> std::future<typename std::result_of<F(Args...)>::type> {
+inline auto ThreadPool::execute(F&& f, Args&&... args) -> std::future<typename std::result_of<F(Args...)>::type> {
     using return_type = typename std::result_of<F(Args...)>::type;
     auto task =
         std::make_shared<std::packaged_task<return_type()>>(std::bind(std::forward<F>(f), std::forward<Args>(args)...));
@@ -74,7 +74,7 @@ auto ThreadPool::execute(F&& f, Args&&... args) -> std::future<typename std::res
     return result;
 }
 
-void ThreadPool::shutdown() {
+inline void ThreadPool::shutdown() {
     {
         std::unique_lock<std::mutex> lock(m_mutex);
         m_running = false;
@@ -87,7 +87,7 @@ void ThreadPool::shutdown() {
     m_workers.clear();
 }
 
-void ThreadPool::run() {
+inline void ThreadPool::run() {
     for (;;) {
         std::function<void()> task;
         {

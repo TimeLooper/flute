@@ -8,6 +8,7 @@
  *************************************************************************/
 
 #pragma once
+
 #include <flute/config.h>
 #include <flute/flute_types.h>
 
@@ -35,8 +36,13 @@
 #ifdef FLUTE_HAVE_SYS_UIO_H
 #include <sys/uio.h>
 #endif
+#ifdef FLUTE_HAVE_NETDB_H
+#include <netdb.h>
+#endif
 
 namespace flute {
+
+class InetAddress;
 
 #ifdef FLUTE_HAVE_SYS_UIO_H
 using ::iovec;
@@ -60,17 +66,17 @@ FLUTE_API_DECL socket_type socket(int domain, int type, int protocol);
 
 FLUTE_API_DECL socket_type createNonblockingSocket(unsigned short int family);
 
-FLUTE_API_DECL int bind(socket_type fd, const sockaddr_storage& addr);
+FLUTE_API_DECL int bind(socket_type fd, const InetAddress& addr);
 
 FLUTE_API_DECL std::int32_t read(socket_type fd, void* buffer, std::size_t size);
 
 FLUTE_API_DECL std::int32_t readv(socket_type fd, const struct iovec* vec, int count);
 
-FLUTE_API_DECL int connect(socket_type fd, const sockaddr_storage& addr);
+FLUTE_API_DECL int connect(socket_type fd, const InetAddress& addr);
 
 FLUTE_API_DECL int listen(socket_type fd);
 
-FLUTE_API_DECL socket_type accept(socket_type fd, sockaddr_storage& addr);
+FLUTE_API_DECL socket_type accept(socket_type fd, InetAddress& addr);
 
 FLUTE_API_DECL std::int32_t write(socket_type fd, void* buffer, std::size_t size);
 
@@ -82,9 +88,9 @@ FLUTE_API_DECL std::int32_t getByteAvaliableOnSocket(socket_type descriptor);
 
 FLUTE_API_DECL int closeSocket(socket_type socket);
 
-FLUTE_API_DECL sockaddr_storage getLocalAddr(socket_type fd);
+FLUTE_API_DECL InetAddress getLocalAddr(socket_type fd);
 
-FLUTE_API_DECL sockaddr_storage getRemoteAddr(socket_type fd);
+FLUTE_API_DECL InetAddress getRemoteAddr(socket_type fd);
 
 FLUTE_API_DECL bool isSelfConnect(socket_type fd);
 

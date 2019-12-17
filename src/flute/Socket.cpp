@@ -7,38 +7,34 @@
  *
  *************************************************************************/
 
-#include <flute/Socket.h>
 #include <flute/Logger.h>
+#include <flute/Socket.h>
 
-#include <cstring>
 #include <cerrno>
+#include <cstring>
 
 namespace flute {
 
-Socket::Socket(socket_type descriptor) : m_descriptor(descriptor) {
+Socket::Socket(socket_type descriptor) : m_descriptor(descriptor) {}
 
-}
+Socket::~Socket() { close(); }
 
-Socket::~Socket() {
-    close();
-}
-
-void Socket::bind(const sockaddr_storage& address) {
+void Socket::bind(const InetAddress& address) {
     auto result = flute::bind(m_descriptor, address);
     if (result != 0) {
-        LOG_ERROR << "Socket::bind(" << m_descriptor << ") error " << errno << ":" << std::strerror(errno); 
+        LOG_ERROR << "Socket::bind(" << m_descriptor << ") error " << errno << ":" << std::strerror(errno);
     }
 }
 
 void Socket::listen() {
     auto result = flute::listen(m_descriptor);
     if (result != 0) {
-        LOG_ERROR << "Socket::listen(" << m_descriptor << ") error " << errno << ":" << std::strerror(errno); 
+        LOG_ERROR << "Socket::listen(" << m_descriptor << ") error " << errno << ":" << std::strerror(errno);
     }
 }
 
 socket_type Socket::accept() {
-    sockaddr_storage address{};
+    InetAddress address;
     return flute::accept(m_descriptor, address);
 }
 
@@ -83,8 +79,6 @@ void Socket::shutdownRead() {
     }
 }
 
-void Socket::close() {
-    flute::closeSocket(m_descriptor);
-}
+void Socket::close() { flute::closeSocket(m_descriptor); }
 
 } // namespace flute

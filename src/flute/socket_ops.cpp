@@ -7,6 +7,7 @@
  *
  *************************************************************************/
 
+#include <flute/InetAddress.h>
 #include <flute/Logger.h>
 #include <flute/endian.h>
 #include <flute/flute-config.h>
@@ -88,9 +89,9 @@ socket_type createNonblockingSocket(unsigned short int family) {
     return result;
 }
 
-int bind(socket_type fd, const sockaddr_storage& addr) {
+int bind(socket_type fd, const InetAddress& addr) {
     socklen_t size = 0;
-    if (addr.ss_family == AF_INET) {
+    if (addr.getSocketAddress()->sa_family == AF_INET) {
         size = sizeof(sockaddr_in);
     } else {
         size = sizeof(sockaddr_in6);
@@ -98,28 +99,30 @@ int bind(socket_type fd, const sockaddr_storage& addr) {
     return ::bind(fd, reinterpret_cast<const sockaddr*>(&addr), size);
 }
 
-int connect(socket_type fd, const sockaddr_storage& addr) {
+int connect(socket_type fd, const InetAddress& addr) {
     socklen_t size = 0;
-    if (addr.ss_family == AF_INET) {
+    if (addr.getSocketAddress()->sa_family == AF_INET) {
         size = sizeof(sockaddr_in);
     } else {
         size = sizeof(sockaddr_in6);
     }
-    return ::connect(fd, reinterpret_cast<const sockaddr*>(&addr), size);
+    return ::connect(fd, addr.getSocketAddress(), size);
 }
 
 int listen(socket_type fd) { return ::listen(fd, SOMAXCONN); }
 
-socket_type accept(socket_type fd, sockaddr_storage& addr) {
+socket_type accept(socket_type fd, InetAddress& addr) {
     socket_type connectFd = FLUTE_INVALID_SOCKET;
-    socklen_t length = sizeof(addr);
+    sockaddr_in6 tmp{};
+    socklen_t length = sizeof(tmp);
 #if defined(FLUTE_HAVE_ACCEPT4) && defined(SOCK_NONBLOCK) && defined(SOCK_CLOEXEC)
-    connectFd = ::accept4(fd, reinterpret_cast<sockaddr*>(&addr), &length, SOCK_NONBLOCK | SOCK_CLOEXEC);
+    connectFd = ::accept4(fd, reinterpret_cast<sockaddr*>(&tmp), &length, SOCK_NONBLOCK | SOCK_CLOEXEC);
 #else
-    connectFd = ::accept(fd, reinterpret_cast<sockaddr*>(&addr), &length);
+    connectFd = ::accept(fd, reinterpret_cast<sockaddr*>(&tmp), &length);
     setSocketNonblocking(fd);
     setSocketCloseOnExec(fd);
 #endif
+    addr = InetAddress(tmp);
     return connectFd;
 }
 
@@ -176,32 +179,32 @@ int closeSocket(socket_type socket) {
 #endif
 }
 
-sockaddr_storage getLocalAddr(socket_type fd) {
-    sockaddr_storage addr{};
+InetAddress getLocalAddr(socket_type fd) {
+    sockaddr_in6 addr{};
     socklen_t size = static_cast<socklen_t>(sizeof(sockaddr_in6));
     if (::getsockname(fd, reinterpret_cast<sockaddr*>(&addr), &size) < 0) {
         LOG_ERROR << "getsocketname(" << fd << ") failed.";
     }
-    return addr;
+    return InetAddress(addr);
 }
 
-sockaddr_storage getRemoteAddr(socket_type fd) {
-    sockaddr_storage addr{};
+InetAddress getRemoteAddr(socket_type fd) {
+    sockaddr_in6 addr{};
     socklen_t size = static_cast<socklen_t>(sizeof(sockaddr_in6));
     if (::getpeername(fd, reinterpret_cast<sockaddr*>(&addr), &size) < 0) {
         LOG_ERROR << "getpeername(" << fd << ") failed.";
     }
-    return addr;
+    return InetAddress(addr);
 }
 
 bool isSelfConnect(socket_type fd) {
     auto localAddr = getLocalAddr(fd);
     auto remoteAddr = getRemoteAddr(fd);
-    if (localAddr.ss_family == AF_INET) {
-        auto local = reinterpret_cast<const sockaddr_in*>(&localAddr);
-        auto remote = reinterpret_cast<const sockaddr_in*>(&remoteAddr);
+    if (localAddr.getSocketAddress()->sa_family == AF_INET) {
+        auto local = reinterpret_cast<const sockaddr_in*>(localAddr.getSocketAddress());
+        auto remote = reinterpret_cast<const sockaddr_in*>(remoteAddr.getSocketAddress());
         return local->sin_port == remote->sin_port && local->sin_addr.s_addr == remote->sin_addr.s_addr;
-    } else if (localAddr.ss_family == AF_INET6) {
+    } else if (localAddr.getSocketAddress()->sa_family == AF_INET6) {
         auto local = reinterpret_cast<const sockaddr_in6*>(&localAddr);
         auto remote = reinterpret_cast<const sockaddr_in6*>(&remoteAddr);
         return local->sin6_port == remote->sin6_port &&

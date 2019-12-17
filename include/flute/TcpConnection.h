@@ -10,7 +10,8 @@
 #pragma once
 
 #include <flute/Buffer.h>
-#include <flute/Channel.h>
+#include <flute/InetAddress.h>
+#include <flute/Socket.h>
 #include <flute/flute_types.h>
 #include <flute/noncopyable.h>
 #include <flute/socket_ops.h>
@@ -21,14 +22,15 @@
 namespace flute {
 
 class EventLoop;
+class Channel;
 
 class TcpConnection : private noncopyable, public std::enable_shared_from_this<TcpConnection> {
 public:
-    FLUTE_API_DECL TcpConnection(socket_type descriptor, EventLoop* loop, const sockaddr_storage& localAddress,
-                                 const sockaddr_storage& remoteAddress);
+    FLUTE_API_DECL TcpConnection(socket_type descriptor, EventLoop* loop, const InetAddress& localAddress,
+                                 const InetAddress& remoteAddress);
     FLUTE_API_DECL ~TcpConnection();
 
-    FLUTE_API_DECL int shutdown(int flags) const;
+    FLUTE_API_DECL void shutdown();
     FLUTE_API_DECL void send(const void* buffer, flute::ssize_t length);
     FLUTE_API_DECL void send(const std::string& message);
     FLUTE_API_DECL void send(Buffer& buffer);
@@ -53,10 +55,10 @@ public:
     inline void setConnectionDestroyCallback(ConnectionDestroyCallback&& cb) {
         m_connectionDestroyCallback = std::move(cb);
     }
-    inline socket_type descriptor() const { return m_channel ? m_channel->descriptor() : FLUTE_INVALID_SOCKET; }
+    inline socket_type descriptor() const { return m_socket ? m_socket->descriptor() : FLUTE_INVALID_SOCKET; }
     inline EventLoop* getEventLoop() const { return m_loop; }
-    inline const sockaddr_storage& getLocalAddress() const { return m_localAddress; }
-    inline const sockaddr_storage& getRemoteAddress() const { return m_remoteAddress; }
+    inline const InetAddress& getLocalAddress() const { return m_localAddress; }
+    inline const InetAddress& getRemoteAddress() const { return m_remoteAddress; }
     inline bool connected() const { return m_state == ConnectionState::CONNECTED; }
 
 private:
@@ -65,8 +67,9 @@ private:
     EventLoop* m_loop;
     std::atomic<ConnectionState> m_state;
     std::unique_ptr<Channel> m_channel;
-    const sockaddr_storage m_localAddress;
-    const sockaddr_storage m_remoteAddress;
+    std::unique_ptr<Socket> m_socket;
+    const InetAddress m_localAddress;
+    const InetAddress m_remoteAddress;
     MessageCallback m_messageCallback;
     CloseCallback m_closeCallback;
     WriteCompleteCallback m_writeCompleteCallback;
@@ -81,7 +84,6 @@ private:
     void handleClose();
     void handleError();
     void shutdownInLoop();
-    void setTcpNoDelay(bool on) const;
     void sendInLoop(const void* buffer, flute::ssize_t length);
     void sendInLoop(const std::string& message);
     void sendInLoop(Buffer& buffer);
