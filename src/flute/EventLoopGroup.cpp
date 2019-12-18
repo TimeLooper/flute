@@ -9,6 +9,7 @@
 
 #include <flute/EventLoop.h>
 #include <flute/EventLoopGroup.h>
+#include <flute/Logger.h>
 
 #include <memory>
 
@@ -19,8 +20,14 @@ EventLoopGroup::EventLoopGroup(std::size_t size) : m_eventLoops(), m_threadPool(
     m_eventLoops.reserve(size);
     for (std::size_t i = 0; i < size; ++i) {
         auto loop = new EventLoop();
+        std::promise<void> p;
         m_eventLoops.emplace_back(std::unique_ptr<EventLoop>(loop));
-        m_threadPool.execute(&EventLoopGroup::dispatch, this, loop);
+        m_threadPool.execute([loop, &p] {
+            loop->attachThread();
+            p.set_value();
+            loop->dispatch();
+        });
+        p.get_future().get();
     }
 }
 
@@ -40,11 +47,6 @@ void EventLoopGroup::shutdown() {
         loop->quit();
     }
     m_threadPool.shutdown();
-}
-
-void EventLoopGroup::dispatch(EventLoop* loop) {
-    loop->attachThread();
-    loop->dispatch();
 }
 
 } // namespace flute

@@ -36,23 +36,28 @@ Acceptor::~Acceptor() {
 }
 
 void Acceptor::listen() {
-    m_loop->runInLoop([this] {
+    std::promise<void> p;
+    m_loop->runInLoop([this, &p] {
         this->m_loop->assertInLoopThread();
         this->m_listening = true;
         this->m_socket->listen();
         this->m_channel->enableRead();
-        LOG_DEBUG << "listen";
+        p.set_value();
     });
+    p.get_future().get();
 }
 
 void Acceptor::close() {
-    m_loop->runInLoop([this] {
+    std::promise<void> p;
+    m_loop->runInLoop([this, &p] {
         this->m_loop->assertInLoopThread();
         this->m_channel->disableAll();
         this->m_socket->close();
         flute::closeSocket(this->m_idleDescriptor);
         this->m_listening = false;
+        p.set_value();
     });
+    p.get_future().get();
 }
 
 void Acceptor::handleRead() {

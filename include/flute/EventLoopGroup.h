@@ -29,8 +29,6 @@ public:
 private:
     std::vector<std::unique_ptr<EventLoop>> m_eventLoops;
     ThreadPool m_threadPool;
-
-    void dispatch(EventLoop* loop);
 };
 
 } // namespace flute

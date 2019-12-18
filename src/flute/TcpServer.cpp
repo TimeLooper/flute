@@ -76,6 +76,7 @@ void TcpServer::handleAcceptConnection(flute::socket_type descriptor) {
     if (m_state != ServerState::STARTED) {
         return;
     }
+    LOG_TRACE << "new connection coming.";
     EventLoop* ioLoop = m_child->chooseEventLoop(descriptor);
     auto localAddress = flute::getLocalAddr(descriptor);
     auto remoteAddress = flute::getRemoteAddr(descriptor);

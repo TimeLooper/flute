@@ -71,7 +71,8 @@ void EventLoopInterrupter::open() {
         m_read_descriptor = fds[0];
         m_write_descriptor = fds[1];
         m_channel = new Channel(m_read_descriptor, m_loop);
-        m_loop->addEvent(m_channel, FileEvent::READ);
+        m_channel->setReadCallback(std::bind(&EventLoopInterrupter::handleRead, this));
+        m_channel->enableRead();
     }
 }
 
@@ -84,7 +85,7 @@ void EventLoopInterrupter::close() {
     }
     m_write_descriptor = m_read_descriptor = FLUTE_INVALID_SOCKET;
     if (m_channel) {
-        m_loop->removeEvent(m_channel, m_channel->events());
+        m_channel->disableAll();
         delete m_channel;
         m_channel = nullptr;
     }
