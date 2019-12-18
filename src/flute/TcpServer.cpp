@@ -50,7 +50,7 @@ void TcpServer::bind(const InetAddress& address) {
     m_acceptor->listen();
 }
 
-void TcpServer::sync() { m_serverPromise.get_future().get(); }
+void TcpServer::sync() { if (m_state == ServerState::STARTED) m_serverPromise.get_future().get(); }
 
 void TcpServer::close() {
     assert(m_state != ServerState::STOPPING);
@@ -112,6 +112,7 @@ void TcpServer::handleConnectionDestroyInLoop(const std::shared_ptr<flute::TcpCo
         m_state = ServerState::STOPPED;
         m_serverPromise.set_value();
     }
+    LOG_TRACE << "remove connection " << conn->getRemoteAddress().toString();
 }
 
 } // namespace flute

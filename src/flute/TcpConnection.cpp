@@ -40,7 +40,9 @@ TcpConnection::TcpConnection(socket_type descriptor, EventLoop* loop, const Inet
     m_channel->setWriteCallback(std::bind(&TcpConnection::handleWrite, this));
 }
 
-TcpConnection::~TcpConnection() { assert(m_state == ConnectionState::DISCONNECTED); }
+TcpConnection::~TcpConnection() {
+    assert(m_state == ConnectionState::DISCONNECTED);
+}
 
 void TcpConnection::shutdown() {
     if (m_state == ConnectionState::CONNECTED) {
@@ -162,8 +164,8 @@ void TcpConnection::handleWrite() {
 }
 
 void TcpConnection::handleClose() {
-    assert(m_state == ConnectionState::CONNECTED || m_state == ConnectionState::DISCONNECTING);
-    m_state = ConnectionState::DISCONNECTED;
+    assert(m_state == ConnectionState::CONNECTED);
+    m_state = ConnectionState::DISCONNECTING;
     m_channel->disableAll();
     auto conn = shared_from_this();
     if (m_closeCallback) {
@@ -272,7 +274,6 @@ void TcpConnection::handleConnectionEstablishedInLoop() {
     assert(m_state == ConnectionState::CONNECTING || m_state == ConnectionState::DISCONNECTED);
     m_state = ConnectionState::CONNECTED;
     m_channel->enableRead();
-    LOG_DEBUG << "connection established.";
     if (m_connectionEstablishedCallback) {
         m_connectionEstablishedCallback(shared_from_this());
     }
