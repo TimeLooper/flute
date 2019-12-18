@@ -20,7 +20,7 @@
 
 namespace flute {
 
-static const int DEFAULT_BUFFER_SIZE = 1024;
+static const int DEFAULT_BUFFER_SIZE = 4;
 
 #define UPDATE_READ_INDEX(capacity, readIndex, bufferSize, size) \
     do {                                                         \
@@ -234,7 +234,7 @@ flute::ssize_t Buffer::readFromSocket(socket_type descriptor) {
     if (m_readIndex <= m_writeIndex) {
         if (m_capacity - m_writeIndex >= bytesAvailable) {
             vec[0].iov_base = m_buffer + m_writeIndex;
-            vec[0].iov_len = writeableSize;
+            vec[0].iov_len = writeableBytes();
             count = 1;
         } else {
             vec[0].iov_base = m_buffer + m_writeIndex;

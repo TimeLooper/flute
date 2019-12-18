@@ -29,8 +29,7 @@ EpollReactor::EpollReactor()
 #ifdef USING_TIMERFD
     , m_timerfd(FLUTE_INVALID_SOCKET)
 #endif
-    , m_events() {
-    m_events.resize(INIT_EVENT_SIZE);
+    , m_events(INIT_EVENT_SIZE) {
     open();
 }
 
@@ -65,7 +64,7 @@ void EpollReactor::remove(socket_type fd, int old, int event, void* data) {
 int EpollReactor::wait(std::vector<FileEvent>& events, int timeout) {
     auto epoll_timeout = timeout;
 #ifdef USING_TIMERFD
-    if (m_timerfd != FLUTE_INVALID_SOCKET) {
+    if (m_timerfd != FLUTE_INVALID_SOCKET && timeout > 0) {
         struct itimerspec newValue {};
         newValue.it_value.tv_sec = timeout / 1000;
         newValue.it_value.tv_nsec = (timeout % 1000) * 1000;
@@ -84,7 +83,7 @@ int EpollReactor::wait(std::vector<FileEvent>& events, int timeout) {
     if (ret > 0 && static_cast<std::size_t>(ret) > events.size()) {
         events.resize(ret);
     }
-    for (auto i = 0; i < ret; ++i) {
+    for (auto i = 0, j = 0; i < ret; ++i) {
         auto& e = m_events[i];
 #ifdef USING_TIMERFD
         // timerfd
@@ -92,7 +91,7 @@ int EpollReactor::wait(std::vector<FileEvent>& events, int timeout) {
             continue;
         }
 #endif
-        auto& fe = events[i];
+        auto& fe = events[j];
         fe.data = e.data.ptr;
         fe.events = 0;
         if (e.events & EPOLLIN) {
@@ -101,6 +100,7 @@ int EpollReactor::wait(std::vector<FileEvent>& events, int timeout) {
         if (e.events & EPOLLOUT) {
             fe.events |= FileEvent::WRITE;
         }
+        j += 1;
     }
     if (ret > 0 && static_cast<std::size_t>(ret) == m_events.size() && m_events.size() < MAX_EVENT_SIZE) {
         m_events.resize(m_events.size() << 1);

@@ -52,13 +52,13 @@ public:
     FLUTE_API_DECL std::uint64_t schedule(std::function<void()>&& callback, std::int64_t delay, int loopCount);
     FLUTE_API_DECL std::uint64_t schedule(const std::function<void()>& callback, std::int64_t delay, int loopCount);
     FLUTE_API_DECL void cancel(std::uint64_t timerId);
-    FLUTE_API_DECL void attachThread();
+    // FLUTE_API_DECL void attachThread();
     FLUTE_API_DECL void assertInLoopThread() const;
     FLUTE_API_DECL void abortNotInLoopThread() const;
 
 private:
     Reactor* m_reactor;
-    std::thread::id m_tid;
+    const std::thread::id m_tid;
     std::atomic<bool> m_quit;
     EventLoopInterrupter m_interrupter;
     std::vector<std::function<void()>> m_tasks;

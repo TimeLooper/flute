@@ -19,15 +19,14 @@ EventLoopGroup::EventLoopGroup(std::size_t size) : m_eventLoops(), m_threadPool(
     m_threadPool.start(size);
     m_eventLoops.reserve(size);
     for (std::size_t i = 0; i < size; ++i) {
-        auto loop = new EventLoop();
-        std::promise<void> p;
-        m_eventLoops.emplace_back(std::unique_ptr<EventLoop>(loop));
-        m_threadPool.execute([loop, &p] {
-            loop->attachThread();
-            p.set_value();
-            loop->dispatch();
+        std::promise<EventLoop *> p;
+        m_threadPool.execute([&p] {
+            EventLoop loop;
+            p.set_value(&loop);
+            loop.dispatch();
         });
-        p.get_future().get();
+        auto loop = p.get_future().get();
+        m_eventLoops.emplace_back(loop);
     }
 }
 
@@ -36,9 +35,9 @@ EventLoopGroup::~EventLoopGroup() {}
 EventLoop* EventLoopGroup::chooseEventLoop(std::uint64_t hash) {
     auto size = m_eventLoops.size();
     if ((size & -size) == size) {
-        return m_eventLoops[hash & (size - 1)].get();
+        return m_eventLoops[hash & (size - 1)];
     } else {
-        return m_eventLoops[hash % size].get();
+        return m_eventLoops[hash % size];
     }
 }
 

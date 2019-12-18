@@ -27,7 +27,7 @@ public:
     FLUTE_API_DECL EventLoop* chooseEventLoop(std::uint64_t hash);
 
 private:
-    std::vector<std::unique_ptr<EventLoop>> m_eventLoops;
+    std::vector<EventLoop *> m_eventLoops;
     ThreadPool m_threadPool;
 };
 

@@ -19,12 +19,13 @@ namespace flute {
 
 EventLoop::EventLoop()
     : m_reactor(createReactor())
-    , m_tid()
+    , m_tid(std::this_thread::get_id())
     , m_quit(true)
     , m_interrupter(this)
     , m_tasks()
     , m_mutex()
-    , m_timerQueue(this) {}
+    , m_timerQueue(this) {
+}
 
 EventLoop::~EventLoop() {
     if (m_reactor) {
@@ -43,7 +44,7 @@ void EventLoop::removeEvent(Channel* channel, int events) {
 
 void EventLoop::dispatch() {
     m_quit = false;
-    static std::vector<FileEvent> events;
+    static std::vector<FileEvent> events(32);
     while (!m_quit) {
         auto ret = m_reactor->wait(events, m_timerQueue.searchNearestTime());
         if (ret == -1) {
@@ -94,7 +95,7 @@ std::uint64_t EventLoop::schedule(const std::function<void()>& callback, std::in
 
 void EventLoop::cancel(std::uint64_t timerId) { m_timerQueue.cancel(timerId); }
 
-void EventLoop::attachThread() { m_tid = std::this_thread::get_id(); }
+// void EventLoop::attachThread() { m_tid = std::this_thread::get_id(); }
 
 void EventLoop::assertInLoopThread() const {
     if (!isInLoopThread()) {

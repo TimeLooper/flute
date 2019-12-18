@@ -59,7 +59,7 @@ EventLoopInterrupter::~EventLoopInterrupter() { close(); }
 
 void EventLoopInterrupter::interrupt() {
     if (m_write_descriptor != FLUTE_INVALID_SOCKET) {
-        std::uint64_t num = 0;
+        std::uint64_t num = 1;
         flute::write(m_write_descriptor, &num, sizeof(num));
     }
 }

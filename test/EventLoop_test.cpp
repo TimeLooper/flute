@@ -12,7 +12,6 @@
 
 int main(int argc, char* argv[]) {
     flute::EventLoop loop;
-    loop.attachThread();
     auto delay = 1000;
     loop.schedule([=] { LOG_DEBUG << "timer " << delay; }, delay, -1);
     delay = 500;
