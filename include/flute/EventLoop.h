@@ -26,8 +26,8 @@ class Channel;
 
 struct FileEvent {
     static const int NONE = 0x0;
-    static const int READ = 0x1 << 1;
-    static const int WRITE = 0x1 << 2;
+    static const int READ = 0x1 << 0;
+    static const int WRITE = 0x1 << 1;
 
     int events;
     void* data;

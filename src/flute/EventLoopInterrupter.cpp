@@ -92,7 +92,6 @@ void EventLoopInterrupter::close() {
 }
 
 void EventLoopInterrupter::handleRead() {
-    LOG_TRACE << "interrupt reactor.";
     std::uint64_t num;
     flute::read(m_read_descriptor, &num, sizeof(num));
 }

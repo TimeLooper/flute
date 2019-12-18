@@ -269,7 +269,7 @@ void TcpConnection::sendInLoop(Buffer& buffer) {
 
 void TcpConnection::handleConnectionEstablishedInLoop() {
     m_loop->assertInLoopThread();
-    assert(m_state == ConnectionState::CONNECTING);
+    assert(m_state == ConnectionState::CONNECTING || m_state == ConnectionState::DISCONNECTED);
     m_state = ConnectionState::CONNECTED;
     m_channel->enableRead();
     LOG_DEBUG << "connection established.";

@@ -18,10 +18,10 @@ Channel::Channel(socket_type descriptor, EventLoop* loop)
 Channel::~Channel() { disableAll(); }
 
 void Channel::handleEvent(int events) {
-    if (events & FileEvent::READ) {
+    if ((events & FileEvent::READ) && m_readCallback) {
         m_readCallback();
     }
-    if (events & FileEvent::WRITE) {
+    if ((events & FileEvent::WRITE) && m_writeCallback) {
         m_writeCallback();
     }
 }
