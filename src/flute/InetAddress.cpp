@@ -27,7 +27,7 @@ InetAddress::InetAddress(std::uint16_t port, bool loopbackOnly, bool ipv6) : m_a
         std::memset(&m_addr4, 0, sizeof(m_addr4));
         m_addr4.sin_family = AF_INET;
         auto ip = loopbackOnly ? INADDR_LOOPBACK : INADDR_ANY;
-        m_addr4.sin_addr.s_addr = htonl(ip);
+        m_addr4.sin_addr.s_addr = flute::host2Network(ip);
         m_addr4.sin_port = flute::host2Network(port);
     }
 }

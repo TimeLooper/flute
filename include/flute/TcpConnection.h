@@ -36,6 +36,10 @@ public:
     FLUTE_API_DECL void send(Buffer& buffer);
     FLUTE_API_DECL void handleConnectionEstablished();
     FLUTE_API_DECL void handleConnectionDestroy();
+    FLUTE_API_DECL void startRead();
+    FLUTE_API_DECL void stopRead();
+    FLUTE_API_DECL void startWrite();
+    FLUTE_API_DECL void stopWrite();
 
     inline void setMessageCallback(const MessageCallback& cb) { m_messageCallback = cb; }
     inline void setMessageCallback(MessageCallback&& cb) { m_messageCallback = std::move(cb); }

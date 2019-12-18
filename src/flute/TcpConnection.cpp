@@ -93,6 +93,38 @@ void TcpConnection::handleConnectionDestroy() {
     m_loop->runInLoop(std::bind(&TcpConnection::handleConnectionDestroyInLoop, this));
 }
 
+void TcpConnection::startRead() {
+    m_loop->runInLoop([this] {
+        if (!this->m_channel->isReadable()) {
+            this->m_channel->enableRead();
+        }
+    });
+}
+
+void TcpConnection::stopRead() {
+    m_loop->runInLoop([this] {
+        if (this->m_channel->isReadable()) {
+            this->m_channel->disableRead();
+        }
+    });
+}
+
+void TcpConnection::startWrite() {
+    m_loop->runInLoop([this] {
+        if (!this->m_channel->isWriteable()) {
+            this->m_channel->enableWrite();
+        }
+    });
+}
+
+void TcpConnection::stopWrite() {
+    m_loop->runInLoop([this] {
+        if (this->m_channel->isWriteable()) {
+            this->m_channel->disableWrite();
+        }
+    });
+}
+
 void TcpConnection::handleRead() {
     m_loop->assertInLoopThread();
     auto result = m_inputBuffer.readFromSocket(m_channel->descriptor());
@@ -240,6 +272,7 @@ void TcpConnection::handleConnectionEstablishedInLoop() {
     assert(m_state == ConnectionState::CONNECTING);
     m_state = ConnectionState::CONNECTED;
     m_channel->enableRead();
+    LOG_DEBUG << "connection established.";
     if (m_connectionEstablishedCallback) {
         m_connectionEstablishedCallback(shared_from_this());
     }

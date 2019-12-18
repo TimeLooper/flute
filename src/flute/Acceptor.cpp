@@ -19,12 +19,13 @@ namespace flute {
 Acceptor::Acceptor(EventLoopGroup* loopGroup, const InetAddress& address, bool reusePort)
     : m_listening(false)
     , m_idleDescriptor(createNonblockingSocket(AF_INET))
-    , m_socket(new Socket(createNonblockingSocket(address.getSocketAddress()->sa_family)))
+    , m_socket(new Socket(createNonblockingSocket(address.family())))
     , m_loop(loopGroup->chooseEventLoop(m_socket->descriptor()))
     , m_channel(new Channel(m_socket->descriptor(), m_loop))
     , m_acceptCallback() {
     m_socket->setReuseAddress(true);
     m_socket->setReusePort(reusePort);
+    m_socket->bind(address);
     m_channel->setReadCallback(std::bind(&Acceptor::handleRead, this));
 }
 
@@ -38,8 +39,9 @@ void Acceptor::listen() {
     m_loop->runInLoop([this] {
         this->m_loop->assertInLoopThread();
         this->m_listening = true;
-        flute::listen(this->m_channel->descriptor());
+        this->m_socket->listen();
         this->m_channel->enableRead();
+        LOG_DEBUG << "listen";
     });
 }
 
@@ -47,7 +49,7 @@ void Acceptor::close() {
     m_loop->runInLoop([this] {
         this->m_loop->assertInLoopThread();
         this->m_channel->disableAll();
-        flute::closeSocket(this->m_channel->descriptor());
+        this->m_socket->close();
         flute::closeSocket(this->m_idleDescriptor);
         this->m_listening = false;
     });

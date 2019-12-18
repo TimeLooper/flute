@@ -91,7 +91,7 @@ socket_type createNonblockingSocket(unsigned short int family) {
 
 int bind(socket_type fd, const InetAddress& addr) {
     socklen_t size = 0;
-    if (addr.getSocketAddress()->sa_family == AF_INET) {
+    if (addr.family() == AF_INET) {
         size = sizeof(sockaddr_in);
     } else {
         size = sizeof(sockaddr_in6);
@@ -101,7 +101,7 @@ int bind(socket_type fd, const InetAddress& addr) {
 
 int connect(socket_type fd, const InetAddress& addr) {
     socklen_t size = 0;
-    if (addr.getSocketAddress()->sa_family == AF_INET) {
+    if (addr.family() == AF_INET) {
         size = sizeof(sockaddr_in);
     } else {
         size = sizeof(sockaddr_in6);
@@ -200,13 +200,13 @@ InetAddress getRemoteAddr(socket_type fd) {
 bool isSelfConnect(socket_type fd) {
     auto localAddr = getLocalAddr(fd);
     auto remoteAddr = getRemoteAddr(fd);
-    if (localAddr.getSocketAddress()->sa_family == AF_INET) {
+    if (localAddr.family() == AF_INET) {
         auto local = reinterpret_cast<const sockaddr_in*>(localAddr.getSocketAddress());
         auto remote = reinterpret_cast<const sockaddr_in*>(remoteAddr.getSocketAddress());
         return local->sin_port == remote->sin_port && local->sin_addr.s_addr == remote->sin_addr.s_addr;
-    } else if (localAddr.getSocketAddress()->sa_family == AF_INET6) {
-        auto local = reinterpret_cast<const sockaddr_in6*>(&localAddr);
-        auto remote = reinterpret_cast<const sockaddr_in6*>(&remoteAddr);
+    } else if (localAddr.family() == AF_INET6) {
+        auto local = reinterpret_cast<const sockaddr_in6*>(localAddr.getSocketAddress());
+        auto remote = reinterpret_cast<const sockaddr_in6*>(remoteAddr.getSocketAddress());
         return local->sin6_port == remote->sin6_port &&
                std::memcmp(&local->sin6_addr, &remote->sin6_addr, sizeof(local->sin6_addr)) == 0;
     } else {
