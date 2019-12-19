@@ -194,7 +194,7 @@ void TcpConnection::sendInLoop(const void* buffer, flute::ssize_t length) {
     if (!m_channel->isWriteable() && m_outputBuffer.readableBytes() == 0) {
         // try to write direct
         iovec vec = {const_cast<void*>(buffer), static_cast<std::size_t>(length)};
-        flute::writev(m_socket->descriptor(), &vec, 1);
+        count = flute::writev(m_socket->descriptor(), &vec, 1);
         if (count >= 0) {
             remain = length - count;
             if (remain <= 0 && m_writeCompleteCallback) {
@@ -204,7 +204,7 @@ void TcpConnection::sendInLoop(const void* buffer, flute::ssize_t length) {
     } else {
         count = 0;
         if (errno != EWOULDBLOCK && errno != EAGAIN) {
-            LOG_ERROR << "TcpConnection::sendInLoop";
+            LOG_ERROR << "TcpConnection::sendInLoop " << errno << ":" << std::strerror(errno);
             if (errno == EPIPE || errno == ECONNRESET) {
                 error = true;
             }

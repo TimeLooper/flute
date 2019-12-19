@@ -54,6 +54,7 @@ public:
     FLUTE_API_DECL const std::string& getLineSeparator() const;
     FLUTE_API_DECL flute::ssize_t readFromSocket(socket_type descriptor);
     FLUTE_API_DECL flute::ssize_t sendToSocket(socket_type descriptor);
+    FLUTE_API_DECL void clear();
 
 private:
     flute::ssize_t m_readIndex;

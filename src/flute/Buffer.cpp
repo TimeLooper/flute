@@ -20,7 +20,7 @@
 
 namespace flute {
 
-static const int DEFAULT_BUFFER_SIZE = 4;
+static const int DEFAULT_BUFFER_SIZE = 1024;
 
 #define UPDATE_READ_INDEX(capacity, readIndex, bufferSize, size) \
     do {                                                         \
@@ -275,6 +275,10 @@ flute::ssize_t Buffer::sendToSocket(socket_type descriptor) {
         UPDATE_READ_INDEX(m_capacity, m_readIndex, m_bufferSize, result);
     }
     return result;
+}
+
+void Buffer::clear() {
+    m_readIndex = m_writeIndex = m_bufferSize = 0;
 }
 
 void Buffer::expand(flute::ssize_t length) {
