@@ -16,9 +16,6 @@
 #include <cassert>
 #include <cstring>
 
-#ifdef FLUTE_HAVE_UNISTD_H
-#include <unistd.h>
-#endif
 #ifdef FLUTE_HAVE_FCNTL_H
 #include <fcntl.h>
 #endif
@@ -126,7 +123,7 @@ socket_type accept(socket_type fd, InetAddress& addr) {
     return connectFd;
 }
 
-std::int32_t readv(socket_type fd, const struct iovec* vec, int count) {
+flute::ssize_t readv(socket_type fd, const struct iovec* vec, int count) {
 #ifdef FLUTE_HAVE_SYS_UIO_H
     return ::readv(fd, vec, count);
 #else
@@ -148,7 +145,7 @@ std::int32_t readv(socket_type fd, const struct iovec* vec, int count) {
 #endif
 }
 
-std::int32_t writev(socket_type fd, const struct iovec* vec, int count) {
+flute::ssize_t writev(socket_type fd, const struct iovec* vec, int count) {
 #ifdef FLUTE_HAVE_SYS_UIO_H
     return ::writev(fd, vec, count);
 #else
@@ -172,7 +169,7 @@ std::int32_t writev(socket_type fd, const struct iovec* vec, int count) {
 
 int close(int fd) { return ::close(fd); }
 
-std::int32_t getByteAvaliableOnSocket(socket_type descriptor) {
+flute::ssize_t getByteAvaliableOnSocket(socket_type descriptor) {
 #if defined(FIONREAD) && defined(_WIN32)
     u_long lng = BUFFER_MAX_READ_DEFAULT;
     if (ioctlsocket(descriptor, FIONREAD, &lng) < 0) return -1;

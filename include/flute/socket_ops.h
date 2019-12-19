@@ -39,6 +39,9 @@
 #ifdef FLUTE_HAVE_NETDB_H
 #include <netdb.h>
 #endif
+#ifdef FLUTE_HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 
 namespace flute {
 
@@ -72,7 +75,7 @@ FLUTE_API_DECL socket_type createNonblockingSocket(unsigned short int family);
 
 FLUTE_API_DECL int bind(socket_type fd, const InetAddress& addr);
 
-FLUTE_API_DECL std::int32_t readv(socket_type fd, const struct iovec* vec, int count);
+FLUTE_API_DECL flute::ssize_t readv(socket_type fd, const struct iovec* vec, int count);
 
 FLUTE_API_DECL int connect(socket_type fd, const InetAddress& addr);
 
@@ -80,11 +83,11 @@ FLUTE_API_DECL int listen(socket_type fd);
 
 FLUTE_API_DECL socket_type accept(socket_type fd, InetAddress& addr);
 
-FLUTE_API_DECL std::int32_t writev(socket_type fd, const struct iovec* vec, int count);
+FLUTE_API_DECL flute::ssize_t writev(socket_type fd, const struct iovec* vec, int count);
 
 FLUTE_API_DECL int close(int fd);
 
-FLUTE_API_DECL std::int32_t getByteAvaliableOnSocket(socket_type descriptor);
+FLUTE_API_DECL flute::ssize_t getByteAvaliableOnSocket(socket_type descriptor);
 
 FLUTE_API_DECL int closeSocket(socket_type socket);
 
