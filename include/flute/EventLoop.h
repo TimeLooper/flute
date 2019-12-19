@@ -9,8 +9,6 @@
 
 #pragma once
 
-#include <flute/EventLoopInterrupter.h>
-#include <flute/TimerQueue.h>
 #include <flute/config.h>
 #include <flute/noncopyable.h>
 
@@ -21,8 +19,11 @@
 #include <vector>
 
 namespace flute {
+
 class Reactor;
 class Channel;
+class EventLoopInterrupter;
+class TimerQueue;
 
 struct FileEvent {
     static const int NONE = 0x0;
@@ -60,10 +61,10 @@ private:
     const std::thread::id m_tid;
     std::atomic<bool> m_quit;
     std::atomic<bool> m_isRunTasks;
-    EventLoopInterrupter m_interrupter;
+    EventLoopInterrupter* m_interrupter;
     std::vector<std::function<void()>> m_tasks;
     std::mutex m_mutex;
-    TimerQueue m_timerQueue;
+    TimerQueue* m_timerQueue;
 
     void executeTasks();
 };

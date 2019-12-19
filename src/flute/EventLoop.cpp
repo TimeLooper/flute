@@ -11,6 +11,8 @@
 #include <flute/EventLoop.h>
 #include <flute/Logger.h>
 #include <flute/Reactor.h>
+#include <flute/TimerQueue.h>
+#include <flute/EventLoopInterrupter.h>
 
 #include <cerrno>
 #include <cstring>
@@ -22,15 +24,23 @@ EventLoop::EventLoop()
     , m_tid(std::this_thread::get_id())
     , m_quit(true)
     , m_isRunTasks(false)
-    , m_interrupter(this)
+    , m_interrupter(new EventLoopInterrupter(this))
     , m_tasks()
     , m_mutex()
-    , m_timerQueue(this) {}
+    , m_timerQueue(new TimerQueue(this)) {}
 
 EventLoop::~EventLoop() {
     if (m_reactor) {
         delete m_reactor;
         m_reactor = nullptr;
+    }
+    if (m_interrupter) {
+        delete m_interrupter;
+        m_interrupter = nullptr;
+    }
+    if (m_timerQueue) {
+        delete m_timerQueue;
+        m_timerQueue = nullptr;
     }
 }
 
@@ -46,7 +56,7 @@ void EventLoop::dispatch() {
     m_quit = false;
     static std::vector<FileEvent> events(32);
     while (!m_quit) {
-        auto ret = m_reactor->wait(events, m_timerQueue.searchNearestTime());
+        auto ret = m_reactor->wait(events, m_timerQueue->searchNearestTime());
         if (ret == -1) {
             LOG_ERROR << "reactor wait " << errno << ": " << std::strerror(errno);
         }
@@ -56,16 +66,16 @@ void EventLoop::dispatch() {
             ch->handleEvent(e.events);
         }
         executeTasks();
-        m_timerQueue.handleTimerEvent();
+        m_timerQueue->handleTimerEvent();
     }
 }
 
 void EventLoop::quit() {
     m_quit = true;
-    m_interrupter.interrupt();
+    m_interrupter->interrupt();
 }
 
-void EventLoop::wakeup() { m_interrupter.interrupt(); }
+void EventLoop::wakeup() { m_interrupter->interrupt(); }
 
 bool EventLoop::isInLoopThread() const { return m_tid == std::this_thread::get_id(); }
 
@@ -86,14 +96,14 @@ void EventLoop::runInLoop(std::function<void()>&& task) {
 }
 
 std::uint64_t EventLoop::schedule(std::function<void()>&& callback, std::int64_t delay, int loopCount) {
-    return m_timerQueue.schedule(std::move(callback), delay, loopCount);
+    return m_timerQueue->schedule(std::move(callback), delay, loopCount);
 }
 
 std::uint64_t EventLoop::schedule(const std::function<void()>& callback, std::int64_t delay, int loopCount) {
-    return m_timerQueue.schedule(callback, delay, loopCount);
+    return m_timerQueue->schedule(callback, delay, loopCount);
 }
 
-void EventLoop::cancel(std::uint64_t timerId) { m_timerQueue.cancel(timerId); }
+void EventLoop::cancel(std::uint64_t timerId) { m_timerQueue->cancel(timerId); }
 
 void EventLoop::assertInLoopThread() const {
     if (!isInLoopThread()) {

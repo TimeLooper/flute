@@ -17,21 +17,21 @@ namespace flute {
 
 class Socket {
 public:
-    explicit Socket(socket_type descriptor);
-    ~Socket();
+    FLUTE_API_DECL explicit Socket(socket_type descriptor);
+    FLUTE_API_DECL ~Socket();
 
-    void bind(const InetAddress& address);
-    void listen();
+    FLUTE_API_DECL void bind(const InetAddress& address);
+    FLUTE_API_DECL void listen();
     inline socket_type descriptor() const { return m_descriptor; }
     inline int getSocketError() const { return flute::getSocketError(m_descriptor); }
-    socket_type accept();
-    void setTcpNoDelay(bool on);
-    void setReuseAddress(bool on);
-    void setReusePort(bool on);
-    void setKeepAlive(bool on);
-    void shutdownWrite();
-    void shutdownRead();
-    void close();
+    FLUTE_API_DECL socket_type accept();
+    FLUTE_API_DECL void setTcpNoDelay(bool on);
+    FLUTE_API_DECL void setReuseAddress(bool on);
+    FLUTE_API_DECL void setReusePort(bool on);
+    FLUTE_API_DECL void setKeepAlive(bool on);
+    FLUTE_API_DECL void shutdownWrite();
+    FLUTE_API_DECL void shutdownRead();
+    FLUTE_API_DECL void close();
 
 private:
     socket_type m_descriptor;
