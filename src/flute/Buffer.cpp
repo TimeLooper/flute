@@ -108,10 +108,10 @@ std::int64_t Buffer::peekInt64() const {
 
 std::string Buffer::peekLine() const {
     auto temp = m_lineSeparator.c_str();
-    std::int32_t length = m_lineSeparator.length();
+    flute::ssize_t length = static_cast<flute::ssize_t>(m_lineSeparator.length());
     auto bytesAvailable = readableBytes();
-    std::int32_t index = 0;
-    std::int32_t idx = 0;
+    flute::ssize_t index = 0;
+    flute::ssize_t idx = 0;
     std::stringstream ss;
     while (true) {
         ss << *(m_buffer + ((m_readIndex + index) & (m_capacity - 1)));
@@ -165,7 +165,7 @@ std::int64_t Buffer::readInt64() {
 
 std::string Buffer::readLine() {
     auto result = peekLine();
-    UPDATE_READ_INDEX(m_capacity, m_readIndex, m_bufferSize, result.length());
+    UPDATE_READ_INDEX(m_capacity, m_readIndex, m_bufferSize, static_cast<flute::ssize_t>(result.length()));
     return result;
 }
 

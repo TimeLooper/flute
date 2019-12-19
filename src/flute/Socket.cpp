@@ -40,12 +40,12 @@ socket_type Socket::accept() {
 
 void Socket::setTcpNoDelay(bool on) {
     int option = on ? 1 : 0;
-    flute::setsockopt(m_descriptor, IPPROTO_TCP, TCP_NODELAY, &option, sizeof(option));
+    flute::setsockopt(m_descriptor, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<const char *>(&option), sizeof(option));
 }
 
 void Socket::setReuseAddress(bool on) {
     int option = on ? 1 : 0;
-    flute::setsockopt(m_descriptor, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
+    flute::setsockopt(m_descriptor, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char *>(&option), sizeof(option));
 }
 
 void Socket::setReusePort(bool on) {
@@ -64,7 +64,7 @@ void Socket::setReusePort(bool on) {
 
 void Socket::setKeepAlive(bool on) {
     int option = on ? 1 : 0;
-    flute::setsockopt(m_descriptor, SOL_SOCKET, SO_KEEPALIVE, &option, sizeof(option));
+    flute::setsockopt(m_descriptor, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<const char *>(&option), sizeof(option));
 }
 
 void Socket::shutdownWrite() {

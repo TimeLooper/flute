@@ -57,6 +57,10 @@ using ::getsockopt;
 using ::open;
 using ::setsockopt;
 using ::shutdown;
+using ::send;
+using ::recv;
+using ::read;
+using ::write;
 
 FLUTE_API_DECL int setSocketCloseOnExec(socket_type fd);
 
@@ -68,8 +72,6 @@ FLUTE_API_DECL socket_type createNonblockingSocket(unsigned short int family);
 
 FLUTE_API_DECL int bind(socket_type fd, const InetAddress& addr);
 
-FLUTE_API_DECL std::int32_t read(socket_type fd, void* buffer, std::size_t size);
-
 FLUTE_API_DECL std::int32_t readv(socket_type fd, const struct iovec* vec, int count);
 
 FLUTE_API_DECL int connect(socket_type fd, const InetAddress& addr);
@@ -77,8 +79,6 @@ FLUTE_API_DECL int connect(socket_type fd, const InetAddress& addr);
 FLUTE_API_DECL int listen(socket_type fd);
 
 FLUTE_API_DECL socket_type accept(socket_type fd, InetAddress& addr);
-
-FLUTE_API_DECL std::int32_t write(socket_type fd, void* buffer, std::size_t size);
 
 FLUTE_API_DECL std::int32_t writev(socket_type fd, const struct iovec* vec, int count);
 

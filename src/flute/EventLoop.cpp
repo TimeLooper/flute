@@ -20,7 +20,7 @@
 namespace flute {
 
 EventLoop::EventLoop()
-    : m_reactor(createReactor())
+    : m_reactor(CHECK_NOTNULL(createReactor()))
     , m_tid(std::this_thread::get_id())
     , m_quit(true)
     , m_isRunTasks(false)
@@ -56,7 +56,7 @@ void EventLoop::dispatch() {
     m_quit = false;
     static std::vector<FileEvent> events(32);
     while (!m_quit) {
-        auto ret = m_reactor->wait(events, m_timerQueue->searchNearestTime());
+        auto ret = m_reactor->wait(events, static_cast<int>(m_timerQueue->searchNearestTime()));
         if (ret == -1) {
             LOG_ERROR << "reactor wait " << errno << ": " << std::strerror(errno);
         }
