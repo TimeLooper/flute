@@ -16,7 +16,9 @@
 
 void handleMessage(const std::shared_ptr<flute::TcpConnection>& conn, flute::Buffer& buffer) {
     buffer.setLineSeparator("\n");
-    LOG_DEBUG << "receive message from " << conn->getRemoteAddress().toString() << " : " << buffer.readLine();
+    std::string str = buffer.readLine();
+    LOG_DEBUG << "receive message from " << conn->getRemoteAddress().toString() << " : " << str;
+    conn->send(str);
 }
 
 int main(int argc, char* argv[]) {

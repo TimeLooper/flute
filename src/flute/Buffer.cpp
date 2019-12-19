@@ -292,9 +292,6 @@ void Buffer::expand(flute::ssize_t length) {
                 std::memmove(new_buffer, m_buffer + capacity - m_capacity, headCnt + m_capacity - capacity);
             }
         }
-        if (new_buffer != m_buffer) {
-            std::free(m_buffer);
-        }
         m_buffer = new_buffer;
         m_writeIndex = m_readIndex + m_bufferSize;
         m_capacity = capacity;

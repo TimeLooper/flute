@@ -19,7 +19,7 @@ EventLoopGroup::EventLoopGroup(std::size_t size) : m_eventLoops(), m_threadPool(
     m_threadPool.start(size);
     m_eventLoops.reserve(size);
     for (std::size_t i = 0; i < size; ++i) {
-        std::promise<EventLoop *> p;
+        std::promise<EventLoop*> p;
         m_threadPool.execute([&p] {
             EventLoop loop;
             p.set_value(&loop);

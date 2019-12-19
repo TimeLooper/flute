@@ -21,11 +21,11 @@ EventLoop::EventLoop()
     : m_reactor(createReactor())
     , m_tid(std::this_thread::get_id())
     , m_quit(true)
+    , m_isRunTasks(false)
     , m_interrupter(this)
     , m_tasks()
     , m_mutex()
-    , m_timerQueue(this) {
-}
+    , m_timerQueue(this) {}
 
 EventLoop::~EventLoop() {
     if (m_reactor) {
@@ -95,8 +95,6 @@ std::uint64_t EventLoop::schedule(const std::function<void()>& callback, std::in
 
 void EventLoop::cancel(std::uint64_t timerId) { m_timerQueue.cancel(timerId); }
 
-// void EventLoop::attachThread() { m_tid = std::this_thread::get_id(); }
-
 void EventLoop::assertInLoopThread() const {
     if (!isInLoopThread()) {
         abortNotInLoopThread();
@@ -113,7 +111,7 @@ void EventLoop::queueInLoop(const std::function<void()>& task) {
         std::lock_guard<std::mutex> lock(m_mutex);
         m_tasks.push_back(task);
     }
-    if (!isInLoopThread()) {
+    if (!isInLoopThread() || m_isRunTasks) {
         wakeup();
     }
 }
@@ -123,13 +121,14 @@ void EventLoop::queueInLoop(std::function<void()>&& task) {
         std::lock_guard<std::mutex> lock(m_mutex);
         m_tasks.push_back(std::move(task));
     }
-    if (!isInLoopThread()) {
+    if (!isInLoopThread() || m_isRunTasks) {
         wakeup();
     }
 }
 
 void EventLoop::executeTasks() {
     std::vector<std::function<void()>> temp;
+    m_isRunTasks = true;
     {
         std::lock_guard<std::mutex> lock(m_mutex);
         temp.swap(m_tasks);
@@ -137,6 +136,7 @@ void EventLoop::executeTasks() {
     for (auto& t : temp) {
         t();
     }
+    m_isRunTasks = false;
 }
 
 } // namespace flute

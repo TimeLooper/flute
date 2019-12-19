@@ -50,7 +50,9 @@ void TcpServer::bind(const InetAddress& address) {
     m_acceptor->listen();
 }
 
-void TcpServer::sync() { if (m_state == ServerState::STARTED) m_serverPromise.get_future().get(); }
+void TcpServer::sync() {
+    if (m_state == ServerState::STARTED) m_serverPromise.get_future().get();
+}
 
 void TcpServer::close() {
     assert(m_state != ServerState::STOPPING);

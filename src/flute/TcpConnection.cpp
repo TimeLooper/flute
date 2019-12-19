@@ -40,9 +40,7 @@ TcpConnection::TcpConnection(socket_type descriptor, EventLoop* loop, const Inet
     m_channel->setWriteCallback(std::bind(&TcpConnection::handleWrite, this));
 }
 
-TcpConnection::~TcpConnection() {
-    assert(m_state == ConnectionState::DISCONNECTED);
-}
+TcpConnection::~TcpConnection() { assert(m_state == ConnectionState::DISCONNECTED); }
 
 void TcpConnection::shutdown() {
     if (m_state == ConnectionState::CONNECTED) {
@@ -64,7 +62,7 @@ void TcpConnection::send(const void* buffer, flute::ssize_t length) {
 }
 
 void TcpConnection::send(const std::string& message) {
-    if (m_state == ConnectionState::CONNECTED) {
+    if (m_state != ConnectionState::CONNECTED) {
         return;
     }
     if (m_loop->isInLoopThread()) {
