@@ -9,10 +9,10 @@
 
 #include <flute/Channel.h>
 #include <flute/EventLoop.h>
+#include <flute/EventLoopInterrupter.h>
 #include <flute/Logger.h>
 #include <flute/Reactor.h>
 #include <flute/TimerQueue.h>
-#include <flute/EventLoopInterrupter.h>
 
 #include <cerrno>
 #include <cstring>

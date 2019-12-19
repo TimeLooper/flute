@@ -277,9 +277,7 @@ flute::ssize_t Buffer::sendToSocket(socket_type descriptor) {
     return result;
 }
 
-void Buffer::clear() {
-    m_readIndex = m_writeIndex = m_bufferSize = 0;
-}
+void Buffer::clear() { m_readIndex = m_writeIndex = m_bufferSize = 0; }
 
 void Buffer::expand(flute::ssize_t length) {
     auto capacity = getCapacity(length, m_capacity);
