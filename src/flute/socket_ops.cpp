@@ -153,18 +153,18 @@ std::int32_t writev(socket_type fd, const struct iovec* vec, int count) {
     return ::writev(fd, vec, count);
 #else
     auto result = 0;
-    DWORD bytesRead;
+    DWORD bytesSend;
     DWORD flags = 0;
     WSABUF buf{};
     buf.buf = static_cast<char*>(vec->iov_base);
     buf.len = static_cast<ULONG>(vec->iov_len);
-    if (WSASend(fd, &buf, count, &bytesRead, flags, nullptr, nullptr)) {
+    if (WSASend(fd, &buf, count, &bytesSend, flags, nullptr, nullptr)) {
         if (WSAGetLastError() == WSAECONNABORTED)
             result = 0;
         else
             result = -1;
     } else {
-        result = bytesRead;
+        result = bytesSend;
     }
     return result;
 #endif
