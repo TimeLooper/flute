@@ -39,6 +39,9 @@
 #ifdef FLUTE_HAVE_NETDB_H
 #include <netdb.h>
 #endif
+#ifdef FLUTE_HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 
 namespace flute {
 

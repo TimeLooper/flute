@@ -16,9 +16,6 @@
 #include <cassert>
 #include <cstring>
 
-#ifdef FLUTE_HAVE_UNISTD_H
-#include <unistd.h>
-#endif
 #ifdef FLUTE_HAVE_FCNTL_H
 #include <fcntl.h>
 #endif
