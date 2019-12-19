@@ -61,6 +61,7 @@ typedef std::function<void(const std::shared_ptr<TcpConnection>&)> WriteComplete
 typedef std::function<void(const std::shared_ptr<TcpConnection>&, flute::ssize_t)> HighWaterMarkCallback;
 typedef std::function<void(const std::shared_ptr<TcpConnection>&)> ConnectionEstablishedCallback;
 typedef std::function<void(const std::shared_ptr<TcpConnection>&)> ConnectionDestroyCallback;
-typedef std::function<void(const socket_type descriptor)> AcceptCallback;
+typedef std::function<void(const socket_type)> AcceptCallback;
+typedef std::function<void(const socket_type)> ConnectCallback;
 
 } // namespace flute

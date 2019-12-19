@@ -12,6 +12,7 @@
 #include <flute/ThreadPool.h>
 #include <flute/config.h>
 
+#include <atomic>
 #include <cstdint>
 
 namespace flute {
@@ -25,9 +26,11 @@ public:
 
     FLUTE_API_DECL void shutdown();
     FLUTE_API_DECL EventLoop* chooseEventLoop(std::uint64_t hash);
+    FLUTE_API_DECL EventLoop* chooseEventLoop();
 
 private:
-    std::vector<EventLoop*> m_eventLoops;
+    std::atomic<std::size_t> m_index;
+    std::vector<EventLoop *> m_eventLoops;
     ThreadPool m_threadPool;
 };
 

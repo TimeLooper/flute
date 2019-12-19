@@ -30,10 +30,6 @@ EventLoop::EventLoop()
     , m_timerQueue(new TimerQueue(this)) {}
 
 EventLoop::~EventLoop() {
-    if (m_reactor) {
-        delete m_reactor;
-        m_reactor = nullptr;
-    }
     if (m_interrupter) {
         delete m_interrupter;
         m_interrupter = nullptr;
@@ -41,6 +37,10 @@ EventLoop::~EventLoop() {
     if (m_timerQueue) {
         delete m_timerQueue;
         m_timerQueue = nullptr;
+    }
+    if (m_reactor) {
+        delete m_reactor;
+        m_reactor = nullptr;
     }
 }
 
@@ -95,8 +95,16 @@ void EventLoop::runInLoop(std::function<void()>&& task) {
     }
 }
 
+std::uint64_t EventLoop::schedule(std::function<void()>&& callback, std::int64_t delay) {
+    return m_timerQueue->schedule(std::move(callback), delay, 1);
+}
+
 std::uint64_t EventLoop::schedule(std::function<void()>&& callback, std::int64_t delay, int loopCount) {
     return m_timerQueue->schedule(std::move(callback), delay, loopCount);
+}
+
+std::uint64_t EventLoop::schedule(const std::function<void()>& callback, std::int64_t delay) {
+    return m_timerQueue->schedule(callback, delay, 1);
 }
 
 std::uint64_t EventLoop::schedule(const std::function<void()>& callback, std::int64_t delay, int loopCount) {

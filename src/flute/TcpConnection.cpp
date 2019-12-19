@@ -85,6 +85,13 @@ void TcpConnection::send(Buffer& buffer) {
     }
 }
 
+void TcpConnection::forceClose() {
+    if (m_state == ConnectionState::CONNECTED || m_state == ConnectionState::CONNECTING) {
+        m_state = ConnectionState::DISCONNECTING;
+        m_loop->queueInLoop(std::bind(&TcpConnection::forceCloseInLoop, shared_from_this()));
+    }
+}
+
 void TcpConnection::handleConnectionEstablished() {
     m_loop->runInLoop(std::bind(&TcpConnection::handleConnectionEstablishedInLoop, this));
 }
@@ -162,7 +169,7 @@ void TcpConnection::handleWrite() {
 }
 
 void TcpConnection::handleClose() {
-    assert(m_state == ConnectionState::CONNECTED);
+    assert(m_state == ConnectionState::CONNECTED || m_state == ConnectionState::DISCONNECTING);
     m_state = ConnectionState::DISCONNECTING;
     m_channel->disableAll();
     auto conn = shared_from_this();
@@ -285,6 +292,13 @@ void TcpConnection::handleConnectionDestroyInLoop() {
         if (m_connectionDestroyCallback) {
             m_connectionDestroyCallback(shared_from_this());
         }
+    }
+}
+
+void TcpConnection::forceCloseInLoop() {
+    m_loop->assertInLoopThread();
+    if (m_state == ConnectionState::CONNECTED || m_state == ConnectionState::CONNECTING) {
+        handleClose();
     }
 }
 

@@ -40,6 +40,7 @@ public:
     FLUTE_API_DECL void stopRead();
     FLUTE_API_DECL void startWrite();
     FLUTE_API_DECL void stopWrite();
+    FLUTE_API_DECL void forceClose();
 
     inline void setMessageCallback(const MessageCallback& cb) { m_messageCallback = cb; }
     inline void setMessageCallback(MessageCallback&& cb) { m_messageCallback = std::move(cb); }
@@ -93,6 +94,7 @@ private:
     void sendInLoop(Buffer& buffer);
     void handleConnectionEstablishedInLoop();
     void handleConnectionDestroyInLoop();
+    void forceCloseInLoop();
 };
 
 } // namespace flute
