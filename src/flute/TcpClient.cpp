@@ -28,6 +28,7 @@ TcpClient::TcpClient(EventLoopGroup* loop, const InetAddress& address)
     : m_loop(loop)
     , m_retry(false)
     , m_connect(true)
+    , m_isEstablished(false)
     , m_connectPromise()
     , m_closePromise()
     , m_mutex()
@@ -73,6 +74,7 @@ void TcpClient::disconnect() {
             m_connection->shutdown();
         }
     }
+    m_isEstablished = false;
     m_connectPromise.set_value();
     m_closePromise.set_value();
 }
@@ -81,12 +83,18 @@ void TcpClient::stop() {
     auto temp = m_connect.load();
     m_connect = false;
     m_connector->stop();
+    m_isEstablished = false;
     if (temp) {
         m_connectPromise.set_value();
     }
 }
 
-void TcpClient::sync() { m_closePromise.get_future().get(); }
+void TcpClient::sync() {
+    if (!m_isEstablished) {
+        return;
+    }
+    m_closePromise.get_future().get();
+}
 
 void TcpClient::onConnected(socket_type descriptor) {
     auto remoteAddress = flute::getRemoteAddr(descriptor);
@@ -102,6 +110,7 @@ void TcpClient::onConnected(socket_type descriptor) {
         m_connection = conn;
     }
     conn->handleConnectionEstablished();
+    m_isEstablished = true;
     m_connectPromise.set_value();
 }
 

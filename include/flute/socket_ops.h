@@ -58,11 +58,11 @@ struct iovec {
 
 using ::getsockopt;
 using ::open;
+using ::read;
+using ::recv;
+using ::send;
 using ::setsockopt;
 using ::shutdown;
-using ::send;
-using ::recv;
-using ::read;
 using ::write;
 
 FLUTE_API_DECL int setSocketCloseOnExec(socket_type fd);

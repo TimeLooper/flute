@@ -138,8 +138,10 @@ void TcpConnection::handleRead() {
     if (result > 0) {
         if (m_messageCallback) {
             m_messageCallback(shared_from_this(), m_inputBuffer);
+        } else {
+            m_inputBuffer.clear();
         }
-    } else if (result == 0 && errno != EAGAIN && errno != EWOULDBLOCK) {
+    } else if (result == 0) {
         handleClose();
     } else {
         handleError();

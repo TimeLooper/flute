@@ -15,7 +15,7 @@
 
 namespace flute {
 
-EventLoopGroup::EventLoopGroup(std::size_t size) : m_eventLoops(), m_threadPool() {
+EventLoopGroup::EventLoopGroup(std::size_t size) : m_index(0), m_eventLoops(), m_threadPool() {
     m_threadPool.start(size);
     m_eventLoops.reserve(size);
     for (std::size_t i = 0; i < size; ++i) {
@@ -24,6 +24,7 @@ EventLoopGroup::EventLoopGroup(std::size_t size) : m_eventLoops(), m_threadPool(
             EventLoop loop;
             p.set_value(&loop);
             loop.dispatch();
+            LOG_FATAL << "exit loop";
         });
         auto loop = p.get_future().get();
         m_eventLoops.emplace_back(loop);
@@ -43,6 +44,7 @@ EventLoop* EventLoopGroup::chooseEventLoop(std::uint64_t hash) {
 
 EventLoop* EventLoopGroup::chooseEventLoop() {
     auto result = m_eventLoops[m_index];
+    m_index += 1;
     m_index = m_index >= m_eventLoops.size() ? 0 : m_index.load();
     return result;
 }

@@ -45,10 +45,12 @@ EventLoop::~EventLoop() {
 }
 
 void EventLoop::addEvent(Channel* channel, int events) {
+    assertInLoopThread();
     m_reactor->add(channel->descriptor(), channel->events(), events, channel);
 }
 
 void EventLoop::removeEvent(Channel* channel, int events) {
+    assertInLoopThread();
     m_reactor->remove(channel->descriptor(), channel->events(), events, channel);
 }
 
@@ -120,7 +122,7 @@ void EventLoop::assertInLoopThread() const {
 }
 
 void EventLoop::abortNotInLoopThread() const {
-    LOG_FATAL << "EventLoop " << this << " was attached thread " << m_tid << ", current thread id "
+    LOG_FATAL << "EventLoop " << this << " was created in thread " << m_tid << ", current thread id "
               << std::this_thread::get_id() << ".";
 }
 

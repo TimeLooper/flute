@@ -53,6 +53,7 @@ private:
     EventLoopGroup* m_loop;
     std::atomic<bool> m_retry;
     std::atomic<bool> m_connect;
+    std::atomic<bool> m_isEstablished;
     std::promise<void> m_connectPromise;
     std::promise<void> m_closePromise;
     mutable std::mutex m_mutex;
