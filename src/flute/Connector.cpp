@@ -7,11 +7,13 @@
  *
  *************************************************************************/
 
-#include <flute/Connector.h>
 #include <flute/Channel.h>
+#include <flute/Connector.h>
 #include <flute/EventLoop.h>
 #include <flute/EventLoopGroup.h>
 #include <flute/Logger.h>
+
+#include <cstring>
 
 namespace flute {
 
@@ -24,16 +26,15 @@ Connector::Connector(EventLoopGroup* loop, const InetAddress& address)
     , m_remoteAddress(address)
     , m_connect(false)
     , m_state(ConnectorState::DISCONNECTED)
-    , m_channel(nullptr) {
-}
+    , m_channel(nullptr) {}
 
 Connector::Connector(EventLoopGroup* loop, InetAddress&& address)
-    : m_loop(loop->chooseEventLoop()), m_remoteAddress(std::move(address)), m_state(ConnectorState::DISCONNECTED), m_channel(nullptr) {
-}
+    : m_loop(loop->chooseEventLoop())
+    , m_remoteAddress(std::move(address))
+    , m_state(ConnectorState::DISCONNECTED)
+    , m_channel(nullptr) {}
 
-Connector::~Connector() {
-    assert(!m_channel);
-}
+Connector::~Connector() { assert(!m_channel); }
 
 void Connector::start() {
     m_connect = true;
@@ -169,8 +170,6 @@ socket_type Connector::removeAndResetChannel() {
     return descriptor;
 }
 
-void Connector::resetChannel() {
-    m_channel.reset();
-}
+void Connector::resetChannel() { m_channel.reset(); }
 
 } // namespace flute

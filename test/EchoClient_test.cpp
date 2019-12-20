@@ -48,7 +48,7 @@ private:
         //   }
         //   LOG_INFO << "*** connected " << current;
         // }
-        conn->send("world");
+        // conn->send("world");
     }
 
     void onMessage(const std::shared_ptr<flute::TcpConnection>& conn, flute::Buffer& buf) {

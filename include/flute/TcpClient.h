@@ -9,13 +9,13 @@
 
 #pragma once
 
-#include <flute/config.h>
 #include <flute/InetAddress.h>
+#include <flute/config.h>
 #include <flute/flute_types.h>
 #include <flute/noncopyable.h>
 
-#include <mutex>
 #include <future>
+#include <mutex>
 
 namespace flute {
 
@@ -34,9 +34,7 @@ public:
 
     inline void setMessageCallback(MessageCallback&& cb) { m_messageCallback = std::move(cb); }
     inline void setMessageCallback(const MessageCallback& cb) { m_messageCallback = cb; }
-    inline void setWriteCompleteCallback(WriteCompleteCallback&& cb) {
-        m_writeCompleteCallback = std::move(cb);
-    }
+    inline void setWriteCompleteCallback(WriteCompleteCallback&& cb) { m_writeCompleteCallback = std::move(cb); }
     inline void setWriteCompleteCallback(const WriteCompleteCallback& cb) { m_writeCompleteCallback = cb; }
     inline void setConnectionEstablishedCallback(ConnectionEstablishedCallback&& cb) {
         m_connectionEstablishedCallback = std::move(cb);

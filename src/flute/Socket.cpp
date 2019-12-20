@@ -19,7 +19,7 @@ Socket::Socket(socket_type descriptor) : m_descriptor(descriptor) {}
 
 Socket::~Socket() { close(); }
 
-void Socket::bind(const InetAddress& address) {
+void Socket::bind(const InetAddress &address) {
     auto result = flute::bind(m_descriptor, address);
     if (result != 0) {
         LOG_ERROR << "Socket::bind(" << m_descriptor << ") error " << errno << ":" << std::strerror(errno);

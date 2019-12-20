@@ -7,20 +7,18 @@
  *
  *************************************************************************/
 
-#include <flute/TcpClient.h>
 #include <flute/Connector.h>
 #include <flute/EventLoop.h>
 #include <flute/EventLoopGroup.h>
 #include <flute/Logger.h>
+#include <flute/TcpClient.h>
 #include <flute/TcpConnection.h>
 
 #include <cassert>
 
 namespace flute {
 
-static void handleRemoveConnection(const std::shared_ptr<TcpConnection>& conn) {
-    conn->handleConnectionDestroy();
-}
+static void handleRemoveConnection(const std::shared_ptr<TcpConnection>& conn) { conn->handleConnectionDestroy(); }
 
 static void removeConnector(const std::shared_ptr<Connector>& connector) {
     // connector->
@@ -88,14 +86,13 @@ void TcpClient::stop() {
     }
 }
 
-void TcpClient::sync() {
-    m_closePromise.get_future().get();
-}
+void TcpClient::sync() { m_closePromise.get_future().get(); }
 
 void TcpClient::onConnected(socket_type descriptor) {
     auto remoteAddress = flute::getRemoteAddr(descriptor);
     auto localAddress = flute::getLocalAddr(descriptor);
-    std::shared_ptr<TcpConnection> conn(new TcpConnection(descriptor, m_loop->chooseEventLoop(descriptor), localAddress, remoteAddress));
+    std::shared_ptr<TcpConnection> conn(
+        new TcpConnection(descriptor, m_loop->chooseEventLoop(descriptor), localAddress, remoteAddress));
     conn->setMessageCallback(m_messageCallback);
     conn->setWriteCompleteCallback(m_writeCompleteCallback);
     conn->setConnectionEstablishedCallback(m_connectionEstablishedCallback);

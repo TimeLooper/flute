@@ -9,9 +9,9 @@
 
 #pragma once
 
+#include <flute/InetAddress.h>
 #include <flute/config.h>
 #include <flute/flute_types.h>
-#include <flute/InetAddress.h>
 #include <flute/noncopyable.h>
 
 #include <atomic>
@@ -34,15 +34,9 @@ public:
     FLUTE_API_DECL void stop();
     FLUTE_API_DECL void restart();
 
-    inline void setOnConnectedCallback(const ConnectCallback& callback) {
-        m_connectedCallback = callback;
-    }
-    inline void setOnConnectedCallback(ConnectCallback&& callback) {
-        m_connectedCallback = std::move(callback);
-    }
-    inline const InetAddress& getRemoteAddress() const {
-        return m_remoteAddress;
-    }
+    inline void setOnConnectedCallback(const ConnectCallback& callback) { m_connectedCallback = callback; }
+    inline void setOnConnectedCallback(ConnectCallback&& callback) { m_connectedCallback = std::move(callback); }
+    inline const InetAddress& getRemoteAddress() const { return m_remoteAddress; }
 
 private:
     enum ConnectorState { DISCONNECTED, CONNECTING, CONNECTED };
@@ -65,9 +59,7 @@ private:
     // void handleError();
     socket_type removeAndResetChannel();
     void resetChannel();
-    inline void setState(ConnectorState state) {
-        m_state = state;
-    }
+    inline void setState(ConnectorState state) { m_state = state; }
 };
 
 } // namespace flute

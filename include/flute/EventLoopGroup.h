@@ -30,7 +30,7 @@ public:
 
 private:
     std::atomic<std::size_t> m_index;
-    std::vector<EventLoop *> m_eventLoops;
+    std::vector<EventLoop*> m_eventLoops;
     ThreadPool m_threadPool;
 };
 

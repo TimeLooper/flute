@@ -32,9 +32,9 @@ public:
 private:
     void onConnection(const std::shared_ptr<flute::TcpConnection>& conn) {
         LOG_TRACE << conn->getRemoteAddress().toString()<< " -> " << conn->getRemoteAddress().toString() << " is " << (conn->connected() ? "UP" : "DOWN");
-
-        conn->send("hello");
+        conn->send("hello\n");
     }
+
     void onMessage(const std::shared_ptr<flute::TcpConnection>& conn, flute::Buffer& buf) {
         // std::string msg(static_cast<const char *>(buf.peek()), buf.readableBytes());
         // buf.retrieveAll();
