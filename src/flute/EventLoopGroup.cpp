@@ -45,7 +45,8 @@ EventLoop* EventLoopGroup::chooseEventLoop(std::uint64_t hash) {
 EventLoop* EventLoopGroup::chooseEventLoop() {
     auto result = m_eventLoops[m_index];
     m_index += 1;
-    m_index = m_index >= m_eventLoops.size() ? 0 : m_index.load();
+    std::size_t idx = m_index;
+    m_index = idx >= m_eventLoops.size() ? 0 : idx;
     return result;
 }
 

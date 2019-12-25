@@ -15,6 +15,7 @@
 #include <flute/noncopyable.h>
 
 #include <future>
+#include <memory>
 #include <mutex>
 
 namespace flute {
@@ -22,7 +23,7 @@ namespace flute {
 class EventLoopGroup;
 class Connector;
 
-class TcpClient {
+class TcpClient : private noncopyable, public std::enable_shared_from_this<TcpClient> {
 public:
     FLUTE_API_DECL explicit TcpClient(EventLoopGroup* loop, const InetAddress& address);
     FLUTE_API_DECL ~TcpClient();

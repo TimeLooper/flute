@@ -16,6 +16,7 @@
 #include <atomic>
 #include <future>
 #include <map>
+#include <memory>
 
 namespace flute {
 
@@ -25,7 +26,7 @@ class Acceptor;
 class TcpConnection;
 class InetAddress;
 
-class TcpServer : private noncopyable {
+class TcpServer : private noncopyable, public std::enable_shared_from_this<TcpServer> {
 public:
     FLUTE_API_DECL explicit TcpServer(EventLoopGroup* parent);
     FLUTE_API_DECL TcpServer(EventLoopGroup* parent, EventLoopGroup* child);
