@@ -42,7 +42,7 @@ public:
 private:
     int m_events;
     socket_type m_descriptor;
-    EventLoop* m_loop;
+    const EventLoop* m_loop;
     std::function<void()> m_readCallback;
     std::function<void()> m_writeCallback;
 };

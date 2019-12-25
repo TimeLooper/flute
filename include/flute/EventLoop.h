@@ -39,8 +39,8 @@ public:
     FLUTE_API_DECL EventLoop();
     FLUTE_API_DECL ~EventLoop();
 
-    FLUTE_API_DECL void addEvent(Channel* channel, int events);
-    FLUTE_API_DECL void removeEvent(Channel* channel, int events);
+    FLUTE_API_DECL void addEvent(Channel* channel, int events) const;
+    FLUTE_API_DECL void removeEvent(Channel* channel, int events) const;
 
     FLUTE_API_DECL void dispatch();
     FLUTE_API_DECL void quit();

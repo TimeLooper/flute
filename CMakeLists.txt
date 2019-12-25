@@ -77,7 +77,28 @@ include_directories(${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src ${CM
 file(GLOB_RECURSE HEADERS "include/*.h")
 add_custom_target(headers SOURCES ${HEADERS})
 
-file(GLOB_RECURSE FLUTE_SOURCES "src/*.cpp")
+#file(GLOB_RECURSE FLUTE_SOURCES "src/*.cpp")
+set(FLUTE_SOURCES
+        src/flute/Acceptor.cpp
+        src/flute/Buffer.cpp
+        src/flute/Channel.cpp
+        src/flute/Connector.cpp
+        src/flute/EventLoop.cpp
+        src/flute/EventLoopGroup.cpp
+        src/flute/EventLoopInterrupter.cpp
+        src/flute/InetAddress.cpp
+        src/flute/Logger.cpp
+        src/flute/Reactor.cpp
+        src/flute/Socket.cpp
+        src/flute/socket_ops.cpp
+        src/flute/TcpClient.cpp
+        src/flute/TcpConnection.cpp
+        src/flute/TcpServer.cpp
+        src/flute/TimerQueue.cpp
+
+        src/flute/impl/EpollReactor.cpp
+        src/flute/impl/KqueueReactor.cpp
+        )
 
 if (UNIX OR APPLE)
 set(LIB_PLATFORM pthread)

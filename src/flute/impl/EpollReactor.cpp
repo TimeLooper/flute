@@ -112,15 +112,14 @@ void EpollReactor::open() {
 #if defined(FLUTE_HAVE_EPOLL_CREATE1) && defined(EPOLL_CLOEXEC)
     m_epfd = ::epoll_create1(EPOLL_CLOEXEC);
 #endif
-    if (m_epfd != FLUTE_INVALID_SOCKET) {
-        return;
-    }
-    m_epfd = ::epoll_create(1024);
     if (m_epfd == FLUTE_INVALID_SOCKET) {
-        LOG_FATAL << "epoll_create error " << errno << ": " << std::strerror(errno);
-        ::exit(-1);
+        m_epfd = ::epoll_create(1024);
+        if (m_epfd == FLUTE_INVALID_SOCKET) {
+            LOG_FATAL << "epoll_create error " << errno << ": " << std::strerror(errno);
+            ::exit(-1);
+        }
+        setSocketCloseOnExec(m_epfd);
     }
-    setSocketCloseOnExec(m_epfd);
 #ifdef USING_TIMERFD
     m_timerfd = ::timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
     if (m_timerfd == FLUTE_INVALID_SOCKET) {

@@ -14,6 +14,7 @@
 #include <flute/Reactor.h>
 #include <flute/TimerQueue.h>
 
+#include <cassert>
 #include <cerrno>
 #include <cstring>
 
@@ -24,10 +25,13 @@ EventLoop::EventLoop()
     , m_tid(std::this_thread::get_id())
     , m_quit(true)
     , m_isRunTasks(false)
-    , m_interrupter(new EventLoopInterrupter(this))
+    , m_interrupter(nullptr)
     , m_tasks()
     , m_mutex()
-    , m_timerQueue(new TimerQueue(this)) {}
+    , m_timerQueue(nullptr) {
+    m_interrupter = new EventLoopInterrupter(this);
+    m_timerQueue = new TimerQueue(this);
+}
 
 EventLoop::~EventLoop() {
     if (m_interrupter) {
@@ -44,12 +48,12 @@ EventLoop::~EventLoop() {
     }
 }
 
-void EventLoop::addEvent(Channel* channel, int events) {
+void EventLoop::addEvent(Channel* channel, int events) const {
     assertInLoopThread();
     m_reactor->add(channel->descriptor(), channel->events(), events, channel);
 }
 
-void EventLoop::removeEvent(Channel* channel, int events) {
+void EventLoop::removeEvent(Channel* channel, int events) const {
     assertInLoopThread();
     m_reactor->remove(channel->descriptor(), channel->events(), events, channel);
 }

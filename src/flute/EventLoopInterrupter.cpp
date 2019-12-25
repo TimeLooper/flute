@@ -71,8 +71,8 @@ void EventLoopInterrupter::open() {
         m_read_descriptor = fds[0];
         m_write_descriptor = fds[1];
         m_channel = new Channel(m_read_descriptor, m_loop);
-        m_channel->setReadCallback(std::bind(&EventLoopInterrupter::handleRead, this));
         m_channel->enableRead();
+        m_channel->setReadCallback(std::bind(&EventLoopInterrupter::handleRead, this));
     }
 }
 

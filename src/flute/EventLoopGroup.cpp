@@ -24,7 +24,6 @@ EventLoopGroup::EventLoopGroup(std::size_t size) : m_index(0), m_eventLoops(), m
             EventLoop loop;
             p.set_value(&loop);
             loop.dispatch();
-            LOG_FATAL << "exit loop";
         });
         auto loop = p.get_future().get();
         m_eventLoops.emplace_back(loop);
