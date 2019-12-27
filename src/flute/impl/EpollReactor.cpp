@@ -83,15 +83,18 @@ int EpollReactor::wait(std::vector<FileEvent>& events, int timeout) {
     if (ret > 0 && static_cast<std::size_t>(ret) > events.size()) {
         events.resize(ret);
     }
-    for (auto i = 0, j = 0; i < ret; ++i) {
+    auto cnt = 0;
+    for (auto i = 0, cnt = 0; i < ret; ++i) {
         auto& e = m_events[i];
 #ifdef USING_TIMERFD
         // timerfd
         if (e.data.ptr == &m_timerfd) {
+            std::uint64_t num;
+            flute::read(m_timerfd, &num, sizeof(num));
             continue;
         }
 #endif
-        auto& fe = events[j];
+        auto& fe = events[cnt];
         fe.data = e.data.ptr;
         fe.events = 0;
         if (e.events & EPOLLIN) {
@@ -100,12 +103,13 @@ int EpollReactor::wait(std::vector<FileEvent>& events, int timeout) {
         if (e.events & EPOLLOUT) {
             fe.events |= FileEvent::WRITE;
         }
-        j += 1;
+        cnt += 1;
     }
+    
     if (ret > 0 && static_cast<std::size_t>(ret) == m_events.size() && m_events.size() < MAX_EVENT_SIZE) {
         m_events.resize(m_events.size() << 1);
     }
-    return ret;
+    return cnt;
 }
 
 void EpollReactor::open() {

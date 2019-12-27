@@ -34,8 +34,7 @@ void Socket::listen() {
 }
 
 socket_type Socket::accept() {
-    InetAddress address;
-    return flute::accept(m_descriptor, address);
+    return flute::accept(m_descriptor, nullptr);
 }
 
 void Socket::setTcpNoDelay(bool on) {

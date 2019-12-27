@@ -90,9 +90,9 @@ void TcpClient::stop() {
 }
 
 void TcpClient::sync() {
-    if (!m_isEstablished) {
-        return;
-    }
+    // if (!m_isEstablished) {
+    //     return;
+    // }
     m_closePromise.get_future().get();
 }
 

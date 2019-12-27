@@ -30,16 +30,16 @@
 
 namespace flute {
 
-int setSocketCloseOnExec(socket_type fd) {
+int setSocketCloseOnExec(socket_type descriptor) {
 #if !defined(_WIN32) && defined(FLUTE_HAVE_SETFD)
     auto flags = 0;
-    if ((flags = ::fcntl(fd, F_GETFD, nullptr)) < 0) {
-        LOG_WARN << "fcntl(" << fd << ", FGETFD)";
+    if ((flags = ::fcntl(descriptor, F_GETFD, nullptr)) < 0) {
+        LOG_WARN << "fcntl(" << descriptor << ", FGETFD)";
         return -1;
     }
     if (!(flags & FD_CLOEXEC)) {
-        if (::fcntl(fd, F_SETFD, flags | FD_CLOEXEC) == -1) {
-            LOG_WARN << "fcntl(" << fd << ", FSETFD)";
+        if (::fcntl(descriptor, F_SETFD, flags | FD_CLOEXEC) == -1) {
+            LOG_WARN << "fcntl(" << descriptor << ", FSETFD)";
             return -1;
         }
     }
@@ -47,22 +47,22 @@ int setSocketCloseOnExec(socket_type fd) {
     return 0;
 }
 
-int setSocketNonblocking(socket_type fd) {
+int setSocketNonblocking(socket_type descriptor) {
 #ifdef _WIN32
     unsigned long nonblocking = 1;
-    if (::ioctlsocket(fd, FIONBIO, &nonblocking) == SOCKET_ERROR) {
-        LOG_WARN << "fcntl(" << fd << ", F_GETFL)";
+    if (::ioctlsocket(descriptor, FIONBIO, &nonblocking) == SOCKET_ERROR) {
+        LOG_WARN << "fcntl(" << descriptor << ", F_GETFL)";
         return -1;
     }
 #else
     int flags;
-    if ((flags = ::fcntl(fd, F_GETFL, NULL)) < 0) {
-        LOG_WARN << "fcntl(" << fd << ", F_GETFL)";
+    if ((flags = ::fcntl(descriptor, F_GETFL, NULL)) < 0) {
+        LOG_WARN << "fcntl(" << descriptor << ", F_GETFL)";
         return -1;
     }
     if (!(flags & O_NONBLOCK)) {
-        if (::fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1) {
-            LOG_WARN << "fcntl(" << fd << ", F_SETFL)";
+        if (::fcntl(descriptor, F_SETFL, flags | O_NONBLOCK) == -1) {
+            LOG_WARN << "fcntl(" << descriptor << ", F_SETFL)";
             return -1;
         }
     }
@@ -86,46 +86,48 @@ socket_type createNonblockingSocket(unsigned short int family) {
     return result;
 }
 
-int bind(socket_type fd, const InetAddress& addr) {
+int bind(socket_type descriptor, const InetAddress& addr) {
     socklen_t size = 0;
     if (addr.family() == AF_INET) {
         size = sizeof(sockaddr_in);
     } else {
         size = sizeof(sockaddr_in6);
     }
-    return ::bind(fd, reinterpret_cast<const sockaddr*>(&addr), size);
+    return ::bind(descriptor, reinterpret_cast<const sockaddr*>(&addr), size);
 }
 
-int connect(socket_type fd, const InetAddress& addr) {
+int connect(socket_type descriptor, const InetAddress& addr) {
     socklen_t size = 0;
     if (addr.family() == AF_INET) {
         size = sizeof(sockaddr_in);
     } else {
         size = sizeof(sockaddr_in6);
     }
-    return ::connect(fd, addr.getSocketAddress(), size);
+    return ::connect(descriptor, addr.getSocketAddress(), size);
 }
 
-int listen(socket_type fd) { return ::listen(fd, SOMAXCONN); }
+int listen(socket_type descriptor) { return ::listen(descriptor, SOMAXCONN); }
 
-socket_type accept(socket_type fd, InetAddress& addr) {
+socket_type accept(socket_type descriptor, InetAddress* addr) {
     socket_type connectFd = FLUTE_INVALID_SOCKET;
     sockaddr_in6 tmp{};
     socklen_t length = sizeof(tmp);
 #if defined(FLUTE_HAVE_ACCEPT4) && defined(SOCK_NONBLOCK) && defined(SOCK_CLOEXEC)
-    connectFd = ::accept4(fd, reinterpret_cast<sockaddr*>(&tmp), &length, SOCK_NONBLOCK | SOCK_CLOEXEC);
+    connectFd = ::accept4(descriptor, reinterpret_cast<sockaddr*>(&tmp), &length, SOCK_NONBLOCK | SOCK_CLOEXEC);
 #else
-    connectFd = ::accept(fd, reinterpret_cast<sockaddr*>(&tmp), &length);
-    setSocketNonblocking(fd);
-    setSocketCloseOnExec(fd);
+    connectFd = ::accept(descriptor, reinterpret_cast<sockaddr*>(&tmp), &length);
+    setSocketNonblocking(connectFd);
+    setSocketCloseOnExec(connectFd);
 #endif
-    addr = InetAddress(tmp);
+    if (addr) {
+        *addr = InetAddress(tmp);
+    }
     return connectFd;
 }
 
-flute::ssize_t readv(socket_type fd, const struct iovec* vec, int count) {
+flute::ssize_t readv(socket_type descriptor, const struct iovec* vec, int count) {
 #ifdef FLUTE_HAVE_SYS_UIO_H
-    return ::readv(fd, vec, count);
+    return ::readv(descriptor, vec, count);
 #else
     auto result = 0;
     DWORD bytesRead;
@@ -133,7 +135,7 @@ flute::ssize_t readv(socket_type fd, const struct iovec* vec, int count) {
     WSABUF buf{};
     buf.buf = static_cast<char*>(vec->iov_base);
     buf.len = static_cast<ULONG>(vec->iov_len);
-    if (WSARecv(fd, &buf, count, &bytesRead, &flags, nullptr, nullptr)) {
+    if (WSARecv(descriptor, &buf, count, &bytesRead, &flags, nullptr, nullptr)) {
         if (WSAGetLastError() == WSAECONNABORTED)
             result = 0;
         else
@@ -145,9 +147,9 @@ flute::ssize_t readv(socket_type fd, const struct iovec* vec, int count) {
 #endif
 }
 
-flute::ssize_t writev(socket_type fd, const struct iovec* vec, int count) {
+flute::ssize_t writev(socket_type descriptor, const struct iovec* vec, int count) {
 #ifdef FLUTE_HAVE_SYS_UIO_H
-    return ::writev(fd, vec, count);
+    return ::writev(descriptor, vec, count);
 #else
     auto result = 0;
     DWORD bytesSend;
@@ -155,7 +157,7 @@ flute::ssize_t writev(socket_type fd, const struct iovec* vec, int count) {
     WSABUF buf{};
     buf.buf = static_cast<char*>(vec->iov_base);
     buf.len = static_cast<ULONG>(vec->iov_len);
-    if (WSASend(fd, &buf, count, &bytesSend, flags, nullptr, nullptr)) {
+    if (WSASend(descriptor, &buf, count, &bytesSend, flags, nullptr, nullptr)) {
         if (WSAGetLastError() == WSAECONNABORTED)
             result = 0;
         else
@@ -167,7 +169,7 @@ flute::ssize_t writev(socket_type fd, const struct iovec* vec, int count) {
 #endif
 }
 
-int close(int fd) { return ::close(fd); }
+int close(int descriptor) { return ::close(descriptor); }
 
 flute::ssize_t getByteAvaliableOnSocket(socket_type descriptor) {
 #if defined(FIONREAD) && defined(_WIN32)
@@ -184,35 +186,35 @@ flute::ssize_t getByteAvaliableOnSocket(socket_type descriptor) {
 #endif
 }
 
-int closeSocket(socket_type socket) {
+int closeSocket(socket_type descriptor) {
 #if defined(WIN32) || defined(_WIN32)
-    return ::closesocket(socket);
+    return ::closesocket(descriptor);
 #else
-    return ::close(socket);
+    return ::close(descriptor);
 #endif
 }
 
-InetAddress getLocalAddr(socket_type fd) {
+InetAddress getLocalAddr(socket_type descriptor) {
     sockaddr_in6 addr{};
     socklen_t size = static_cast<socklen_t>(sizeof(sockaddr_in6));
-    if (::getsockname(fd, reinterpret_cast<sockaddr*>(&addr), &size) < 0) {
-        LOG_ERROR << "getsocketname(" << fd << ") failed.";
+    if (::getsockname(descriptor, reinterpret_cast<sockaddr*>(&addr), &size) < 0) {
+        LOG_ERROR << "getdescriptorname(" << descriptor << ") failed.";
     }
     return InetAddress(addr);
 }
 
-InetAddress getRemoteAddr(socket_type fd) {
+InetAddress getRemoteAddr(socket_type descriptor) {
     sockaddr_in6 addr{};
     socklen_t size = static_cast<socklen_t>(sizeof(sockaddr_in6));
-    if (::getpeername(fd, reinterpret_cast<sockaddr*>(&addr), &size) < 0) {
-        LOG_ERROR << "getpeername(" << fd << ") failed.";
+    if (::getpeername(descriptor, reinterpret_cast<sockaddr*>(&addr), &size) < 0) {
+        LOG_ERROR << "getpeername(" << descriptor << ") failed.";
     }
     return InetAddress(addr);
 }
 
-bool isSelfConnect(socket_type fd) {
-    auto localAddr = getLocalAddr(fd);
-    auto remoteAddr = getRemoteAddr(fd);
+bool isSelfConnect(socket_type descriptor) {
+    auto localAddr = getLocalAddr(descriptor);
+    auto remoteAddr = getRemoteAddr(descriptor);
     if (localAddr.family() == AF_INET) {
         auto local = reinterpret_cast<const sockaddr_in*>(localAddr.getSocketAddress());
         auto remote = reinterpret_cast<const sockaddr_in*>(remoteAddr.getSocketAddress());
@@ -257,10 +259,10 @@ void toIpPort(const sockaddr* addr, char* dst, std::size_t size) {
     std::snprintf(dst + length, size - length, ":%u", port);
 }
 
-int getSocketError(socket_type fd) {
+int getSocketError(socket_type descriptor) {
     int optval;
     socklen_t optlen = static_cast<socklen_t>(sizeof optval);
-    if (::getsockopt(fd, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&optval), &optlen) < 0) {
+    if (::getsockopt(descriptor, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&optval), &optlen) < 0) {
         return errno;
     } else {
         return optval;
