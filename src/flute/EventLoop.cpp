@@ -69,6 +69,7 @@ void EventLoop::dispatch() {
         for (auto i = 0; i < ret; ++i) {
             auto& e = events[i];
             auto ch = static_cast<Channel*>(e.data);
+            assert(ch->getEventLoop() == this);
             ch->handleEvent(e.events);
         }
         executeTasks();

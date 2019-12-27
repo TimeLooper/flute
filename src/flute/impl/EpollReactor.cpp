@@ -79,37 +79,44 @@ int EpollReactor::wait(std::vector<FileEvent>& events, int timeout) {
     auto ret = ::epoll_wait(m_epfd, m_events.data(), m_events.size(), epoll_timeout);
     if (ret == -1) {
         LOG_ERROR << "epoll_wait error " << errno << ": " << std::strerror(errno);
+        return ret;
     }
     if (ret > 0 && static_cast<std::size_t>(ret) > events.size()) {
         events.resize(ret);
     }
-    auto cnt = 0;
-    for (auto i = 0, cnt = 0; i < ret; ++i) {
+    // auto i = 0, j = 0;
+    events.clear();
+    FileEvent temp{};
+    for (auto i = 0; i < ret; ++i) {
         auto& e = m_events[i];
 #ifdef USING_TIMERFD
         // timerfd
-        if (e.data.ptr == &m_timerfd) {
+        if (e.data.ptr == this) {
             std::uint64_t num;
             flute::read(m_timerfd, &num, sizeof(num));
             continue;
         }
 #endif
-        auto& fe = events[cnt];
-        fe.data = e.data.ptr;
-        fe.events = 0;
+        // auto& fe = events[j];
+        // fe.data = e.data.ptr;
+        // fe.events = 0;
+        temp.data = e.data.ptr;
+        temp.events = 0;
         if (e.events & EPOLLIN) {
-            fe.events |= FileEvent::READ;
+            // fe.events |= FileEvent::READ;
+            temp.events |= FileEvent::READ;
         }
         if (e.events & EPOLLOUT) {
-            fe.events |= FileEvent::WRITE;
+            // fe.events |= FileEvent::WRITE;
+            temp.events |= FileEvent::WRITE;
         }
-        cnt += 1;
+        events.push_back(temp);
     }
     
     if (ret > 0 && static_cast<std::size_t>(ret) == m_events.size() && m_events.size() < MAX_EVENT_SIZE) {
         m_events.resize(m_events.size() << 1);
     }
-    return cnt;
+    return events.size();
 }
 
 void EpollReactor::open() {
@@ -129,23 +136,23 @@ void EpollReactor::open() {
     if (m_timerfd == FLUTE_INVALID_SOCKET) {
         LOG_WARN << "timerfd_create error " << errno << ": " << std::strerror(errno);
     } else {
-        add(m_timerfd, FileEvent::NONE, FileEvent::READ, &m_timerfd);
+        add(m_timerfd, FileEvent::NONE, FileEvent::READ, this);
     }
 #endif
 }
 
 void EpollReactor::close() {
+#ifdef USING_TIMERFD
+    if (m_timerfd != FLUTE_INVALID_SOCKET) {
+        flute::close(m_timerfd);
+        remove(m_timerfd, FileEvent::READ, FileEvent::READ, this);
+        m_timerfd = FLUTE_INVALID_SOCKET;
+    }
+#endif
     if (m_epfd != FLUTE_INVALID_SOCKET) {
         flute::close(m_epfd);
         m_epfd = FLUTE_INVALID_SOCKET;
     }
-#ifdef USING_TIMERFD
-    if (m_timerfd != FLUTE_INVALID_SOCKET) {
-        flute::close(m_timerfd);
-        remove(m_timerfd, FileEvent::READ, FileEvent::READ, &m_timerfd);
-        m_timerfd = FLUTE_INVALID_SOCKET;
-    }
-#endif
 }
 
 } // namespace impl

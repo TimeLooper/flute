@@ -45,7 +45,7 @@ TcpConnection::~TcpConnection() { assert(m_state == ConnectionState::DISCONNECTE
 void TcpConnection::shutdown() {
     if (m_state == ConnectionState::CONNECTED) {
         m_state = ConnectionState::DISCONNECTING;
-        m_loop->runInLoop(std::bind(&TcpConnection::shutdownInLoop, shared_from_this()));
+        m_loop->runInLoop(std::bind(&TcpConnection::shutdownInLoop, this));
     }
 }
 
@@ -88,51 +88,43 @@ void TcpConnection::send(Buffer& buffer) {
 void TcpConnection::forceClose() {
     if (m_state == ConnectionState::CONNECTED || m_state == ConnectionState::CONNECTING) {
         m_state = ConnectionState::DISCONNECTING;
-        m_loop->queueInLoop(std::bind(&TcpConnection::forceCloseInLoop, shared_from_this()));
+        m_loop->queueInLoop(std::bind(&TcpConnection::forceCloseInLoop, this));
     }
 }
 
 void TcpConnection::handleConnectionEstablished() {
-    m_loop->runInLoop(std::bind(&TcpConnection::handleConnectionEstablishedInLoop, shared_from_this()));
+    m_loop->runInLoop(std::bind(&TcpConnection::handleConnectionEstablishedInLoop, this));
 }
 
 void TcpConnection::handleConnectionDestroy() {
-    m_loop->runInLoop(std::bind(&TcpConnection::handleConnectionDestroyInLoop, shared_from_this()));
+    m_loop->runInLoop(std::bind(&TcpConnection::handleConnectionDestroyInLoop, this));
 }
 
 void TcpConnection::startRead() {
     auto ptr = shared_from_this();
     m_loop->runInLoop([ptr] {
-        if (!ptr->m_channel->isReadable()) {
-            ptr->m_channel->enableRead();
-        }
+        ptr->m_channel->enableRead();
     });
 }
 
 void TcpConnection::stopRead() {
     auto ptr = shared_from_this();
     m_loop->runInLoop([ptr] {
-        if (ptr->m_channel->isReadable()) {
-            ptr->m_channel->disableRead();
-        }
+        ptr->m_channel->disableRead();
     });
 }
 
 void TcpConnection::startWrite() {
     auto ptr = shared_from_this();
     m_loop->runInLoop([ptr] {
-        if (!ptr->m_channel->isWriteable()) {
-            ptr->m_channel->enableWrite();
-        }
+        ptr->m_channel->enableWrite();
     });
 }
 
 void TcpConnection::stopWrite() {
     auto ptr = shared_from_this();
     m_loop->runInLoop([ptr] {
-        if (ptr->m_channel->isWriteable()) {
-            ptr->m_channel->disableWrite();
-        }
+        ptr->m_channel->disableWrite();
     });
 }
 
