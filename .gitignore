@@ -16,4 +16,6 @@ bin
 
 .DS_Store
 
+flute-config.h
+
 build
