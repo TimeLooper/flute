@@ -79,25 +79,12 @@ add_custom_target(headers SOURCES ${HEADERS})
 
 #file(GLOB_RECURSE FLUTE_SOURCES "src/*.cpp")
 set(FLUTE_SOURCES
-        src/flute/Acceptor.cpp
-        src/flute/Buffer.cpp
-        src/flute/Channel.cpp
-        src/flute/Connector.cpp
-        src/flute/EventLoop.cpp
-        src/flute/EventLoopGroup.cpp
-        src/flute/EventLoopInterrupter.cpp
-        src/flute/InetAddress.cpp
-        src/flute/Logger.cpp
-        src/flute/Reactor.cpp
-        src/flute/Socket.cpp
-        src/flute/socket_ops.cpp
-        src/flute/TcpClient.cpp
-        src/flute/TcpConnection.cpp
-        src/flute/TcpServer.cpp
-        src/flute/TimerQueue.cpp
-
-        src/flute/impl/EpollReactor.cpp
-        src/flute/impl/KqueueReactor.cpp
+        src/flute/Logger.cc
+        src/flute/Reactor.cc
+        src/flute/EventLoop.cc
+        src/flute/socket_ops.cc
+        src/flute/Logger.cc
+        src/flute/TimerQueue.cc
         )
 
 if (UNIX OR APPLE)

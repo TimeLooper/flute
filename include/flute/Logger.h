@@ -1,13 +1,9 @@
-/*************************************************************************
- *
- * File Name:  Logger.h
- * Repository: https://github.com/TimeLooper/flute
- * Author:     why
- * Date:       2019/11/28
- *
- *************************************************************************/
+//
+// Created by why on 2019/12/29.
+//
 
-#pragma once
+#ifndef FLUTE_LOGGER_H
+#define FLUTE_LOGGER_H
 
 #include <flute/config.h>
 #include <flute/copyable.h>
@@ -66,3 +62,5 @@ inline T* checkNotNull(const char* file, int line, const char* msg, T* ptr) {
 }
 
 } // namespace flute
+
+#endif // FLUTE_LOGGER_H

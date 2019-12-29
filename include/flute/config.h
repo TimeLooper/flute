@@ -1,13 +1,9 @@
-/*************************************************************************
- *
- * File Name:  config.hpp
- * Repository: https://github.com/TimeLooper/flute
- * Author:     why
- * Date:       2019/11/27
- *
- *************************************************************************/
+//
+// Created by why on 2019/12/29.
+//
 
-#pragma once
+#ifndef FLUTE_CONFIG_H
+#define FLUTE_CONFIG_H
 
 #ifdef flute_shared_EXPORTS
 #if defined(__SUNPRO_C) && (__SUNPRO_C >= 0x550)
@@ -24,3 +20,5 @@
 #else
 #define FLUTE_API_DECL
 #endif
+
+#endif // FLUTE_CONFIG_H

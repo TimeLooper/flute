@@ -1,13 +1,9 @@
-/*************************************************************************
- *
- * File Name:  flute_types.hpp
- * Repository: https://github.com/TimeLooper/flute
- * Author:     why
- * Date:       2019/11/26
- *
- *************************************************************************/
+//
+// Created by why on 2019/12/29.
+//
 
-#pragma once
+#ifndef FLUTE_TYPES_H
+#define FLUTE_TYPES_H
 
 #include <flute/flute-config.h>
 
@@ -52,16 +48,6 @@ typedef long int ssize_t;
 typedef ::ssize_t ssize_t;
 #endif
 
-class TcpConnection;
-class Buffer;
-
-typedef std::function<void(const std::shared_ptr<TcpConnection>&, Buffer&)> MessageCallback;
-typedef std::function<void(const std::shared_ptr<TcpConnection>&)> CloseCallback;
-typedef std::function<void(const std::shared_ptr<TcpConnection>&)> WriteCompleteCallback;
-typedef std::function<void(const std::shared_ptr<TcpConnection>&, flute::ssize_t)> HighWaterMarkCallback;
-typedef std::function<void(const std::shared_ptr<TcpConnection>&)> ConnectionEstablishedCallback;
-typedef std::function<void(const std::shared_ptr<TcpConnection>&)> ConnectionDestroyCallback;
-typedef std::function<void(const socket_type)> AcceptCallback;
-typedef std::function<void(const socket_type)> ConnectCallback;
-
 } // namespace flute
+
+#endif // FLUTE_TYPES_H

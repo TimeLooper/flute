@@ -1,13 +1,9 @@
-/*************************************************************************
- *
- * File Name:  ThreadPool.h
- * Repository: https://github.com/TimeLooper/flute
- * Author:     why
- * Date:       2019/12/15
- *
- *************************************************************************/
+//
+// Created by why on 2019/12/29.
+//
 
-#pragma once
+#ifndef FLUTE_THREAD_POOL_H
+#define FLUTE_THREAD_POOL_H
 
 #include <flute/noncopyable.h>
 
@@ -104,3 +100,5 @@ inline void ThreadPool::run() {
 }
 
 } // namespace flute
+
+#endif // FLUTE_THREAD_POOL_H

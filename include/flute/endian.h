@@ -1,11 +1,9 @@
-/*************************************************************************
- *
- * File Name:  endian.h
- * Repository: https://github.com/TimeLooper/flute
- * Author:     why
- * Date:       2019/11/28
- *
- *************************************************************************/
+//
+// Created by why on 2019/12/29.
+//
+
+#ifndef FLUTE_ENDIAN_H
+#define FLUTE_ENDIAN_H
 
 #include <flute/flute-config.h>
 
@@ -89,3 +87,5 @@ inline std::uint16_t network2Host(std::uint16_t value) {
 inline std::int16_t network2Host(std::int16_t value) { return network2Host(static_cast<std::uint16_t>(value)); }
 
 } // namespace flute
+
+#endif // FLUTE_ENDIAN_H

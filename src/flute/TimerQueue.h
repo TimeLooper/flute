@@ -1,26 +1,27 @@
-/*************************************************************************
- *
- * File Name:  TimerQueue.h
- * Repository: https://github.com/TimeLooper/flute
- * Author:     why
- * Date:       2019/11/29
- *
- *************************************************************************/
+//
+// Created by why on 2019/12/29.
+//
 
-#pragma once
-#include <flute/flute_types.h>
+#ifndef FLUTE_TIMER_QUEUE_H
+#define FLUTE_TIMER_QUEUE_H
+
+#include <flute/EventLoop.h>
+#include <flute/flute-config.h>
 #include <flute/noncopyable.h>
 
-#include <cstdint>
-#include <functional>
-#include <map>
-#include <queue>
+#ifdef FLUTE_HAVE_SYS_TIMERFD_H
+#include <sys/timerfd.h>
+#endif
+
+#if defined(FLUTE_HAVE_SYS_TIMERFD_H) && defined(FLUTE_HAVE_TIMERFD_CREATE) && defined(CLOCK_MONOTONIC) && \
+    defined(TFD_NONBLOCK) && defined(TFD_CLOEXEC)
+#define USING_TIMERFD
+#endif
 
 namespace flute {
 
-class Timer;
-class EventLoop;
 class TimerHeap;
+class Timer;
 
 class TimerQueue : private noncopyable {
 public:
@@ -34,11 +35,16 @@ public:
     void handleTimerEvent();
 
 private:
+#ifdef USING_TIMERFD
+    int m_timerDescriptor;
+#endif
     EventLoop* m_loop;
-    TimerHeap* m_timerQueue;
+    TimerHeap* m_timerHeap;
 
     void postTimerInLoop(Timer* timer);
     void cancelTimerInLoop(std::uint64_t timerId);
 };
 
 } // namespace flute
+
+#endif // FLUTE_TIMER_QUEUE_H

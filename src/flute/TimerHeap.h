@@ -1,19 +1,38 @@
-/*************************************************************************
- *
- * File Name:  TimerHeap.h
- * Repository: https://github.com/TimeLooper/flute
- * Author:     why
- * Date:       2019/12/03 23:51:12
- *
- *************************************************************************/
+//
+// Created by why on 2019/12/29.
+//
 
-#pragma once
+#ifndef FLUTE_TIMER_HEAP_H
+#define FLUTE_TIMER_HEAP_H
 
-#include <flute/Timer.h>
-
+#include <chrono>
+#include <cstdint>
+#include <functional>
 #include <vector>
 
 namespace flute {
+
+inline std::int64_t currentMilliseconds() {
+    return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch())
+        .count();
+}
+
+struct Timer {
+    Timer(std::function<void()>&& callback, std::int64_t delay, int loopCount)
+        : loopCount(loopCount)
+        , index(-1)
+        , startTime(currentMilliseconds())
+        , delay(delay)
+        , callback(std::move(callback)) {}
+    Timer(const std::function<void()>& callback, std::int64_t delay, int loopCount)
+        : loopCount(loopCount), index(-1), startTime(currentMilliseconds()), delay(delay), callback(callback) {}
+
+    int loopCount;
+    int index;
+    std::int64_t startTime;
+    std::int64_t delay;
+    std::function<void()> callback;
+};
 
 static inline bool compare(const Timer* lhs, const Timer* rhs) {
     if (lhs->loopCount == 0 && rhs->loopCount != 0) {
@@ -127,3 +146,5 @@ void TimerHeap::shift_up(TimerHeap::size_type index) {
 }
 
 } // namespace flute
+
+#endif // FLUTE_TIMER_HEAP_H

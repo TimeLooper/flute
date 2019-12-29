@@ -1,13 +1,9 @@
-/*************************************************************************
- *
- * File Name:  copyable.hpp
- * Repository: https://github.com/TimeLooper/flute
- * Author:     why
- * Date:       2019/11/26
- *
- *************************************************************************/
+//
+// Created by why on 2019/12/29.
+//
 
-#pragma once
+#ifndef FLUTE_COPYABLE_H
+#define FLUTE_COPYABLE_H
 
 namespace flute {
 
@@ -18,3 +14,5 @@ public:
 };
 
 } // namespace flute
+
+#endif // FLUTE_COPYABLE_H

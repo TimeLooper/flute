@@ -1,11 +1,6 @@
-/*************************************************************************
- *
- * File Name:  Logger.cpp
- * Repository: https://github.com/TimeLooper/flute
- * Author:     why
- * Date:       2019/11/28
- *
- *************************************************************************/
+//
+// Created by why on 2019/12/29.
+//
 
 #include <flute/Logger.h>
 

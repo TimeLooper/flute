@@ -1,34 +1,33 @@
-/*************************************************************************
- *
- * File Name:  Reactor.h
- * Repository: https://github.com/TimeLooper/flute
- * Author:     why
- * Date:       2019/11/28
- *
- *************************************************************************/
+//
+// Created by why on 2019/12/29.
+//
 
-#pragma once
+#ifndef FLUTE_REACTOR_H
+#define FLUTE_REACTOR_H
 
-#include <flute/config.h>
+#include <flute/EventLoop.h>
 #include <flute/flute_types.h>
 #include <flute/noncopyable.h>
 
-#include <cstdint>
 #include <vector>
 
 namespace flute {
-struct FileEvent;
+
+static const int INIT_EVENT_SIZE = 32;
+static const int MAX_EVENT_SIZE = 4096;
 
 class Reactor : private noncopyable {
 public:
     Reactor() = default;
     virtual ~Reactor() = default;
 
-    virtual void add(socket_type fd, int old, int event, void* data) = 0;
-    virtual void remove(socket_type fd, int old, int event, void* data) = 0;
-    virtual int wait(std::vector<FileEvent>& events, int timeout) = 0;
+    virtual void addEvent(socket_type descriptor, int old, int events, void* data) = 0;
+    virtual void removeEvent(socket_type descriptor, int old, int events, void* data) = 0;
+    virtual int wait(std::vector<FluteEvent>& events, int timeout) = 0;
+
+    static Reactor* createReactor();
 };
 
-Reactor* createReactor();
-
 } // namespace flute
+
+#endif // FLUTE_REACTOR_H
