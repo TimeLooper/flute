@@ -80,12 +80,14 @@ add_custom_target(headers SOURCES ${HEADERS})
 #file(GLOB_RECURSE FLUTE_SOURCES "src/*.cpp")
 set(FLUTE_SOURCES
         src/flute/Logger.cc
-        src/flute/Reactor.cc
+        src/flute/Selector.cc
         src/flute/EventLoop.cc
         src/flute/socket_ops.cc
         src/flute/Logger.cc
         src/flute/TimerQueue.cc
-        )
+        src/flute/EventLoopInterruptor.cc
+        src/flute/Channel.cc
+)
 
 if (UNIX OR APPLE)
 set(LIB_PLATFORM pthread)

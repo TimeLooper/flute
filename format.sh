@@ -2,5 +2,7 @@
 
 clang-format -i include/flute/*.h
 
-clang-format -i src/flute/*.cpp
-clang-format -i src/flute/impl/*.cpp
+clang-format -i src/flute/*.cc
+clang-format -i src/flute/*.h
+# clang-format -i src/flute/detail/*.cc
+clang-format -i src/flute/detail/*.h

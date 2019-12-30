@@ -41,7 +41,7 @@ private:
     EventLoop* m_loop;
     TimerHeap* m_timerHeap;
 
-    void postTimerInLoop(Timer* timer);
+    void scheduleInLoop(Timer* timer);
     void cancelTimerInLoop(std::uint64_t timerId);
 };
 

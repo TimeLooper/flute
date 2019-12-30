@@ -16,16 +16,16 @@ namespace flute {
 static const int INIT_EVENT_SIZE = 32;
 static const int MAX_EVENT_SIZE = 4096;
 
-class Reactor : private noncopyable {
+class Selector : private noncopyable {
 public:
-    Reactor() = default;
-    virtual ~Reactor() = default;
+    Selector() = default;
+    virtual ~Selector() = default;
 
     virtual void addEvent(socket_type descriptor, int old, int events, void* data) = 0;
     virtual void removeEvent(socket_type descriptor, int old, int events, void* data) = 0;
     virtual int wait(std::vector<FluteEvent>& events, int timeout) = 0;
 
-    static Reactor* createReactor();
+    static Selector* createSelector();
 };
 
 } // namespace flute

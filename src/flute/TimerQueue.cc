@@ -24,13 +24,13 @@ TimerQueue::~TimerQueue() {
 
 std::uint64_t TimerQueue::schedule(std::function<void()>&& callback, std::int64_t delay, int loopCount) {
     auto timer = new Timer(std::move(callback), delay, loopCount);
-    m_loop->runInLoop(std::bind(&TimerQueue::postTimerInLoop, this, timer));
+    m_loop->runInLoop(std::bind(&TimerQueue::scheduleInLoop, this, timer));
     return reinterpret_cast<std::uint64_t>(timer);
 }
 
 std::uint64_t TimerQueue::schedule(const std::function<void()>& callback, std::int64_t delay, int loopCount) {
     auto timer = new Timer(callback, delay, loopCount);
-    m_loop->runInLoop(std::bind(&TimerQueue::postTimerInLoop, this, timer));
+    m_loop->runInLoop(std::bind(&TimerQueue::scheduleInLoop, this, timer));
     return reinterpret_cast<std::uint64_t>(timer);
 }
 
@@ -86,7 +86,7 @@ void TimerQueue::handleTimerEvent() {
     }
 }
 
-void TimerQueue::postTimerInLoop(Timer* timer) { m_timerHeap->push(timer); }
+void TimerQueue::scheduleInLoop(Timer* timer) { m_timerHeap->push(timer); }
 
 void TimerQueue::cancelTimerInLoop(std::uint64_t timerId) {
     auto timer = reinterpret_cast<Timer*>(timerId);

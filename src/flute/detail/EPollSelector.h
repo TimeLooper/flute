@@ -8,7 +8,7 @@
 #include <flute/flute-config.h>
 
 #include <flute/Logger.h>
-#include <flute/Reactor.h>
+#include <flute/Selector.h>
 #include <flute/socket_ops.h>
 
 #include <cerrno>
@@ -20,10 +20,10 @@
 namespace flute {
 namespace detail {
 
-class EPollReactor : public Reactor {
+class EPollSelector : public Selector {
 public:
-    EPollReactor();
-    ~EPollReactor() final;
+    EPollSelector();
+    ~EPollSelector() final;
 
     void addEvent(socket_type descriptor, int old, int events, void* data) override;
 
@@ -52,16 +52,16 @@ inline int create_epoll() {
     return result;
 }
 
-inline EPollReactor::EPollReactor() : m_descriptor(create_epoll()), m_events(INIT_EVENT_SIZE) {}
+inline EPollSelector::EPollSelector() : m_descriptor(create_epoll()), m_events(INIT_EVENT_SIZE) {}
 
-inline EPollReactor::~EPollReactor() {
+inline EPollSelector::~EPollSelector() {
     if (m_descriptor != FLUTE_INVALID_SOCKET) {
         flute::close(m_descriptor);
         m_descriptor = FLUTE_INVALID_SOCKET;
     }
 }
 
-inline void EPollReactor::addEvent(socket_type descriptor, int old, int events, void* data) {
+inline void EPollSelector::addEvent(socket_type descriptor, int old, int events, void* data) {
     epoll_event ev{};
     ev.data.ptr = data;
     auto temp = old | events;
@@ -74,7 +74,7 @@ inline void EPollReactor::addEvent(socket_type descriptor, int old, int events, 
     }
 }
 
-inline void EPollReactor::removeEvent(socket_type descriptor, int old, int events, void* data) {
+inline void EPollSelector::removeEvent(socket_type descriptor, int old, int events, void* data) {
     epoll_event ev{};
     ev.data.ptr = data;
     auto temp = old & (~events);
@@ -87,7 +87,7 @@ inline void EPollReactor::removeEvent(socket_type descriptor, int old, int event
     }
 }
 
-inline int EPollReactor::wait(std::vector<FluteEvent>& events, int timeout) {
+inline int EPollSelector::wait(std::vector<FluteEvent>& events, int timeout) {
     auto count = ::epoll_wait(m_descriptor, m_events.data(), m_events.size(), timeout);
     if (count == -1) {
         LOG_ERROR << "epoll_wait error " << errno << ":" << std::strerror(errno);

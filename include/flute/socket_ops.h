@@ -42,6 +42,8 @@
 namespace flute {
 
 using ::close;
+using ::write;
+using ::read;
 
 FLUTE_API_DECL int setSocketCloseOnExec(socket_type descriptor);
 
