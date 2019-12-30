@@ -33,9 +33,7 @@ void Socket::listen() {
     }
 }
 
-socket_type Socket::accept() {
-    return flute::accept(m_descriptor, nullptr);
-}
+socket_type Socket::accept() { return flute::accept(m_descriptor, nullptr); }
 
 void Socket::setTcpNoDelay(bool on) {
     int option = on ? 1 : 0;

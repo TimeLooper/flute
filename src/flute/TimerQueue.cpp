@@ -7,24 +7,47 @@
  *
  *************************************************************************/
 
+#include <flute/Channel.h>
 #include <flute/EventLoop.h>
 #include <flute/Logger.h>
 #include <flute/Timer.h>
 #include <flute/TimerHeap.h>
 #include <flute/TimerQueue.h>
+#include <flute/socket_ops.h>
 
 #include <algorithm>
 #include <atomic>
 #include <cassert>
+#include <cassert>
 #include <chrono>
+#include <cstring>
 
 namespace flute {
 
-TimerQueue::TimerQueue(EventLoop* loop) : m_loop(loop), m_timerQueue(new TimerHeap()) {}
+TimerQueue::TimerQueue(EventLoop* loop)
+    : m_loop(loop)
+#ifdef USING_TIMERFD
+    , m_channel(nullptr)
+#endif
+    , m_timerHeap(new TimerHeap()) {
+#ifdef USING_TIMERFD
+    auto descriptor = ::timerfd_create(CLOCK_MONOTONIC, TFD_CLOEXEC | TFD_NONBLOCK);
+    if (descriptor != FLUTE_INVALID_SOCKET) {
+        m_channel = new Channel(descriptor, loop);
+        m_channel->enableRead();
+    }
+#endif
+}
 
 TimerQueue::~TimerQueue() {
-    assert(m_timerQueue->empty());
-    delete m_timerQueue;
+#ifdef USING_TIMERFD
+    if (m_channel) {
+        m_channel->disableAll();
+        delete m_channel;
+    }
+#endif
+    assert(m_timerHeap->empty());
+    delete m_timerHeap;
 }
 
 std::uint64_t TimerQueue::schedule(std::function<void()>&& callback, std::int64_t delay, int loopCount) {
@@ -44,21 +67,34 @@ void TimerQueue::cancel(std::uint64_t timerId) {
 }
 
 std::int64_t TimerQueue::searchNearestTime() {
-    if (m_timerQueue->empty()) {
+    if (m_timerHeap->empty()) {
         return -1;
     }
-    auto top = m_timerQueue->top();
+    auto top = m_timerHeap->top();
     auto delay = top->delay - currentMilliseconds() + top->startTime;
+#ifdef USING_TIMERFD
+    if (m_channel) {
+        m_channel->descriptor();
+        itimerspec spec{};
+        spec.it_value.tv_sec = delay / 1000;
+        spec.it_value.tv_nsec = (delay % 1000) * 1000;
+        auto ret = ::timerfd_settime(m_channel->descriptor(), 0, &spec, nullptr);
+        if (ret != 0) {
+            LOG_WARN << "timerfd_settime failed " << errno << ":" << std::strerror(errno);
+        }
+        delay = -1;
+    }
+#endif
     return delay;
 }
 
 void TimerQueue::handleTimerEvent() {
-    if (m_timerQueue->empty()) {
+    if (m_timerHeap->empty()) {
         return;
     }
     auto currentTime = currentMilliseconds();
-    while (!m_timerQueue->empty()) {
-        auto timer = m_timerQueue->top();
+    while (!m_timerHeap->empty()) {
+        auto timer = m_timerHeap->top();
         auto offset = timer->delay + timer->startTime - currentTime;
         if (offset <= 0) {
             if (timer->callback) {
@@ -68,11 +104,11 @@ void TimerQueue::handleTimerEvent() {
                 timer->loopCount -= 1;
             }
             if (timer->loopCount == 0) {
-                m_timerQueue->remove(timer);
+                m_timerHeap->remove(timer);
                 delete timer;
             } else {
                 timer->startTime += timer->delay;
-                m_timerQueue->update(timer);
+                m_timerHeap->update(timer);
             }
         } else {
             break;
@@ -80,11 +116,11 @@ void TimerQueue::handleTimerEvent() {
     }
 }
 
-void TimerQueue::postTimerInLoop(Timer* timer) { m_timerQueue->push(timer); }
+void TimerQueue::postTimerInLoop(Timer* timer) { m_timerHeap->push(timer); }
 
 void TimerQueue::cancelTimerInLoop(std::uint64_t timerId) {
     auto timer = reinterpret_cast<Timer*>(timerId);
-    m_timerQueue->remove(timer);
+    m_timerHeap->remove(timer);
     delete timer;
 }
 

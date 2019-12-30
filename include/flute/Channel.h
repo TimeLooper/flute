@@ -38,7 +38,6 @@ public:
     inline int events() const { return m_events; }
     inline bool isWriteable() const { return m_events & FileEvent::WRITE; }
     inline bool isReadable() const { return m_events & FileEvent::READ; }
-    inline EventLoop* getEventLoop() const { return m_loop; }
 
 private:
     int m_events;

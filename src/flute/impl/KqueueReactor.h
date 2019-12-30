@@ -27,7 +27,7 @@ public:
     int wait(std::vector<FileEvent>& events, int timeout) override;
 
 private:
-    socket_type m_kqfd;
+    socket_type m_descriptor;
     std::vector<struct kevent> m_events;
 
     void open();

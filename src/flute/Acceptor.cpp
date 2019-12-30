@@ -20,7 +20,7 @@ Acceptor::Acceptor(EventLoopGroup* loopGroup, const InetAddress& address, bool r
     : m_listening(false)
     , m_idleDescriptor(createNonblockingSocket(AF_INET))
     , m_socket(new Socket(createNonblockingSocket(address.family())))
-    , m_loop(loopGroup->chooseEventLoop(m_socket->descriptor()))
+    , m_loop(loopGroup->chooseEventLoop())
     , m_channel(new Channel(m_socket->descriptor(), m_loop))
     , m_acceptCallback() {
     m_socket->setReuseAddress(true);

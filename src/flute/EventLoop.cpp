@@ -60,7 +60,7 @@ void EventLoop::removeEvent(Channel* channel, int events) const {
 
 void EventLoop::dispatch() {
     m_quit = false;
-    static std::vector<FileEvent> events(32);
+    std::vector<FileEvent> events(32);
     while (!m_quit) {
         auto ret = m_reactor->wait(events, static_cast<int>(m_timerQueue->searchNearestTime()));
         if (ret == -1) {
@@ -69,7 +69,6 @@ void EventLoop::dispatch() {
         for (auto i = 0; i < ret; ++i) {
             auto& e = events[i];
             auto ch = static_cast<Channel*>(e.data);
-            assert(ch->getEventLoop() == this);
             ch->handleEvent(e.events);
         }
         executeTasks();

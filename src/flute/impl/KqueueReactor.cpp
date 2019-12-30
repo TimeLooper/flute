@@ -23,7 +23,7 @@ namespace impl {
 static const int INIT_EVENT_SIZE = 32;
 static const int MAX_EVENT_SIZE = 4096;
 
-KqueueReactor::KqueueReactor() : m_kqfd(FLUTE_INVALID_SOCKET), m_events(INIT_EVENT_SIZE) { open(); }
+KqueueReactor::KqueueReactor() : m_descriptor(FLUTE_INVALID_SOCKET), m_events(INIT_EVENT_SIZE) { open(); }
 
 KqueueReactor::~KqueueReactor() { close(); }
 
@@ -38,7 +38,7 @@ void KqueueReactor::add(socket_type fd, int old, int event, void* data) {
     if (event & FileEvent::WRITE) {
         EV_SET(&ev[n++], fd, EVFILT_WRITE, EV_ADD, 0, 0, data);
     }
-    auto ret = kevent(m_kqfd, ev, n, nullptr, 0, &now);
+    auto ret = kevent(m_descriptor, ev, n, nullptr, 0, &now);
     if (ret != 0) {
         LOG_ERROR << "kevent error " << errno << ": " << std::strerror(errno);
     }
@@ -55,7 +55,7 @@ void KqueueReactor::remove(socket_type fd, int old, int event, void* data) {
     if (event & FileEvent::WRITE) {
         EV_SET(&ev[n++], fd, EVFILT_WRITE, EV_DELETE, 0, 0, data);
     }
-    auto ret = kevent(m_kqfd, ev, n, nullptr, 0, &now);
+    auto ret = kevent(m_descriptor, ev, n, nullptr, 0, &now);
     if (ret != 0) {
         LOG_ERROR << "kevent error " << errno << ": " << std::strerror(errno);
     }
@@ -67,9 +67,9 @@ int KqueueReactor::wait(std::vector<FileEvent>& events, int timeout) {
         struct timespec timeoutSpec;
         timeoutSpec.tv_sec = timeout / 1000;
         timeoutSpec.tv_nsec = (timeout % 1000) * 1000 * 1000;
-        ret = ::kevent(m_kqfd, nullptr, 0, m_events.data(), m_events.size(), &timeoutSpec);
+        ret = ::kevent(m_descriptor, nullptr, 0, m_events.data(), m_events.size(), &timeoutSpec);
     } else {
-        ret = ::kevent(m_kqfd, nullptr, 0, m_events.data(), m_events.size(), nullptr);
+        ret = ::kevent(m_descriptor, nullptr, 0, m_events.data(), m_events.size(), nullptr);
     }
     if (ret > 0 && ret > events.size()) {
         events.resize(ret);
@@ -93,16 +93,16 @@ int KqueueReactor::wait(std::vector<FileEvent>& events, int timeout) {
 }
 
 void KqueueReactor::open() {
-    m_kqfd = kqueue();
-    if (m_kqfd < 0) {
+    m_descriptor = kqueue();
+    if (m_descriptor < 0) {
         LOG_FATAL << "kqueue init failed " << errno << ": " << std::strerror(errno);
         exit(-1);
     }
 }
 
 void KqueueReactor::close() {
-    flute::close(m_kqfd);
-    m_kqfd = FLUTE_INVALID_SOCKET;
+    flute::close(m_descriptor);
+    m_descriptor = FLUTE_INVALID_SOCKET;
 }
 
 } // namespace impl

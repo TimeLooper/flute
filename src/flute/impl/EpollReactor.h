@@ -15,14 +15,6 @@
 #include <vector>
 
 #include <sys/epoll.h>
-#ifdef FLUTE_HAVE_SYS_TIMERFD_H
-#include <sys/timerfd.h>
-#endif
-
-#if defined(FLUTE_HAVE_SYS_TIMERFD_H) && defined(FLUTE_HAVE_TIMERFD_CREATE) && defined(CLOCK_MONOTONIC) && \
-    defined(TFD_NONBLOCK) && defined(TFD_CLOEXEC)
-#define USING_TIMERFD
-#endif
 
 namespace flute {
 namespace impl {
@@ -37,10 +29,7 @@ public:
     int wait(std::vector<FileEvent>& events, int timeout) override;
 
 private:
-    socket_type m_epfd;
-#ifdef USING_TIMERFD
-    socket_type m_timerfd;
-#endif
+    socket_type m_descriptor;
     std::vector<epoll_event> m_events;
 
     void open();

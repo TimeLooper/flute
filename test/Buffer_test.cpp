@@ -8,6 +8,8 @@
  *************************************************************************/
 
 #include <flute/Buffer.h>
+#include <iostream>
+#include <string>
 
 int main(int argc, char* argv[]) {
     flute::Buffer buf;
@@ -29,5 +31,9 @@ int main(int argc, char* argv[]) {
     ret = buf.readInt32();
     ret = buf.readInt32();
     ret = buf.readInt32();
+    std::string temp;
+    while (std::cin >> temp) {
+
+    }
     return 0;
 }

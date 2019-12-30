@@ -102,30 +102,22 @@ void TcpConnection::handleConnectionDestroy() {
 
 void TcpConnection::startRead() {
     auto ptr = shared_from_this();
-    m_loop->runInLoop([ptr] {
-        ptr->m_channel->enableRead();
-    });
+    m_loop->runInLoop([ptr] { ptr->m_channel->enableRead(); });
 }
 
 void TcpConnection::stopRead() {
     auto ptr = shared_from_this();
-    m_loop->runInLoop([ptr] {
-        ptr->m_channel->disableRead();
-    });
+    m_loop->runInLoop([ptr] { ptr->m_channel->disableRead(); });
 }
 
 void TcpConnection::startWrite() {
     auto ptr = shared_from_this();
-    m_loop->runInLoop([ptr] {
-        ptr->m_channel->enableWrite();
-    });
+    m_loop->runInLoop([ptr] { ptr->m_channel->enableWrite(); });
 }
 
 void TcpConnection::stopWrite() {
     auto ptr = shared_from_this();
-    m_loop->runInLoop([ptr] {
-        ptr->m_channel->disableWrite();
-    });
+    m_loop->runInLoop([ptr] { ptr->m_channel->disableWrite(); });
 }
 
 void TcpConnection::handleRead() {
