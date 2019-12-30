@@ -87,6 +87,13 @@ set(FLUTE_SOURCES
         src/flute/TimerQueue.cc
         src/flute/EventLoopInterruptor.cc
         src/flute/Channel.cc
+        src/flute/InetAddress.cc
+        src/flute/Buffer.cc
+        src/flute/TcpConnection.cc
+        src/flute/Socket.cc
+        src/flute/EventLoopGroup.cc
+        src/flute/TcpServer.cc
+        src/flute/Acceptor.cc
 )
 
 if (UNIX OR APPLE)

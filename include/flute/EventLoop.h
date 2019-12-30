@@ -2,8 +2,8 @@
 // Created by why on 2019/12/29.
 //
 
-#ifndef FLUTE_EVENTLOOP_H
-#define FLUTE_EVENTLOOP_H
+#ifndef FLUTE_EVENT_LOOP_H
+#define FLUTE_EVENT_LOOP_H
 
 #include <flute/config.h>
 #include <flute/noncopyable.h>
@@ -15,15 +15,6 @@
 #include <vector>
 
 namespace flute {
-
-struct FluteEvent {
-    static const int NONE = 0x0;
-    static const int READ = 0x1;
-    static const int WRITE = 0x2;
-
-    int events;
-    void* data;
-};
 
 class Selector;
 class TimerQueue;
@@ -66,4 +57,4 @@ private:
 
 } // namespace flute
 
-#endif // FLUTE_EVENTLOOP_H
+#endif // FLUTE_EVENT_LOOP_H

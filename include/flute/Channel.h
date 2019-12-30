@@ -6,6 +6,7 @@
 #define FLUTE_CHANNEL_H
 
 #include <flute/EventLoop.h>
+#include <flute/Selector.h>
 #include <flute/config.h>
 #include <flute/flute_types.h>
 #include <flute/noncopyable.h>
@@ -32,8 +33,8 @@ public:
     inline void setWriteCallback(std::function<void()>&& cb) { m_writeCallback = std::move(cb); }
     inline socket_type descriptor() const { return m_descriptor; }
     inline int events() const { return m_events; }
-    inline bool isWriteable() const { return m_events & FluteEvent::WRITE; }
-    inline bool isReadable() const { return m_events & FluteEvent::READ; }
+    inline bool isWriteable() const { return m_events & SelectorEvent::EVENT_WRITE; }
+    inline bool isReadable() const { return m_events & SelectorEvent::EVENT_READ; }
 
 private:
     int m_events;

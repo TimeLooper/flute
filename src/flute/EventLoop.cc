@@ -8,7 +8,6 @@
 #include <flute/Logger.h>
 #include <flute/Selector.h>
 #include <flute/TimerQueue.h>
-#include <flute/TimerQueue.h>
 
 namespace flute {
 
@@ -47,9 +46,19 @@ void EventLoop::removeEvent(Channel* channel, int events) {
 
 void EventLoop::dispatch() {
     m_quit = false;
-    std::vector<FluteEvent> events(INIT_EVENT_SIZE);
+    std::vector<SelectorEvent> events(32);
     while (!m_quit) {
-
+        auto ret = m_selector->select(events, m_timerQueue->searchNearestTime());
+        if (ret == -1) {
+            continue;
+        }
+        m_timerQueue->handleTimerEvent();
+        for (auto i = 0; i < ret; ++i) {
+            auto& e = events[i];
+            auto ch = static_cast<Channel*>(e.data);
+            ch->handleEvent(e.events);
+        }
+        executeTasks();
     }
 }
 
@@ -115,6 +124,19 @@ void EventLoop::assertInLoopThread() const {
 void EventLoop::abortNotInLoopThread() const {
     LOG_FATAL << "EventLoop " << this << " was create in thread " << m_tid << ", current thread id "
               << std::this_thread::get_id() << ".";
+}
+
+void EventLoop::executeTasks() {
+    std::vector<std::function<void()>> temp;
+    m_isRunTasks = true;
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        temp.swap(m_tasks);
+    }
+    for (const auto& t : temp) {
+        t();
+    }
+    m_isRunTasks = false;
 }
 
 } // namespace flute

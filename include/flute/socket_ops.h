@@ -41,13 +41,65 @@
 
 namespace flute {
 
-using ::close;
-using ::write;
+class InetAddress;
+
+#ifdef FLUTE_HAVE_SYS_UIO_H
+using ::iovec;
+#else
+struct iovec {
+    void* iov_base;      /* Pointer to data.  */
+    std::size_t iov_len; /* Length of data.  */
+};
+#endif
+
+using ::getsockopt;
+using ::open;
 using ::read;
+using ::recv;
+using ::send;
+using ::setsockopt;
+using ::shutdown;
+using ::write;
 
 FLUTE_API_DECL int setSocketCloseOnExec(socket_type descriptor);
 
 FLUTE_API_DECL int setSocketNonblocking(socket_type descriptor);
+
+FLUTE_API_DECL socket_type socket(int domain, int type, int protocol);
+
+FLUTE_API_DECL socket_type createNonblockingSocket(unsigned short int family);
+
+FLUTE_API_DECL int bind(socket_type descriptor, const InetAddress& addr);
+
+FLUTE_API_DECL flute::ssize_t readv(socket_type descriptor, const struct iovec* vec, int count);
+
+FLUTE_API_DECL int connect(socket_type descriptor, const InetAddress& addr);
+
+FLUTE_API_DECL int listen(socket_type descriptor);
+
+FLUTE_API_DECL socket_type accept(socket_type descriptor, InetAddress* addr);
+
+FLUTE_API_DECL flute::ssize_t writev(socket_type descriptor, const struct iovec* vec, int count);
+
+FLUTE_API_DECL int close(int descriptor);
+
+FLUTE_API_DECL flute::ssize_t getByteAvaliableOnSocket(socket_type descriptor);
+
+FLUTE_API_DECL int closeSocket(socket_type descriptor);
+
+FLUTE_API_DECL InetAddress getLocalAddr(socket_type descriptor);
+
+FLUTE_API_DECL InetAddress getRemoteAddr(socket_type descriptor);
+
+FLUTE_API_DECL bool isSelfConnect(socket_type descriptor);
+
+FLUTE_API_DECL void fromIpPort(const char* ip, std::uint16_t port, sockaddr_in* addr);
+
+FLUTE_API_DECL void fromIpPort(const char* ip, std::uint16_t port, sockaddr_in6* addr);
+
+FLUTE_API_DECL void toIpPort(const sockaddr* addr, char* dst, std::size_t size);
+
+FLUTE_API_DECL int getSocketError(socket_type descriptor);
 
 } // namespace flute
 

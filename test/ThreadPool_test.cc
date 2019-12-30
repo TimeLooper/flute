@@ -1,11 +1,6 @@
-/*************************************************************************
- *
- * File Name:  ThreadPool_test.cpp
- * Repository: https://github.com/TimeLooper/flute
- * Author:     why
- * Date:       2019/12/15
- *
- *************************************************************************/
+//
+// Created by why on 2019/12/15.
+//
 
 #include <flute/Logger.h>
 #include <flute/ThreadPool.h>
