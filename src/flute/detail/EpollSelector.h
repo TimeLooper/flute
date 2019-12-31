@@ -2,8 +2,8 @@
 // Created by why on 2019/12/29.
 //
 
-#ifndef FLUTE_EPOLL_SELECTOR_H
-#define FLUTE_EPOLL_SELECTOR_H
+#ifndef FLUTE_DETAIL_EPOLL_SELECTOR_H
+#define FLUTE_DETAIL_EPOLL_SELECTOR_H
 
 #include <flute/flute-config.h>
 
@@ -107,4 +107,4 @@ private:
 } // namespace detail
 } // namespace flute
 
-#endif // FLUTE_EPOLL_SELECTOR_H
+#endif // FLUTE_DETAIL_EPOLL_SELECTOR_H

@@ -96,4 +96,4 @@ private:
 
 } // namespace flute
 
-#endif
+#endif // FLUTE_TCP_CONNECTION_H

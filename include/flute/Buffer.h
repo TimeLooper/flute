@@ -65,4 +65,4 @@ private:
 
 } // namespace flute
 
-#endif
+#endif // FLUTE_BUFFER_H

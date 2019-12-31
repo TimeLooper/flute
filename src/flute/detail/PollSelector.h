@@ -2,8 +2,8 @@
 // Created by why on 2019/12/31.
 //
 
-#ifndef FLUTE_POLL_SELECTOR_H
-#define FLUTE_POLL_SELECTOR_H
+#ifndef FLUTE_DETAIL_POLL_SELECTOR_H
+#define FLUTE_DETAIL_POLL_SELECTOR_H
 
 #include <flute/flute-config.h>
 #include <flute/Logger.h>
@@ -97,4 +97,4 @@ private:
 } // namespace detail
 } // namespace flute
 
-#endif
+#endif // FLUTE_DETAIL_POLL_SELECTOR_H

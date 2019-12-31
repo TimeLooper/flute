@@ -12,6 +12,9 @@
 #ifdef FLUTE_HAVE_EPOLL
 #include <flute/detail/EpollSelector.h>
 #endif
+#ifdef FLUTE_HAVE_KQUEUE
+#include <flute/KqueueSelector.h>
+#endif
 #ifdef FLUTE_HAVE_SYS_POLL_H
 #include <flute/detail/PollSelector.h>
 #endif
@@ -21,6 +24,9 @@ namespace flute {
 Selector* Selector::createSelector() {
 #ifdef FLUTE_HAVE_EPOLL
     return new detail::EpollSelector();
+#endif
+#ifdef FLUTE_HAVE_KQUEUE
+    return new detail::KqueueSelector();
 #endif
 #ifdef FLUTE_HAVE_SYS_POLL_H
     return new detail::PollSelector();

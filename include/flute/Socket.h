@@ -38,4 +38,4 @@ private:
 
 } // namespace flute
 
-#endif
+#endif // FLUTE_SOCKET_H
