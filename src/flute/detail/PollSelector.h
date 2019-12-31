@@ -10,8 +10,9 @@
 #include <flute/Selector.h>
 
 #include <sys/poll.h>
+
+#include <cassert>
 #include <map>
-#include <set>
 
 namespace flute {
 namespace detail {
