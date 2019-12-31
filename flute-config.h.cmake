@@ -55,4 +55,8 @@
 
 #cmakedefine FLUTE_HAVE_TIMERFD_CREATE 1
 
+#cmakedefine FLUTE_HAVE_POLL 1
+
+#cmakedefine FLUTE_HAVE_SELECT 1
+
 #cmakedefine FLUTE_HAVE_SETFD 1

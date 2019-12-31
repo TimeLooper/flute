@@ -13,10 +13,13 @@
 #include <flute/detail/EpollSelector.h>
 #endif
 #ifdef FLUTE_HAVE_KQUEUE
-#include <flute/KqueueSelector.h>
+#include <flute/detail/KqueueSelector.h>
 #endif
-#ifdef FLUTE_HAVE_SYS_POLL_H
+#ifdef FLUTE_HAVE_POLL
 #include <flute/detail/PollSelector.h>
+#endif
+#ifdef FLUTE_HAVE_SELECT
+#include <flute/detail/SelectSelector.h>
 #endif
 
 namespace flute {
@@ -28,8 +31,11 @@ Selector* Selector::createSelector() {
 #ifdef FLUTE_HAVE_KQUEUE
     return new detail::KqueueSelector();
 #endif
-#ifdef FLUTE_HAVE_SYS_POLL_H
+#ifdef FLUTE_HAVE_POLL
     return new detail::PollSelector();
+#endif
+#ifdef FLUTE_HAVE_SELECT
+    return new detail::SelectSelector();
 #endif
 }
 

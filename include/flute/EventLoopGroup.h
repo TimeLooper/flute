@@ -13,6 +13,8 @@
 
 namespace flute {
 
+class EventLoop;
+
 class EventLoopGroup : private noncopyable {
 public:
     FLUTE_API_DECL explicit EventLoopGroup(std::size_t childSize);
