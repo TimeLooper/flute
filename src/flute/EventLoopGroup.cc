@@ -10,7 +10,8 @@
 
 namespace flute {
 
-EventLoopGroup::EventLoopGroup(std::size_t childSize) : m_masterEventLoop(new EventLoop()), m_slaveEventLoops(), m_threadPool() {
+EventLoopGroup::EventLoopGroup(std::size_t childSize)
+    : m_masterEventLoop(new EventLoop()), m_slaveEventLoops(), m_threadPool() {
     m_threadPool.start(childSize);
     m_slaveEventLoops.reserve(childSize);
     for (std::size_t i = 0; i < childSize; ++i) {
@@ -41,13 +42,9 @@ EventLoop* EventLoopGroup::chooseSlaveEventLoop(std::uint64_t hash) {
     }
 }
 
-EventLoop* EventLoopGroup::getMasterEventLoop() {
-    return m_masterEventLoop;
-}
+EventLoop* EventLoopGroup::getMasterEventLoop() { return m_masterEventLoop; }
 
-void EventLoopGroup::dispatch() {
-    m_masterEventLoop->dispatch();
-}
+void EventLoopGroup::dispatch() { m_masterEventLoop->dispatch(); }
 
 void EventLoopGroup::shutdown() {
     for (auto& loop : m_slaveEventLoops) {

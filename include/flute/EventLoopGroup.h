@@ -25,7 +25,7 @@ public:
 
 private:
     EventLoop* m_masterEventLoop;
-    std::vector<EventLoop *> m_slaveEventLoops;
+    std::vector<EventLoop*> m_slaveEventLoops;
     ThreadPool m_threadPool;
 };
 

@@ -20,8 +20,7 @@ Acceptor::Acceptor(EventLoop* loop)
     , m_socket(nullptr)
     , m_loop(loop)
     , m_channel(nullptr)
-    , m_acceptCallback() {
-}
+    , m_acceptCallback() {}
 
 Acceptor::~Acceptor() {
     m_channel->disableAll();

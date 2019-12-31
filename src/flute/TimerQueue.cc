@@ -3,10 +3,10 @@
 //
 
 #include <flute/Channel.h>
+#include <flute/Logger.h>
 #include <flute/TimerHeap.h>
 #include <flute/TimerQueue.h>
 #include <flute/flute_types.h>
-#include <flute/Logger.h>
 #include <flute/socket_ops.h>
 
 #include <cassert>
@@ -14,8 +14,7 @@
 
 namespace flute {
 
-TimerQueue::TimerQueue(flute::EventLoop* loop)
-    : m_channel(nullptr), m_loop(loop), m_timerHeap(new TimerHeap()) {
+TimerQueue::TimerQueue(flute::EventLoop* loop) : m_channel(nullptr), m_loop(loop), m_timerHeap(new TimerHeap()) {
 #ifdef USING_TIMERFD
     auto descriptor = ::timerfd_create(CLOCK_MONOTONIC, TFD_CLOEXEC | TFD_NONBLOCK);
     if (descriptor != FLUTE_INVALID_SOCKET) {
