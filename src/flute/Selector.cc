@@ -22,6 +22,9 @@ Selector* Selector::createSelector() {
 #ifdef FLUTE_HAVE_EPOLL
     return new detail::EPollSelector();
 #endif
+#ifdef FLUTE_HAVE_SYS_POLL_H
+    return new detail::PollSelector();
+#endif
 }
 
 } // namespace flute

@@ -21,7 +21,7 @@
 namespace flute {
 
 class TimerHeap;
-class Timer;
+struct Timer;
 
 class TimerQueue : private noncopyable {
 public:
@@ -35,10 +35,10 @@ public:
     void handleTimerEvent();
 
 private:
+    EventLoop* m_loop;
 #ifdef USING_TIMERFD
     Channel* m_channel;
 #endif
-    EventLoop* m_loop;
     TimerHeap* m_timerHeap;
 
     void scheduleInLoop(Timer* timer);

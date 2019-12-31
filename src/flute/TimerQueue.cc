@@ -14,7 +14,12 @@
 
 namespace flute {
 
-TimerQueue::TimerQueue(flute::EventLoop* loop) : m_channel(nullptr), m_loop(loop), m_timerHeap(new TimerHeap()) {
+TimerQueue::TimerQueue(flute::EventLoop* loop)
+    : m_loop(loop)
+#ifdef USING_TIMERFD
+    , m_channel(nullptr)
+#endif
+    , m_timerHeap(new TimerHeap()) {
 #ifdef USING_TIMERFD
     auto descriptor = ::timerfd_create(CLOCK_MONOTONIC, TFD_CLOEXEC | TFD_NONBLOCK);
     if (descriptor != FLUTE_INVALID_SOCKET) {
@@ -25,11 +30,13 @@ TimerQueue::TimerQueue(flute::EventLoop* loop) : m_channel(nullptr), m_loop(loop
 }
 
 TimerQueue::~TimerQueue() {
+#ifdef USING_TIMERFD
     if (m_channel) {
         m_channel->disableAll();
         flute::close(m_channel->descriptor());
         delete m_channel;
     }
+#endif
     assert(m_timerHeap->empty());
     delete m_timerHeap;
 }
