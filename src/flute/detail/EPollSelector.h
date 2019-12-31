@@ -20,22 +20,6 @@
 namespace flute {
 namespace detail {
 
-class EPollSelector : public Selector {
-public:
-    EPollSelector();
-    ~EPollSelector() final;
-
-    void addEvent(socket_type descriptor, int old, int events, void* data) override;
-
-    void removeEvent(socket_type descriptor, int old, int events, void* data) override;
-
-    int select(std::vector<SelectorEvent>& events, int timeout) override;
-
-private:
-    int m_descriptor;
-    std::vector<epoll_event> m_events;
-};
-
 inline int create_epoll() {
     int result = FLUTE_INVALID_SOCKET;
 #if defined(FLUTE_HAVE_EPOLL_CREATE1) && defined(EPOLL_CLOEXEC)
@@ -52,67 +36,73 @@ inline int create_epoll() {
     return result;
 }
 
-inline EPollSelector::EPollSelector() : m_descriptor(create_epoll()), m_events(INIT_EVENT_SIZE) {}
-
-inline EPollSelector::~EPollSelector() {
-    if (m_descriptor != FLUTE_INVALID_SOCKET) {
-        flute::close(m_descriptor);
-        m_descriptor = FLUTE_INVALID_SOCKET;
-    }
-}
-
-inline void EPollSelector::addEvent(socket_type descriptor, int old, int events, void* data) {
-    epoll_event ev{};
-    ev.data.ptr = data;
-    auto temp = old | events;
-    if (temp & SelectorEvent::EVENT_READ) ev.events |= EPOLLIN;
-    if (temp & SelectorEvent::EVENT_WRITE) ev.events |= EPOLLOUT;
-    auto op = old == SelectorEvent::EVENT_NONE ? EPOLL_CTL_ADD : EPOLL_CTL_MOD;
-    auto ret = ::epoll_ctl(m_descriptor, op, descriptor, &ev);
-    if (ret == -1) {
-        LOG_ERROR << "epoll_ctl error " << errno << ":" << std::strerror(errno);
-    }
-}
-
-inline void EPollSelector::removeEvent(socket_type descriptor, int old, int events, void* data) {
-    epoll_event ev{};
-    ev.data.ptr = data;
-    auto temp = old & (~events);
-    if (temp & SelectorEvent::EVENT_READ) ev.events |= EPOLLIN;
-    if (temp & SelectorEvent::EVENT_WRITE) ev.events |= EPOLLOUT;
-    auto op = temp == SelectorEvent::EVENT_NONE ? EPOLL_CTL_DEL : EPOLL_CTL_MOD;
-    auto ret = ::epoll_ctl(m_descriptor, op, descriptor, &ev);
-    if (ret == -1) {
-        LOG_ERROR << "epoll_ctl error " << errno << ":" << std::strerror(errno);
-    }
-}
-
-inline int EPollSelector::select(std::vector<SelectorEvent>& events, int timeout) {
-    auto count = ::epoll_wait(m_descriptor, m_events.data(), m_events.size(), timeout);
-    if (count == -1) {
-        LOG_ERROR << "epoll_wait error " << errno << ":" << std::strerror(errno);
-        return -1;
-    }
-    if (count > 0 && static_cast<std::size_t>(count) > events.size()) {
-        events.resize(count);
-    }
-    for (auto i = 0; i < count; ++i) {
-        auto& ev = m_events[i];
-        auto& e = events[i];
-        e.data = ev.data.ptr;
-        e.events = 0;
-        if (ev.events & EPOLLIN) {
-            e.events |= SelectorEvent::EVENT_READ;
-        }
-        if (ev.events & EPOLLOUT) {
-            e.events |= SelectorEvent::EVENT_WRITE;
+class EPollSelector : public Selector {
+public:
+    EPollSelector() : m_descriptor(create_epoll()), m_events(INIT_EVENT_SIZE) {}
+    ~EPollSelector() final {
+        if (m_descriptor != FLUTE_INVALID_SOCKET) {
+            flute::close(m_descriptor);
+            m_descriptor = FLUTE_INVALID_SOCKET;
         }
     }
-    if (static_cast<std::size_t>(count) == m_events.size() && count < MAX_EVENT_SIZE) {
-        m_events.resize(m_events.size() << 1);
+
+    void addEvent(socket_type descriptor, int old, int events, void* data) override {
+        epoll_event ev{};
+        ev.data.ptr = data;
+        auto temp = old | events;
+        if (temp & SelectorEvent::EVENT_READ) ev.events |= EPOLLIN;
+        if (temp & SelectorEvent::EVENT_WRITE) ev.events |= EPOLLOUT;
+        auto op = old == SelectorEvent::EVENT_NONE ? EPOLL_CTL_ADD : EPOLL_CTL_MOD;
+        auto ret = ::epoll_ctl(m_descriptor, op, descriptor, &ev);
+        if (ret == -1) {
+            LOG_ERROR << "epoll_ctl error " << errno << ":" << std::strerror(errno);
+        }
     }
-    return 0;
-}
+
+    void removeEvent(socket_type descriptor, int old, int events, void* data) override {
+        epoll_event ev{};
+        ev.data.ptr = data;
+        auto temp = old & (~events);
+        if (temp & SelectorEvent::EVENT_READ) ev.events |= EPOLLIN;
+        if (temp & SelectorEvent::EVENT_WRITE) ev.events |= EPOLLOUT;
+        auto op = temp == SelectorEvent::EVENT_NONE ? EPOLL_CTL_DEL : EPOLL_CTL_MOD;
+        auto ret = ::epoll_ctl(m_descriptor, op, descriptor, &ev);
+        if (ret == -1) {
+            LOG_ERROR << "epoll_ctl error " << errno << ":" << std::strerror(errno);
+        }
+    }
+
+    int select(std::vector<SelectorEvent>& events, int timeout) override {
+        auto count = ::epoll_wait(m_descriptor, m_events.data(), m_events.size(), timeout);
+        if (count == -1) {
+            LOG_ERROR << "epoll_wait error " << errno << ":" << std::strerror(errno);
+            return -1;
+        }
+        if (count > 0 && static_cast<std::size_t>(count) > events.size()) {
+            events.resize(count);
+        }
+        for (auto i = 0; i < count; ++i) {
+            auto& ev = m_events[i];
+            auto& e = events[i];
+            e.data = ev.data.ptr;
+            e.events = 0;
+            if (ev.events & EPOLLIN) {
+                e.events |= SelectorEvent::EVENT_READ;
+            }
+            if (ev.events & EPOLLOUT) {
+                e.events |= SelectorEvent::EVENT_WRITE;
+            }
+        }
+        if (static_cast<std::size_t>(count) == m_events.size() && count < MAX_EVENT_SIZE) {
+            m_events.resize(m_events.size() << 1);
+        }
+        return count;
+    }
+
+private:
+    int m_descriptor;
+    std::vector<epoll_event> m_events;
+};
 
 } // namespace detail
 } // namespace flute

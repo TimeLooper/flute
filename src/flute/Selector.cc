@@ -12,6 +12,9 @@
 #ifdef FLUTE_HAVE_EPOLL
 #include <flute/detail/EPollSelector.h>
 #endif
+#ifdef FLUTE_HAVE_SYS_POLL_H
+#include <flute/detail/PollSelector.h>
+#endif
 
 namespace flute {
 
