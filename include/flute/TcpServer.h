@@ -10,7 +10,6 @@
 #include <flute/noncopyable.h>
 
 #include <atomic>
-#include <future>
 #include <map>
 #include <memory>
 
@@ -54,7 +53,6 @@ private:
     std::atomic<ServerState> m_state;
     std::unique_ptr<Acceptor> m_acceptor;
     std::map<flute::socket_type, std::shared_ptr<TcpConnection>> m_connections;
-    std::promise<void> m_serverPromise;
 
     MessageCallback m_messageCallback;
     WriteCompleteCallback m_writeCompleteCallback;

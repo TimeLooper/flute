@@ -2,22 +2,35 @@
 // Created by why on 2019/12/29.
 //
 
+#include <flute/Channel.h>
 #include <flute/TimerHeap.h>
 #include <flute/TimerQueue.h>
 #include <flute/flute_types.h>
+#include <flute/Logger.h>
+#include <flute/socket_ops.h>
 
 #include <cassert>
+#include <cstring>
 
 namespace flute {
 
 TimerQueue::TimerQueue(flute::EventLoop* loop)
-    : m_timerDescriptor(FLUTE_INVALID_SOCKET), m_loop(loop), m_timerHeap(new TimerHeap()) {
+    : m_channel(nullptr), m_loop(loop), m_timerHeap(new TimerHeap()) {
 #ifdef USING_TIMERFD
-    m_timerDescriptor = ::timerfd_create(CLOCK_MONOTONIC, TFD_CLOEXEC | TFD_NONBLOCK);
+    auto descriptor = ::timerfd_create(CLOCK_MONOTONIC, TFD_CLOEXEC | TFD_NONBLOCK);
+    if (descriptor != FLUTE_INVALID_SOCKET) {
+        m_channel = new Channel(descriptor, loop);
+        m_channel->enableRead();
+    }
 #endif
 }
 
 TimerQueue::~TimerQueue() {
+    if (m_channel) {
+        m_channel->disableAll();
+        flute::close(m_channel->descriptor());
+        delete m_channel;
+    }
     assert(m_timerHeap->empty());
     delete m_timerHeap;
 }
@@ -45,13 +58,15 @@ std::int64_t TimerQueue::searchNearestTime() {
     auto top = m_timerHeap->top();
     auto delay = top->delay - currentMilliseconds() + top->startTime;
 #ifdef USING_TIMERFD
-    if (m_timerDescriptor != FLUTE_INVALID_SOCKET) {
+    if (m_channel) {
         itimerspec spec{};
-        spec.it_value.tv_nsec = (delay % 1000) * 1000;
+        spec.it_value.tv_nsec = (delay % 1000) * 1000000;
         spec.it_value.tv_sec = delay / 1000;
-        auto ret = ::timerfd_settime(m_timerDescriptor, 0, &spec, nullptr);
+        auto ret = ::timerfd_settime(m_channel->descriptor(), 0, &spec, nullptr);
         if (ret == 0) {
             delay = -1;
+        } else {
+            LOG_ERROR << "timerfd_settime error " << errno << ":" << std::strerror(errno);
         }
     }
 #endif

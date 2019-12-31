@@ -18,7 +18,6 @@ TcpServer::TcpServer(flute::EventLoopGroup* eventLoopGroup)
     , m_state(ServerState::STOPPED)
     , m_acceptor()
     , m_connections()
-    , m_serverPromise()
     , m_messageCallback()
     , m_writeCompleteCallback()
     , m_highWaterMarkCallback()
@@ -105,7 +104,6 @@ void TcpServer::handleConnectionDestroyInLoop(const std::shared_ptr<flute::TcpCo
     (void)n;
     if (m_connections.empty() && m_state == ServerState::STOPPING) {
         m_state = ServerState::STOPPED;
-        m_serverPromise.set_value();
     }
     LOG_TRACE << "remove connection " << conn->getRemoteAddress().toString();
 }

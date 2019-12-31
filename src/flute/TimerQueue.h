@@ -36,7 +36,7 @@ public:
 
 private:
 #ifdef USING_TIMERFD
-    int m_timerDescriptor;
+    Channel* m_channel;
 #endif
     EventLoop* m_loop;
     TimerHeap* m_timerHeap;
