@@ -10,7 +10,7 @@
 #define MAX_EVENT_SIZE 4096
 
 #ifdef FLUTE_HAVE_EPOLL
-#include <flute/detail/EPollSelector.h>
+#include <flute/detail/EpollSelector.h>
 #endif
 #ifdef FLUTE_HAVE_SYS_POLL_H
 #include <flute/detail/PollSelector.h>
@@ -20,7 +20,7 @@ namespace flute {
 
 Selector* Selector::createSelector() {
 #ifdef FLUTE_HAVE_EPOLL
-    return new detail::EPollSelector();
+    return new detail::EpollSelector();
 #endif
 #ifdef FLUTE_HAVE_SYS_POLL_H
     return new detail::PollSelector();

@@ -36,10 +36,10 @@ inline int create_epoll() {
     return result;
 }
 
-class EPollSelector : public Selector {
+class EpollSelector : public Selector {
 public:
-    EPollSelector() : m_descriptor(create_epoll()), m_events(INIT_EVENT_SIZE) {}
-    ~EPollSelector() final {
+    EpollSelector() : m_descriptor(create_epoll()), m_events(INIT_EVENT_SIZE) {}
+    ~EpollSelector() final {
         if (m_descriptor != FLUTE_INVALID_SOCKET) {
             flute::close(m_descriptor);
             m_descriptor = FLUTE_INVALID_SOCKET;
