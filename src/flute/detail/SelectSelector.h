@@ -23,7 +23,7 @@ namespace detail {
 
 class SelectSelector : public Selector {
 public:
-    SelectSelector() : m_maxDescriptor(0), m_readSet(), m_writeSet(), m_dataMap() {}
+    SelectSelector() : m_maxDescriptor(0), m_readSet(), m_writeSet(), m_readSetOut(), m_writeSetOut(), m_dataMap() {}
     ~SelectSelector() = default;
 
     void addEvent(socket_type descriptor, int old, int events, void* data) override {
@@ -60,22 +60,22 @@ public:
 
     int select(std::vector<SelectorEvent>& events, int timeout) override {
         int count = 0;
-        DescriptorSet readSet = m_readSet;
-        DescriptorSet writeSet = m_writeSet;
+        m_readSetOut = m_readSet;
+        m_writeSetOut = m_writeSet;
         if (timeout > 0) {
             struct timeval timeoutSpec;
             timeoutSpec.tv_sec = timeout / 1000;
             timeoutSpec.tv_usec = (timeout % 1000) * 1000;
 #ifdef _WIN32
-            count = ::select(0, readSet.getRawSet(), writeSet.getRawSet(), nullptr, &timeoutSpec);
+            count = ::select(0, m_readSetOut.getRawSet(), m_writeSetOut.getRawSet(), nullptr, &timeoutSpec);
 #else
-            count = ::select(m_maxDescriptor + 1, readSet.getRawSet(), writeSet.getRawSet(), nullptr, &timeoutSpec);
+            count = ::select(m_maxDescriptor + 1, m_readSetOut.getRawSet(), m_writeSetOut.getRawSet(), nullptr, &timeoutSpec);
 #endif
         } else {
 #ifdef _WIN32
-            count = ::select(0, readSet.getRawSet(), writeSet.getRawSet(), nullptr, nullptr);
+            count = ::select(0, m_readSetOut.getRawSet(), m_writeSetOut.getRawSet(), nullptr, nullptr);
 #else
-            count = ::select(m_maxDescriptor + 1, readSet.getRawSet(), writeSet.getRawSet(), nullptr, nullptr);
+            count = ::select(m_maxDescriptor + 1, m_readSetOut.getRawSet(), m_writeSetOut.getRawSet(), nullptr, nullptr);
 #endif
         }
         if (count == -1) {
@@ -89,8 +89,8 @@ public:
         for (socket_type i = 0; i <= m_maxDescriptor; ++i) {
             auto& e = events[index];
             auto events = 0;
-            if (readSet.containes(i)) events |= SelectorEvent::EVENT_READ;
-            if (writeSet.containes(i)) events |= SelectorEvent::EVENT_WRITE;
+            if (m_readSetOut.containes(i)) events |= SelectorEvent::EVENT_READ;
+            if (m_writeSetOut.containes(i)) events |= SelectorEvent::EVENT_WRITE;
             if (events) {
                 auto it = m_dataMap.find(i);
                 e.data = it->second;
@@ -105,6 +105,8 @@ private:
     socket_type m_maxDescriptor;
     DescriptorSet m_readSet;
     DescriptorSet m_writeSet;
+    DescriptorSet m_readSetOut;
+    DescriptorSet m_writeSetOut;
     std::map<socket_type, void*> m_dataMap;
 };
 

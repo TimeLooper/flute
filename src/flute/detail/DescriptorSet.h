@@ -54,7 +54,7 @@ private:
 
     void checkSize(socket_type descriptor);
 
-    static const int INIT_SET_SIZE = 64;
+    static const int INIT_SET_SIZE = FD_SETSIZE;
 };
 
 #ifdef _WIN32
