@@ -9,7 +9,7 @@
 #include <flute/TcpConnection.h>
 
 int main(int argc, char* argv[]) {
-    flute::EventLoopGroup loopGroup(4);
+    flute::EventLoopGroup loopGroup(0);
     flute::TcpServer server(&loopGroup);
     server.bind(flute::InetAddress(9999));
     server.setMessageCallback([&](const std::shared_ptr<flute::TcpConnection>& conn, flute::Buffer& buffer) {

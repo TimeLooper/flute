@@ -23,12 +23,11 @@ namespace detail {
 
 class SelectSelector : public Selector {
 public:
-    SelectSelector() : m_maxDescriptor(0), m_readSet(), m_writeSet(), m_readSetOut(), m_writeSetOut(), m_dataMap() {}
+    SelectSelector() : m_minDescriptor(0), m_maxDescriptor(0), m_descriptors(), m_readSet(), m_writeSet(), m_readSetOut(), m_writeSetOut(), m_dataMap() {}
     ~SelectSelector() = default;
 
     void addEvent(socket_type descriptor, int old, int events, void* data) override {
         auto temp = old | events;
-        m_maxDescriptor = descriptor > m_maxDescriptor ? descriptor : m_maxDescriptor;
         if (events & SelectorEvent::EVENT_READ) {
             m_readSet.add(descriptor);
         }
@@ -37,14 +36,21 @@ public:
         }
         if (temp != SelectorEvent::EVENT_NONE) {
             m_dataMap[descriptor] = data;
+            m_descriptors.insert(descriptor);
         } else {
             m_dataMap.erase(descriptor);
+            m_descriptors.erase(descriptor);
+        }
+        if (m_descriptors.empty()) {
+            m_minDescriptor = m_maxDescriptor = 0;
+        } else {
+            m_minDescriptor = *m_descriptors.begin();
+            m_maxDescriptor = *m_descriptors.rbegin();
         }
     }
 
     void removeEvent(socket_type descriptor, int old, int events, void* data) override {
         auto temp = old & (~events);
-        m_maxDescriptor = descriptor > m_maxDescriptor ? descriptor : m_maxDescriptor;
         if (events & SelectorEvent::EVENT_READ) {
             m_readSet.remove(descriptor);
         }
@@ -53,8 +59,16 @@ public:
         }
         if (temp == SelectorEvent::EVENT_NONE) {
             m_dataMap.erase(descriptor);
+            m_descriptors.erase(descriptor);
         } else {
             m_dataMap[descriptor] = data;
+            m_descriptors.insert(descriptor);
+        }
+        if (m_descriptors.empty()) {
+            m_minDescriptor = m_maxDescriptor = 0;
+        } else {
+            m_minDescriptor = *m_descriptors.begin();
+            m_maxDescriptor = *m_descriptors.rbegin();
         }
     }
 
@@ -86,7 +100,7 @@ public:
             events.resize(count);
         }
         auto index = 0;
-        for (socket_type i = 0; i <= m_maxDescriptor && index < count; ++i) {
+        for (socket_type i = m_minDescriptor; i <= m_maxDescriptor; ++i) {
             auto& e = events[index];
             auto events = 0;
             if (m_readSetOut.containes(i)) events |= SelectorEvent::EVENT_READ;
@@ -102,7 +116,9 @@ public:
     }
 
 private:
+    socket_type m_minDescriptor;
     socket_type m_maxDescriptor;
+    std::set<socket_type> m_descriptors;
     DescriptorSet m_readSet;
     DescriptorSet m_writeSet;
     DescriptorSet m_readSetOut;
