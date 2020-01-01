@@ -39,6 +39,8 @@
 
 #cmakedefine FLUTE_HAVE_SYS_POLL_H 1
 
+#cmakedefine FLUTE_HAVE_SYS_SELECT_H 1
+
 #cmakedefine FLUTE_HAVE_KQUEUE 1
 
 #cmakedefine FLUTE_HAVE_EPOLL 1

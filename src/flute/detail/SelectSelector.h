@@ -5,11 +5,16 @@
 #ifndef FLUTE_DETAIL_SELECT_SELECTOR_H
 #define FLUTE_DETAIL_SELECT_SELECTOR_H
 
+#include <flute/flute-config.h>
 #include <flute/Selector.h>
 #include <flute/flute_types.h>
 #include <flute/Logger.h>
 
+#include <flute/detail/DescriptorSet.h>
+
+#ifdef FLUTE_HAVE_SYS_SELECT_H
 #include <sys/select.h>
+#endif
 
 #include <map>
 
@@ -24,17 +29,11 @@ public:
     void addEvent(socket_type descriptor, int old, int events, void* data) override {
         auto temp = old | events;
         m_maxDescriptor = descriptor > m_maxDescriptor ? descriptor : m_maxDescriptor;
-        if (descriptor >= m_readSet.size()) {
-            m_readSet.resize(m_maxDescriptor + 1);
-        }
-        if (descriptor >= m_writeSet.size()) {
-            m_writeSet.resize(m_maxDescriptor + 1);
-        }
         if (events & SelectorEvent::EVENT_READ) {
-            FD_SET(descriptor, m_readSet.data());
+            m_readSet.add(descriptor);
         }
         if (events & SelectorEvent::EVENT_WRITE) {
-            FD_SET(descriptor, m_writeSet.data());
+            m_writeSet.add(descriptor);
         }
         if (temp != SelectorEvent::EVENT_NONE) {
             m_dataMap[descriptor] = data;
@@ -46,17 +45,11 @@ public:
     void removeEvent(socket_type descriptor, int old, int events, void* data) override {
         auto temp = old & (~events);
         m_maxDescriptor = descriptor > m_maxDescriptor ? descriptor : m_maxDescriptor;
-        if (descriptor >= m_maxDescriptor) {
-            m_readSet.resize(m_maxDescriptor + 1);
-        }
-        if (descriptor >= m_maxDescriptor) {
-            m_writeSet.resize(m_maxDescriptor + 1);
-        }
         if (events & SelectorEvent::EVENT_READ) {
-            FD_CLR(descriptor, m_readSet.data());
+            m_readSet.remove(descriptor);
         }
         if (events & SelectorEvent::EVENT_WRITE) {
-            FD_CLR(descriptor, m_writeSet.data());
+            m_writeSet.remove(descriptor);
         }
         if (temp == SelectorEvent::EVENT_NONE) {
             m_dataMap.erase(descriptor);
@@ -67,40 +60,43 @@ public:
 
     int select(std::vector<SelectorEvent>& events, int timeout) override {
         int count = 0;
-        std::vector<fd_set> readSet = m_readSet;
-        std::vector<fd_set> writeSet = m_writeSet;
+        DescriptorSet readSet = m_readSet;
+        DescriptorSet writeSet = m_writeSet;
         if (timeout > 0) {
             struct timeval timeoutSpec;
             timeoutSpec.tv_sec = timeout / 1000;
             timeoutSpec.tv_usec = (timeout % 1000) * 1000;
-            count = ::select(m_readSet.size(), readSet.data(), writeSet.data(), nullptr, &timeoutSpec);
+            count = ::select(m_maxDescriptor + 1, readSet.getRawSet(), writeSet.getRawSet(), nullptr, &timeoutSpec);
         } else {
-            count = ::select(m_readSet.size(), readSet.data(), writeSet.data(), nullptr, nullptr);
+            count = ::select(m_maxDescriptor + 1, readSet.getRawSet(), writeSet.getRawSet(), nullptr, nullptr);
         }
         if (count == -1) {
-            LOG_ERROR << "poll error " << errno << ":" << std::strerror(errno);
+            LOG_ERROR << "select error " << errno << ":" << std::strerror(errno);
             return -1;
         }
         if (count > 0 && static_cast<std::size_t>(count) > events.size()) {
             events.resize(count);
         }
         auto index = 0;
-        for (socket_type i = 0; i < m_maxDescriptor; ++i) {
+        for (socket_type i = 0; i <= m_maxDescriptor; ++i) {
             auto& e = events[index];
-            auto it = m_dataMap.find(i);
-            e.data = it->second;
-            e.events = 0;
-            if (FD_ISSET(i, m_readSet.data())) e.events |= SelectorEvent::EVENT_READ;
-            if (FD_ISSET(i, m_writeSet.data())) e.events |= SelectorEvent::EVENT_WRITE;
-            index += 1;
+            auto events = 0;
+            if (readSet.containes(i)) events |= SelectorEvent::EVENT_READ;
+            if (writeSet.containes(i)) events |= SelectorEvent::EVENT_WRITE;
+            if (events) {
+                auto it = m_dataMap.find(i);
+                e.data = it->second;
+                e.events = events;
+                index += 1;
+            }
         }
-        return count;
+        return index;
     }
 
 private:
     socket_type m_maxDescriptor;
-    std::vector<fd_set> m_readSet;
-    std::vector<fd_set> m_writeSet;
+    DescriptorSet m_readSet;
+    DescriptorSet m_writeSet;
     std::map<socket_type, void*> m_dataMap;
 };
 
