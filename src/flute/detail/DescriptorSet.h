@@ -198,7 +198,6 @@ DescriptorSet& DescriptorSet::operator=(DescriptorSet&& rhs) {
 }
 
 inline bool DescriptorSet::containes(socket_type descriptor) {
-    // auto index = static_cast<std::size_t>(descriptor / 8);
     auto index = static_cast<std::size_t>(descriptor >> 3);
     if (index >= m_setSize) {
         return false;
@@ -207,7 +206,6 @@ inline bool DescriptorSet::containes(socket_type descriptor) {
 }
 
 inline void DescriptorSet::add(socket_type descriptor) {
-    // auto index = static_cast<std::size_t>(descriptor / 8);
     auto index = static_cast<std::size_t>(descriptor >> 3);
     if (index >= m_setSize) {
         m_set = static_cast<flute_fd_set *>(std::realloc(m_set, index + 1));
@@ -217,7 +215,6 @@ inline void DescriptorSet::add(socket_type descriptor) {
 }
 
 inline void DescriptorSet::remove(socket_type descriptor) {
-    // auto index = static_cast<std::size_t>(descriptor / 8);
     auto index = static_cast<std::size_t>(descriptor >> 3);
     if (index >= m_setSize) {
         return;
