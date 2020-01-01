@@ -61,6 +61,12 @@ using ::setsockopt;
 using ::shutdown;
 using ::write;
 
+#ifdef FLUTE_HAVE_SOCKETPAIR
+using ::socketpair;
+#else
+FLUTE_API_DECL int socketpair(int domain, int type, int protocol, socket_type fds[2]);
+#endif
+
 FLUTE_API_DECL int setSocketCloseOnExec(socket_type descriptor);
 
 FLUTE_API_DECL int setSocketNonblocking(socket_type descriptor);

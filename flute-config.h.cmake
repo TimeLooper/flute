@@ -61,4 +61,6 @@
 
 #cmakedefine FLUTE_HAVE_SELECT 1
 
+#cmakedefine FLUTE_HAVE_SOCKETPAIR 1
+
 #cmakedefine FLUTE_HAVE_SETFD 1
