@@ -198,28 +198,31 @@ DescriptorSet& DescriptorSet::operator=(DescriptorSet&& rhs) {
 }
 
 inline bool DescriptorSet::containes(socket_type descriptor) {
-    auto index = descriptor / 8;
+    // auto index = static_cast<std::size_t>(descriptor / 8);
+    auto index = static_cast<std::size_t>(descriptor >> 3);
     if (index >= m_setSize) {
         return false;
     }
-    return m_set->fds_bits[index] & (std::uint8_t (0x1)) << (descriptor % 8);
+    return m_set->fds_bits[index] & (std::uint8_t (0x1)) << (descriptor & 8);
 }
 
 inline void DescriptorSet::add(socket_type descriptor) {
-    auto index = descriptor / 8;
+    // auto index = static_cast<std::size_t>(descriptor / 8);
+    auto index = static_cast<std::size_t>(descriptor >> 3);
     if (index >= m_setSize) {
         m_set = static_cast<flute_fd_set *>(std::realloc(m_set, index + 1));
         m_setSize = index + 1;
     }
-    m_set->fds_bits[index] |= (std::uint8_t (0x1)) << (descriptor % 8);
+    m_set->fds_bits[index] |= (std::uint8_t (0x1)) << (descriptor & 8);
 }
 
 inline void DescriptorSet::remove(socket_type descriptor) {
-    auto index = descriptor / 8;
+    // auto index = static_cast<std::size_t>(descriptor / 8);
+    auto index = static_cast<std::size_t>(descriptor >> 3);
     if (index >= m_setSize) {
         return;
     }
-    m_set->fds_bits[index] &= ~((std::uint8_t (0x1)) << (descriptor % 8));
+    m_set->fds_bits[index] &= ~((std::uint8_t (0x1)) << (descriptor & 8));
 }
 
 inline fd_set* DescriptorSet::getRawSet() {
