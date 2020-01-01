@@ -40,6 +40,8 @@ static int createInterrupterDescriptor(socket_type fds[2]) {
     } else {
         LOG_WARN << "pipe()";
     }
+#else
+    return flute::socketpair(AF_UNIX, SOCK_STREAM, 0, fds);
 #endif
     return -1;
 }
@@ -53,12 +55,13 @@ EventLoopInterruptor::EventLoopInterruptor(EventLoop* loop)
     if (createInterrupterDescriptor(fds) != 0) {
         LOG_FATAL << "create event interruptor failed.";
         exit(-1);
+    } else {
+        m_readDescriptor = fds[0];
+        m_writeDescriptor = fds[1];
+        m_channel = new Channel(m_readDescriptor, m_loop);
+        m_channel->setReadCallback(std::bind(&EventLoopInterruptor::handleRead, this));
+        m_channel->enableRead();
     }
-    m_readDescriptor = fds[0];
-    m_writeDescriptor = fds[1];
-    m_channel = new Channel(m_readDescriptor, m_loop);
-    m_channel->setReadCallback(std::bind(&EventLoopInterruptor::handleRead, this));
-    m_channel->enableRead();
 }
 
 EventLoopInterruptor::~EventLoopInterruptor() {
@@ -77,6 +80,9 @@ EventLoopInterruptor::~EventLoopInterruptor() {
 }
 
 void EventLoopInterruptor::interrupt() const {
+    if (m_writeDescriptor == FLUTE_INVALID_SOCKET) {
+        return;
+    }
     std::uint64_t num = 1;
     flute::write(m_writeDescriptor, &num, sizeof(num));
 }

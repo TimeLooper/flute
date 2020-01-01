@@ -17,6 +17,15 @@
 namespace flute {
 namespace detail {
 
+#ifdef _WIN32
+struct flute_fd_set {
+    unsigned int fd_count;             /* how many are SET? */
+    socket_type  fd_array[0];          /* an array of SOCKETs */
+};
+#else
+typedef fd_set flute_fd_set;
+#endif
+
 struct DescriptorSet {
 public:
     DescriptorSet();
@@ -38,13 +47,103 @@ public:
 private:
     socket_type m_maxDescriptor;
     std::size_t m_setSize;
-    fd_set *m_set;
+    flute_fd_set *m_set;
 
     void checkSize(socket_type descriptor);
+
+    static const int INIT_SET_SIZE = 1;
 };
 
-inline DescriptorSet::DescriptorSet() : m_maxDescriptor(0), m_setSize(sizeof(fd_set)), m_set(static_cast<fd_set *>(std::malloc(sizeof(fd_set)))) {
-    std::memset(m_set, 0, sizeof(fd_set));
+#ifdef _WIN32
+
+inline DescriptorSet::DescriptorSet() : m_maxDescriptor(0), m_setSize(INIT_SET_SIZE), m_set(static_cast<flute_fd_set *>(std::malloc(sizeof(flute_fd_set) + INIT_SET_SIZE * sizeof(socket_type)))) {
+    std::memset(m_set, 0, sizeof(flute_fd_set) + INIT_SET_SIZE * sizeof(socket_type));
+}
+
+inline DescriptorSet::DescriptorSet(const DescriptorSet& rhs) : DescriptorSet() {
+    if (m_setSize < rhs.m_setSize) {
+        m_set = static_cast<flute_fd_set *>(std::realloc(m_set, sizeof(flute_fd_set) + rhs.m_setSize * sizeof(socket_type)));
+    }
+    m_setSize = rhs.m_setSize;
+    std::memcpy(m_set, rhs.m_set, sizeof(flute_fd_set) + rhs.m_setSize * sizeof(socket_type));
+    m_maxDescriptor = rhs.m_maxDescriptor;
+}
+
+inline DescriptorSet::DescriptorSet(DescriptorSet&& rhs) : DescriptorSet() {
+    std::swap(m_set, rhs.m_set);
+    std::swap(m_setSize, rhs.m_setSize);
+    std::swap(m_maxDescriptor, rhs.m_maxDescriptor);
+}
+
+inline DescriptorSet::~DescriptorSet() {
+    std::free(m_set);
+}
+
+DescriptorSet& DescriptorSet::operator=(const DescriptorSet& rhs) {
+    if (m_setSize < rhs.m_setSize) {
+        m_set = static_cast<flute_fd_set *>(std::realloc(m_set, sizeof(flute_fd_set) + rhs.m_setSize * sizeof(socket_type)));
+    }
+    m_setSize = rhs.m_setSize;
+    std::memcpy(m_set, rhs.m_set, sizeof(flute_fd_set) + rhs.m_setSize * sizeof(socket_type));
+    m_maxDescriptor = rhs.m_maxDescriptor;
+    return *this;
+}
+
+DescriptorSet& DescriptorSet::operator=(DescriptorSet&& rhs) {
+    std::swap(m_set, rhs.m_set);
+    std::swap(m_setSize, rhs.m_setSize);
+    std::swap(m_maxDescriptor, rhs.m_maxDescriptor);
+    return *this;
+}
+
+inline bool DescriptorSet::containes(socket_type descriptor) {
+    unsigned int i;
+    for (i = 0; i < m_set->fd_count; i++) {
+        if (m_set->fd_array[i] == descriptor) {
+            break;
+        }
+    }
+    return i < m_set->fd_count;
+}
+
+inline void DescriptorSet::add(socket_type descriptor) {
+    unsigned int i;
+    for (i = 0; i < m_set->fd_count; i++) {
+        if (m_set->fd_array[i] == descriptor) {
+            break;
+        }
+    }
+    if (i == m_set->fd_count) {
+        if (m_set->fd_count >= m_setSize) {
+            m_set = static_cast<flute_fd_set *>(std::realloc(m_set, sizeof(flute_fd_set) + (m_setSize << 1) * sizeof(socket_type)));
+            m_setSize <<= 1;
+        }
+        m_set->fd_array[i] = descriptor;
+        m_set->fd_count += 1;
+    }
+}
+
+inline void DescriptorSet::remove(socket_type descriptor) {
+    unsigned int i;
+    for (i = 0; i < m_set->fd_count; i++) {
+        if (m_set->fd_array[i] == descriptor) {
+            break;
+        }
+    }
+    if (i < m_set->fd_count) {
+        std::memmove(m_set->fd_array + i, m_set->fd_array + i + 1, m_set->fd_count - 1 - i);
+        m_set->fd_count -= 1;
+    }
+}
+
+inline fd_set* DescriptorSet::getRawSet() {
+    return reinterpret_cast<fd_set*>(m_set);
+}
+
+#else
+
+inline DescriptorSet::DescriptorSet() : m_maxDescriptor(0), m_setSize(sizeof(flute_fd_set)), m_set(static_cast<flute_fd_set *>(std::malloc(sizeof(flute_fd_set)))) {
+    std::memset(m_set, 0, sizeof(flute_fd_set));
 }
 
 inline DescriptorSet::DescriptorSet(const DescriptorSet& rhs) : DescriptorSet() {
@@ -90,8 +189,10 @@ inline void DescriptorSet::remove(socket_type descriptor) {
 }
 
 inline fd_set* DescriptorSet::getRawSet() {
-    return m_set;
+    return reinterpret_cast<fd_set*>(m_set);
 }
+
+#endif
 
 } // namespace detail
 } // namespace flute

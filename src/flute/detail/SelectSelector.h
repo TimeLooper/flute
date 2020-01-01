@@ -66,9 +66,17 @@ public:
             struct timeval timeoutSpec;
             timeoutSpec.tv_sec = timeout / 1000;
             timeoutSpec.tv_usec = (timeout % 1000) * 1000;
+#ifdef _WIN32
+            count = ::select(0, readSet.getRawSet(), writeSet.getRawSet(), nullptr, &timeoutSpec);
+#else
             count = ::select(m_maxDescriptor + 1, readSet.getRawSet(), writeSet.getRawSet(), nullptr, &timeoutSpec);
+#endif
         } else {
+#ifdef _WIN32
+            count = ::select(0, readSet.getRawSet(), writeSet.getRawSet(), nullptr, nullptr);
+#else
             count = ::select(m_maxDescriptor + 1, readSet.getRawSet(), writeSet.getRawSet(), nullptr, nullptr);
+#endif
         }
         if (count == -1) {
             LOG_ERROR << "select error " << errno << ":" << std::strerror(errno);

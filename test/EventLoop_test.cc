@@ -4,6 +4,7 @@
 
 #include <flute/EventLoop.h>
 #include <flute/Logger.h>
+#include <flute/socket_ops.h>
 
 int main(int argc, char* argv[]) {
     flute::EventLoop loop;
