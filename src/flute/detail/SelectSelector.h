@@ -86,7 +86,7 @@ public:
             events.resize(count);
         }
         auto index = 0;
-        for (socket_type i = 0; i <= m_maxDescriptor; ++i) {
+        for (socket_type i = 0; i <= m_maxDescriptor && index < count; ++i) {
             auto& e = events[index];
             auto events = 0;
             if (m_readSetOut.containes(i)) events |= SelectorEvent::EVENT_READ;

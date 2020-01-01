@@ -48,7 +48,7 @@ void EventLoop::dispatch() {
     m_quit = false;
     std::vector<SelectorEvent> events(32);
     while (!m_quit) {
-        auto ret = m_selector->select(events, m_timerQueue->searchNearestTime());
+        auto ret = m_selector->select(events, static_cast<int>(m_timerQueue->searchNearestTime()));
         if (ret == -1) {
             continue;
         }

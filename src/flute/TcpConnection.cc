@@ -216,7 +216,7 @@ void TcpConnection::sendInLoop(const void* buffer, flute::ssize_t length) {
     }
 }
 
-void TcpConnection::sendInLoop(const std::string& message) { sendInLoop(message.c_str(), message.length()); }
+void TcpConnection::sendInLoop(const std::string& message) { sendInLoop(message.c_str(), static_cast<flute::ssize_t>(message.length())); }
 
 void TcpConnection::sendInLoop(Buffer& buffer) {
     m_loop->assertInLoopThread();

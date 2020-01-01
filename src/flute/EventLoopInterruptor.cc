@@ -69,11 +69,11 @@ EventLoopInterruptor::~EventLoopInterruptor() {
         m_channel->disableAll();
     }
     if (m_readDescriptor != m_writeDescriptor && m_writeDescriptor != FLUTE_INVALID_SOCKET) {
-        flute::close(m_writeDescriptor);
+        flute::closeSocket(m_writeDescriptor);
         m_writeDescriptor = FLUTE_INVALID_SOCKET;
     }
     if (m_readDescriptor != FLUTE_INVALID_SOCKET) {
-        flute::close(m_readDescriptor);
+        flute::closeSocket(m_readDescriptor);
         m_readDescriptor = FLUTE_INVALID_SOCKET;
     }
     delete m_channel;
@@ -84,12 +84,20 @@ void EventLoopInterruptor::interrupt() const {
         return;
     }
     std::uint64_t num = 1;
+#ifdef _WIN32
+    flute::send(m_writeDescriptor, reinterpret_cast<char *>(&num), sizeof(num), 0);
+#else
     flute::write(m_writeDescriptor, &num, sizeof(num));
+#endif
 }
 
 void EventLoopInterruptor::handleRead() {
     std::uint64_t num;
+#ifdef _WIN32
+    flute::recv(m_readDescriptor, reinterpret_cast<char *>(&num), sizeof(num), 0);
+#else
     flute::read(m_readDescriptor, &num, sizeof(num));
+#endif
 }
 
 } // namespace flute

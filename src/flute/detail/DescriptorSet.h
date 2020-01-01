@@ -52,8 +52,6 @@ private:
     std::size_t m_setSize;
     flute_fd_set *m_set;
 
-    void checkSize(socket_type descriptor);
-
     static const int INIT_SET_SIZE = FD_SETSIZE;
 };
 
@@ -134,14 +132,15 @@ inline void DescriptorSet::add(socket_type descriptor) {
 
 inline void DescriptorSet::remove(socket_type descriptor) {
     unsigned int i;
-    for (i = 0; i < m_set->fd_count; i++) {
+    for (i = 0; i < m_set->fd_count ; ++i) {
         if (m_set->fd_array[i] == descriptor) {
+            while (i < m_set->fd_count - 1) {
+                m_set->fd_array[i] = m_set->fd_array[i + 1];
+                i += 1;
+            }
+            m_set->fd_count -= 1;
             break;
         }
-    }
-    if (i < m_set->fd_count) {
-        std::memmove(m_set->fd_array + i, m_set->fd_array + i + 1, m_set->fd_count - 1 - i);
-        m_set->fd_count -= 1;
     }
 }
 

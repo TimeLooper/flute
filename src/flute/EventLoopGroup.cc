@@ -34,7 +34,7 @@ EventLoopGroup::~EventLoopGroup() {
 }
 
 EventLoop* EventLoopGroup::chooseSlaveEventLoop(std::uint64_t hash) {
-    auto size = m_slaveEventLoops.size();
+    auto size = static_cast<std::int64_t>(m_slaveEventLoops.size());
     if (size <= 0) {
         return m_masterEventLoop;
     }

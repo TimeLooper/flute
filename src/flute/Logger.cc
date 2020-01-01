@@ -68,7 +68,7 @@ Logger::~Logger() {
     finish();
     if (s_logCallback) {
         auto temp = m_impl->m_buffer.str();
-        s_logCallback(temp.c_str(), temp.length());
+        s_logCallback(temp.c_str(), static_cast<int>(temp.length()));
     }
     delete m_impl;
 }
