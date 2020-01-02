@@ -18,27 +18,33 @@ namespace flute {
 namespace detail {
 
 class PollSelector : public Selector {
+private:
+    struct PollSelectorData;
+
 public:
     PollSelector() : m_events(), m_dataMap() {}
     ~PollSelector() = default;
 
     void addEvent(socket_type descriptor, int old, int events, void* data) override {
         auto temp = old | events;
-        auto ret = m_dataMap.insert(std::pair<socket_type, std::pair<size_type, void*>>(descriptor, std::pair<size_type, void*>(0, data)));
+        auto selectorData = new PollSelectorData();
+        selectorData->index = 0;
+        selectorData->data = data;
+        auto ret = m_dataMap.insert(std::pair<socket_type, PollSelectorData *>(descriptor, selectorData));
         short e = 0;
         if (temp & SelectorEvent::EVENT_READ) e |= POLLIN;
         if (temp & SelectorEvent::EVENT_WRITE) e |= POLLOUT;
         if (!ret.second) {
             // exists
-            ret.first->second.second = data;
-            auto index = ret.first->second.first;
-            auto& temp = m_events[index];
-            temp.events = e;
-            temp.fd = descriptor;
+            ret.first->second->data = data;
+            auto index = ret.first->second->index;
+            auto& pfd = m_events[index];
+            pfd.events = e;
+            pfd.fd = descriptor;
         } else {
             pollfd pfd = { descriptor, e, 0 };
             m_events.push_back(pfd);
-            ret.first->second.first = m_events.size() - 1;
+            ret.first->second->index = m_events.size() - 1;
         }
     }
 
@@ -52,13 +58,20 @@ public:
             return;
         }
         if (temp == SelectorEvent::EVENT_NONE) {
-            m_events.erase(it->second.first + m_events.begin());
+            auto selectorData = it->second;
+            auto iterator = m_events.begin() + selectorData->index;
+            std::iter_swap(iterator, m_events.end() - 1);
+            auto& tmp = m_events[selectorData->index];
+            auto tempIterator = m_dataMap.find(tmp.fd);
+            tempIterator->second->index = selectorData->index;
             m_dataMap.erase(it);
+            m_events.pop_back();
+            delete selectorData;
             return;
         }
         auto& p = it->second;
-        p.second = data;
-        m_events[p.first].events = e;
+        p->data = data;
+        m_events[p->index].events = e;
     }
 
     int select(std::vector<SelectorEvent>& events, int timeout) override {
@@ -77,8 +90,11 @@ public:
             }
             auto& e = events[index];
             auto it = m_dataMap.find(pfd.fd);
+            if (it == m_dataMap.end()) {
+                LOG_DEBUG << "poll descriptor " << pfd.fd;
+            }
             assert(it != m_dataMap.end());
-            e.data = it->second.second;
+            e.data = it->second->data;
             e.events = 0;
             if (pfd.revents & (POLLHUP | POLLERR | POLLNVAL)) e.events |= SelectorEvent::EVENT_READ;
             if (pfd.revents & POLLIN) e.events |= SelectorEvent::EVENT_READ;
@@ -90,8 +106,12 @@ public:
 
 private:
     using size_type = std::vector<pollfd>::size_type;
+    struct PollSelectorData {
+        size_type index;
+        void* data;
+    };
     std::vector<pollfd> m_events;
-    std::map<socket_type, std::pair<size_type, void*>> m_dataMap;
+    std::map<socket_type, PollSelectorData *> m_dataMap;
 };
 
 } // namespace detail

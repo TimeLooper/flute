@@ -23,10 +23,12 @@ struct flute_fd_set {
     socket_type  fd_array[0];          /* an array of SOCKETs */
 };
 #else
-// typedef fd_set flute_fd_set;
 struct flute_fd_set {
     std::uint8_t fds_bits[1];
 };
+
+#define ELEMENT_SIZE (sizeof(std::uint8_t) * 8)
+
 #endif
 
 struct DescriptorSet {
@@ -129,10 +131,7 @@ inline void DescriptorSet::remove(socket_type descriptor) {
     unsigned int i;
     for (i = 0; i < m_set->fd_count ; ++i) {
         if (m_set->fd_array[i] == descriptor) {
-            while (i < m_set->fd_count - 1) {
-                m_set->fd_array[i] = m_set->fd_array[i + 1];
-                i += 1;
-            }
+            m_set->fd_array[i] = m_set->fd_array[m_set->fd_count - 1];
             m_set->fd_count -= 1;
             break;
         }
@@ -192,7 +191,7 @@ inline bool DescriptorSet::containes(socket_type descriptor) {
     if (index >= m_setSize) {
         return false;
     }
-    return m_set->fds_bits[index] & (std::uint8_t (0x1)) << (descriptor & static_cast<socket_type>(~8));
+    return m_set->fds_bits[index] & (std::uint8_t (0x1)) << (descriptor & static_cast<socket_type>(ELEMENT_SIZE - 1));
 }
 
 inline void DescriptorSet::add(socket_type descriptor) {
@@ -201,7 +200,7 @@ inline void DescriptorSet::add(socket_type descriptor) {
         m_set = static_cast<flute_fd_set *>(std::realloc(m_set, index + 1));
         m_setSize = index + 1;
     }
-    m_set->fds_bits[index] |= (std::uint8_t (0x1)) << (descriptor & static_cast<socket_type>(~8));
+    m_set->fds_bits[index] |= (std::uint8_t (0x1)) << (descriptor & static_cast<socket_type>(ELEMENT_SIZE - 1));
 }
 
 inline void DescriptorSet::remove(socket_type descriptor) {
@@ -209,7 +208,7 @@ inline void DescriptorSet::remove(socket_type descriptor) {
     if (index >= m_setSize) {
         return;
     }
-    m_set->fds_bits[index] &= ~((std::uint8_t (0x1)) << (descriptor & static_cast<socket_type>(~8)));
+    m_set->fds_bits[index] &= ~((std::uint8_t (0x1)) << (descriptor & static_cast<socket_type>(ELEMENT_SIZE - 1)));
 }
 
 inline fd_set* DescriptorSet::getRawSet() {
