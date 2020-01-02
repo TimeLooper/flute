@@ -59,9 +59,6 @@ void TcpServer::close() {
 }
 
 void TcpServer::handleConnectionClose(const std::shared_ptr<flute::TcpConnection>& conn) {
-    if (m_closeCallback) {
-        m_closeCallback(conn);
-    }
     auto baseLoop = m_eventLoopGroup->getMasterEventLoop();
     baseLoop->runInLoop(std::bind(&TcpServer::handleConnectionCloseInLoop, this, conn));
 }
@@ -87,25 +84,28 @@ void TcpServer::handleAcceptConnection(flute::socket_type descriptor) {
 
 void TcpServer::handleConnectionCloseInLoop(const std::shared_ptr<flute::TcpConnection>& conn) {
     m_eventLoopGroup->getMasterEventLoop()->assertInLoopThread();
+    if (m_closeCallback) {
+        m_closeCallback(conn);
+    }
     conn->handleConnectionDestroy();
 }
 
 void TcpServer::handleConnectionDestroy(const std::shared_ptr<flute::TcpConnection>& conn) {
-    if (m_connectionDestroyCallback) {
-        m_connectionDestroyCallback(conn);
-    }
     auto baseLoop = m_eventLoopGroup->getMasterEventLoop();
     baseLoop->runInLoop(std::bind(&TcpServer::handleConnectionDestroyInLoop, this, conn));
 }
 
 void TcpServer::handleConnectionDestroyInLoop(const std::shared_ptr<flute::TcpConnection>& conn) {
+    if (m_connectionDestroyCallback) {
+        m_connectionDestroyCallback(conn);
+    }
     auto n = m_connections.erase(conn->descriptor());
     assert(n == 1);
     (void)n;
     if (m_connections.empty() && m_state == ServerState::STOPPING) {
         m_state = ServerState::STOPPED;
     }
-    LOG_TRACE << "remove connection " << conn->getRemoteAddress().toString();
+    LOG_TRACE << "remove connection " << conn->getRemoteAddress().toString() << " live count " << m_connections.size();
 }
 
 } // namespace flute

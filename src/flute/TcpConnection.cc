@@ -192,13 +192,13 @@ void TcpConnection::sendInLoop(const void* buffer, flute::ssize_t length) {
             if (remain <= 0 && m_writeCompleteCallback) {
                 m_loop->queueInLoop(std::bind(m_writeCompleteCallback, shared_from_this()));
             }
-        }
-    } else {
-        count = 0;
-        if (errno != EWOULDBLOCK && errno != EAGAIN) {
-            LOG_ERROR << "TcpConnection::sendInLoop " << errno << ":" << std::strerror(errno);
-            if (errno == EPIPE || errno == ECONNRESET) {
-                error = true;
+        } else {
+            count = 0;
+            if (errno != EWOULDBLOCK && errno != EAGAIN) {
+                LOG_ERROR << "TcpConnection::sendInLoop " << errno << ":" << std::strerror(errno);
+                if (errno == EPIPE || errno == ECONNRESET) {
+                    error = true;
+                }
             }
         }
     }
