@@ -102,14 +102,14 @@ public:
         }
         auto index = 0;
         for (socket_type i = m_minDescriptor; i <= m_maxDescriptor; ++i) {
-            auto& e = events[index];
-            auto events = 0;
-            if (m_readSetOut.containes(i)) events |= SelectorEvent::EVENT_READ;
-            if (m_writeSetOut.containes(i)) events |= SelectorEvent::EVENT_WRITE;
-            if (events) {
+            auto sev = 0;
+            if (m_readSetOut.containes(i)) sev |= SelectorEvent::EVENT_READ;
+            if (m_writeSetOut.containes(i)) sev |= SelectorEvent::EVENT_WRITE;
+            if (sev) {
+                auto& e = events[index];
                 auto it = m_dataMap.find(i);
                 e.data = it->second;
-                e.events = events;
+                e.events = sev;
                 index += 1;
             }
         }

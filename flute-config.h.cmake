@@ -1,7 +1,8 @@
 /*
  * flute-config.h
  */
-#pragma once
+#ifndef FLUTE_CONFIG_H
+#define FLUTE_CONFIG_H
 
 #cmakedefine FLUTE_HAVE_SYS_TYPES_H 1
 
@@ -64,3 +65,5 @@
 #cmakedefine FLUTE_HAVE_SOCKETPAIR 1
 
 #cmakedefine FLUTE_HAVE_SETFD 1
+
+#endif // FLUTE_CONFIG_H
