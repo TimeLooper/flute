@@ -17,6 +17,7 @@
 #endif
 
 #include <map>
+#include <set>
 
 namespace flute {
 namespace detail {
