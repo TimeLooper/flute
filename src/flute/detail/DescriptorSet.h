@@ -20,7 +20,7 @@ namespace detail {
 #ifdef _WIN32
 struct flute_fd_set {
     unsigned int fd_count;             /* how many are SET? */
-    socket_type  fd_array[0];          /* an array of SOCKETs */
+    socket_type  fd_array[1];          /* an array of SOCKETs */
 };
 #else
 struct flute_fd_set {
