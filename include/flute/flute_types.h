@@ -10,7 +10,7 @@
 #include <functional>
 #include <memory>
 
-#if defined(_WIN32) || defined(WIN32)
+#ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #define WIN32_LEAN_AND_MEAN
@@ -30,7 +30,7 @@
 
 namespace flute {
 
-#if defined(WIN32) || defined(_WIN32)
+#ifdef _WIN32
 typedef SOCKET socket_type;
 #define SHUT_WR SD_SEND
 #define SHUT_RD SD_RECEIVE

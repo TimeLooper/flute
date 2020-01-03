@@ -327,7 +327,7 @@ flute::ssize_t getByteAvaliableOnSocket(socket_type descriptor) {
 }
 
 int closeSocket(socket_type descriptor) {
-#if defined(WIN32) || defined(_WIN32)
+#ifdef _WIN32
     return ::closesocket(descriptor);
 #else
     return ::close(descriptor);

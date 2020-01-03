@@ -13,7 +13,7 @@
 #include <ctime>
 #include <iomanip>
 
-#if defined(WIN32) || defined(_WIN32)
+#ifdef _WIN32
 #define filename(x) strrchr(x, '\\') ? strrchr(x, '\\') + 1 : x
 #else
 #define filename(x) strrchr(x, '/') ? strrchr(x, '/') + 1 : x
@@ -37,7 +37,10 @@ static inline const char* getLogLevelTag(int level) {
     }
 }
 
-static void defaultCallback(const char* msg, int length) { fwrite(msg, 1, length, stdout); }
+static void defaultCallback(const char* msg, int length) {
+    fwrite(msg, 1, length, stdout);
+    fflush(stdout);
+}
 
 struct Logger::LoggerImpl {
     int m_line;
