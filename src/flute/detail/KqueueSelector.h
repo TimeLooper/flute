@@ -89,9 +89,9 @@ public:
             auto& kev = m_events[i];
             ev.data = kev.udata;
             ev.events = 0;
-            if (kev.flags & EV_ERROR) ev.events |= SelectorEvent::EVENT_READ;
             if (kev.filter == EVFILT_READ) ev.events |= SelectorEvent::EVENT_READ;
             if (kev.filter == EVFILT_WRITE) ev.events |= SelectorEvent::EVENT_WRITE;
+            if (kev.flags & EV_ERROR) ev.events |= SelectorEvent::EVENT_WRITE;
         }
         if (ret > 0 && m_events.size() == ret && m_events.size() < MAX_EVENT_SIZE) {
             m_events.resize(m_events.size() << 1);

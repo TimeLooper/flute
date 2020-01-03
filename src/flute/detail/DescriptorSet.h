@@ -50,6 +50,8 @@ public:
 
     fd_set* getRawSet();
 
+    void checkSize(socket_type descriptor);
+
 private:
     std::size_t m_setSize;
     flute_fd_set *m_set;
@@ -147,6 +149,10 @@ inline fd_set* DescriptorSet::getRawSet() {
     return reinterpret_cast<fd_set*>(m_set);
 }
 
+inline void DescriptorSet::checkSize(socket_type descriptor) {
+    
+}
+
 #else
 
 inline DescriptorSet::DescriptorSet() : m_setSize(INIT_FD_SET_SIZE / BYTE_BITS), m_set(static_cast<flute_fd_set *>(std::malloc(m_setSize))) {
@@ -201,10 +207,6 @@ inline bool DescriptorSet::containes(socket_type descriptor) {
 
 inline void DescriptorSet::add(socket_type descriptor) {
     auto index = static_cast<std::size_t>(GET_ELELMENT_INDEX(descriptor));
-    if (index >= m_setSize) {
-        m_set = static_cast<flute_fd_set *>(std::realloc(m_set, index + 8));
-        m_setSize = index + 8;
-    }
     m_set->fds_bits[index] |= GET_MASK(descriptor);
 }
 
@@ -218,6 +220,14 @@ inline void DescriptorSet::remove(socket_type descriptor) {
 
 inline fd_set* DescriptorSet::getRawSet() {
     return reinterpret_cast<fd_set*>(m_set);
+}
+
+inline void DescriptorSet::checkSize(socket_type descriptor) {
+    auto index = static_cast<std::size_t>(GET_ELELMENT_INDEX(descriptor));
+    if (index >= m_setSize) {
+        m_set = static_cast<flute_fd_set *>(std::realloc(m_set, index + 8));
+        m_setSize = index + 8;
+    }
 }
 
 #endif

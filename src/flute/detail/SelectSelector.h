@@ -29,6 +29,8 @@ public:
 
     void addEvent(socket_type descriptor, int old, int events, void* data) override {
         auto temp = old | events;
+        m_readSet.checkSize(descriptor);
+        m_writeSet.checkSize(descriptor);
         if (events & SelectorEvent::EVENT_READ) {
             m_readSet.add(descriptor);
         }
