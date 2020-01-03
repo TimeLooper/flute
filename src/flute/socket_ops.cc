@@ -257,9 +257,19 @@ flute::ssize_t readv(socket_type descriptor, const struct iovec* vec, int count)
 #else
     auto result = 0;
     for (auto i = 0; i < count; ++i) {
+        if (vec[i].iov_len <= 0) {
+            break;
+        }
         auto temp = ::recv(descriptor, reinterpret_cast<char *>(vec[i].iov_base), static_cast<int>(vec[i].iov_len), 0);
         if (temp > 0) {
             result += temp;
+        } else {
+            auto error = WSAGetLastError();
+            if (error == WSAECONNABORTED || error == WSAECONNRESET) {
+                return 0;
+            } else {
+                return -1;
+            }
         }
     }
     return result;
@@ -286,9 +296,19 @@ flute::ssize_t writev(socket_type descriptor, const struct iovec* vec, int count
 #else
     auto result = 0;
     for (auto i = 0; i < count; ++i) {
+        if (vec[i].iov_len <= 0) {
+            break;
+        }
         auto temp = ::send(descriptor, reinterpret_cast<const char *>(vec[i].iov_base), static_cast<int>(vec[i].iov_len), 0);
         if (temp > 0) {
             result += temp;
+        } else {
+            auto error = WSAGetLastError();
+            if (error == WSAECONNABORTED || error == WSAECONNRESET) {
+                return 0;
+            } else {
+                return -1;
+            }
         }
     }
     return result;

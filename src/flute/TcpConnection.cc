@@ -31,6 +31,7 @@ TcpConnection::TcpConnection(socket_type descriptor, EventLoop* loop, const Inet
     , m_inputBuffer()
     , m_outputBuffer() {
     m_socket->setTcpNoDelay(true);
+    m_socket->setKeepAlive(true);
     m_channel->setReadCallback(std::bind(&TcpConnection::handleRead, this));
     m_channel->setWriteCallback(std::bind(&TcpConnection::handleWrite, this));
 }
@@ -274,6 +275,7 @@ void TcpConnection::handleConnectionDestroyInLoop() {
     if (m_state == ConnectionState::DISCONNECTING) {
         m_state = ConnectionState::DISCONNECTED;
         m_channel->disableAll();
+        m_socket->close();
         if (m_connectionDestroyCallback) {
             m_connectionDestroyCallback(shared_from_this());
         }
