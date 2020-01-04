@@ -26,13 +26,13 @@ namespace flute {
 
 Selector* Selector::createSelector() {
 #ifdef FLUTE_HAVE_EPOLL
-   return new detail::EpollSelector();
+    return new detail::EpollSelector();
 #endif
 #ifdef FLUTE_HAVE_KQUEUE
-   return new detail::KqueueSelector();
+    return new detail::KqueueSelector();
 #endif
 #ifdef FLUTE_HAVE_POLL
-   return new detail::PollSelector();
+    return new detail::PollSelector();
 #endif
 #if defined(FLUTE_HAVE_SELECT) || defined(_WIN32)
     return new detail::SelectSelector();

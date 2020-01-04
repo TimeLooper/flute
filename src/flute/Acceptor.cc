@@ -23,9 +23,8 @@ Acceptor::Acceptor(EventLoop* loop)
     , m_acceptCallback() {}
 
 Acceptor::~Acceptor() {
-    m_channel->disableAll();
-    delete m_channel;
-    delete m_socket;
+    assert(!m_socket);
+    assert(!m_channel);
 }
 
 void Acceptor::bind(const InetAddress& address) {
@@ -60,6 +59,9 @@ void Acceptor::listen() {
 void Acceptor::close() {
     m_channel->disableAll();
     m_socket->close();
+    delete m_channel;
+    delete m_socket;
+    m_channel = m_socket = nullptr;
     m_listening = false;
 }
 

@@ -5,17 +5,13 @@
 #ifndef FLUTE_TIMER_HEAP_H
 #define FLUTE_TIMER_HEAP_H
 
-#include <chrono>
+#include <flute/internal.h>
+
 #include <cstdint>
 #include <functional>
 #include <vector>
 
 namespace flute {
-
-inline std::int64_t currentMilliseconds() {
-    return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch())
-        .count();
-}
 
 struct Timer {
     Timer(std::function<void()>&& callback, std::int64_t delay, int loopCount)

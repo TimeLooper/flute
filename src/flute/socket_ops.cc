@@ -34,124 +34,108 @@ public:
         WORD wVersionRequested;
         WSADATA wsaData;
         wVersionRequested = MAKEWORD(2, 2);
-        (void) WSAStartup(wVersionRequested, &wsaData);
+        WSAStartup(wVersionRequested, &wsaData);
 #else
-    std::signal(SIGPIPE, SIG_IGN);
+        std::signal(SIGPIPE, SIG_IGN);
 #endif
     }
-} nitialize;
+} initialize;
 
 #ifndef FLUTE_HAVE_SOCKETPAIR
 
 #define FLUTE_SOCKET_ERROR() WSAGetLastError()
 
-#define FLUTE_SET_SOCKET_ERROR(errcode)		\
-	do { WSASetLastError(errcode); } while (0)
+#define FLUTE_SET_SOCKET_ERROR(errcode) \
+    do {                                \
+        WSASetLastError(errcode);       \
+    } while (0)
 
 #ifndef AF_UNIX
 #define AF_UNIX AF_INET
 #endif
 
 int socketpair(int domain, int type, int protocol, socket_type descriptors[2]) {
-    /* This code is originally from Tor.  Used with permission. */
+/* This code is originally from Tor.  Used with permission. */
 
-	/* This socketpair does not work when localhost is down. So
-	 * it's really not the same thing at all. But it's close enough
-	 * for now, and really, when localhost is down sometimes, we
-	 * have other problems too.
-	 */
+/* This socketpair does not work when localhost is down. So
+ * it's really not the same thing at all. But it's close enough
+ * for now, and really, when localhost is down sometimes, we
+ * have other problems too.
+ */
 #ifdef _WIN32
 #define ERR(e) WSA##e
 #else
 #define ERR(e) e
 #endif
-	socket_type listener = -1;
-	socket_type connector = -1;
-	socket_type acceptor = -1;
-	struct sockaddr_in listen_addr;
-	struct sockaddr_in connect_addr;
-	socklen_t size;
-	int saved_errno = -1;
-	int family_test;
-	
-	family_test = domain != AF_INET;
+    socket_type listener = -1;
+    socket_type connector = -1;
+    socket_type acceptor = -1;
+    struct sockaddr_in listen_addr;
+    struct sockaddr_in connect_addr;
+    socklen_t size;
+    int saved_errno = -1;
+    int family_test;
+
+    family_test = domain != AF_INET;
 #ifdef AF_UNIX
-	family_test = family_test && (domain != AF_UNIX);
+    family_test = family_test && (domain != AF_UNIX);
 #endif
-	if (protocol || family_test) {
-		FLUTE_SET_SOCKET_ERROR(ERR(EAFNOSUPPORT));
-		return -1;
-	}
-	
-	if (!descriptors) {
-		FLUTE_SET_SOCKET_ERROR(ERR(EINVAL));
-		return -1;
-	}
+    if (protocol || family_test) {
+        FLUTE_SET_SOCKET_ERROR(ERR(EAFNOSUPPORT));
+        return -1;
+    }
 
-	listener = ::socket(AF_INET, type, 0);
-	if (listener < 0)
-		return -1;
-	std::memset(&listen_addr, 0, sizeof(listen_addr));
-	listen_addr.sin_family = AF_INET;
-	listen_addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
-	listen_addr.sin_port = 0;	/* kernel chooses port.	 */
-	if (::bind(listener, (struct sockaddr *) &listen_addr, sizeof (listen_addr))
-		== -1)
-		goto tidy_up_and_fail;
-	if (::listen(listener, 1) == -1)
-		goto tidy_up_and_fail;
+    if (!descriptors) {
+        FLUTE_SET_SOCKET_ERROR(ERR(EINVAL));
+        return -1;
+    }
 
-	connector = ::socket(AF_INET, type, 0);
-	if (connector < 0)
-		goto tidy_up_and_fail;
+    listener = ::socket(AF_INET, type, 0);
+    if (listener < 0) return -1;
+    std::memset(&listen_addr, 0, sizeof(listen_addr));
+    listen_addr.sin_family = AF_INET;
+    listen_addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+    listen_addr.sin_port = 0; /* kernel chooses port.	 */
+    if (::bind(listener, (struct sockaddr*)&listen_addr, sizeof(listen_addr)) == -1) goto tidy_up_and_fail;
+    if (::listen(listener, 1) == -1) goto tidy_up_and_fail;
 
-	std::memset(&connect_addr, 0, sizeof(connect_addr));
+    connector = ::socket(AF_INET, type, 0);
+    if (connector < 0) goto tidy_up_and_fail;
 
-	/* We want to find out the port number to connect to.  */
-	size = sizeof(connect_addr);
-	if (::getsockname(listener, (struct sockaddr *) &connect_addr, &size) == -1)
-		goto tidy_up_and_fail;
-	if (size != sizeof (connect_addr))
-		goto abort_tidy_up_and_fail;
-	if (::connect(connector, (struct sockaddr *) &connect_addr,
-				sizeof(connect_addr)) == -1)
-		goto tidy_up_and_fail;
+    std::memset(&connect_addr, 0, sizeof(connect_addr));
 
-	size = sizeof(listen_addr);
-	acceptor = ::accept(listener, (struct sockaddr *) &listen_addr, &size);
-	if (acceptor < 0)
-		goto tidy_up_and_fail;
-	if (size != sizeof(listen_addr))
-		goto abort_tidy_up_and_fail;
-	/* Now check we are talking to ourself by matching port and host on the
-	   two sockets.	 */
-	if (::getsockname(connector, (struct sockaddr *) &connect_addr, &size) == -1)
-		goto tidy_up_and_fail;
-	if (size != sizeof (connect_addr)
-		|| listen_addr.sin_family != connect_addr.sin_family
-		|| listen_addr.sin_addr.s_addr != connect_addr.sin_addr.s_addr
-		|| listen_addr.sin_port != connect_addr.sin_port)
-		goto abort_tidy_up_and_fail;
-	::closesocket(listener);
-	descriptors[0] = connector;
-	descriptors[1] = acceptor;
+    /* We want to find out the port number to connect to.  */
+    size = sizeof(connect_addr);
+    if (::getsockname(listener, (struct sockaddr*)&connect_addr, &size) == -1) goto tidy_up_and_fail;
+    if (size != sizeof(connect_addr)) goto abort_tidy_up_and_fail;
+    if (::connect(connector, (struct sockaddr*)&connect_addr, sizeof(connect_addr)) == -1) goto tidy_up_and_fail;
 
-	return 0;
+    size = sizeof(listen_addr);
+    acceptor = ::accept(listener, (struct sockaddr*)&listen_addr, &size);
+    if (acceptor < 0) goto tidy_up_and_fail;
+    if (size != sizeof(listen_addr)) goto abort_tidy_up_and_fail;
+    /* Now check we are talking to ourself by matching port and host on the
+       two sockets.	 */
+    if (::getsockname(connector, (struct sockaddr*)&connect_addr, &size) == -1) goto tidy_up_and_fail;
+    if (size != sizeof(connect_addr) || listen_addr.sin_family != connect_addr.sin_family ||
+        listen_addr.sin_addr.s_addr != connect_addr.sin_addr.s_addr || listen_addr.sin_port != connect_addr.sin_port)
+        goto abort_tidy_up_and_fail;
+    ::closesocket(listener);
+    descriptors[0] = connector;
+    descriptors[1] = acceptor;
 
- abort_tidy_up_and_fail:
-	saved_errno = ERR(ECONNABORTED);
- tidy_up_and_fail:
-	if (saved_errno < 0)
-		saved_errno = FLUTE_SOCKET_ERROR();
-	if (listener != -1)
-		closesocket(listener);
-	if (connector != -1)
-		closesocket(connector);
-	if (acceptor != -1)
-		closesocket(acceptor);
+    return 0;
 
-	FLUTE_SET_SOCKET_ERROR(saved_errno);
-	return -1;
+abort_tidy_up_and_fail:
+    saved_errno = ERR(ECONNABORTED);
+tidy_up_and_fail:
+    if (saved_errno < 0) saved_errno = FLUTE_SOCKET_ERROR();
+    if (listener != -1) closesocket(listener);
+    if (connector != -1) closesocket(connector);
+    if (acceptor != -1) closesocket(acceptor);
+
+    FLUTE_SET_SOCKET_ERROR(saved_errno);
+    return -1;
 #undef ERR
 }
 #endif
@@ -260,7 +244,7 @@ flute::ssize_t readv(socket_type descriptor, const struct iovec* vec, int count)
         if (vec[i].iov_len <= 0) {
             break;
         }
-        auto temp = ::recv(descriptor, reinterpret_cast<char *>(vec[i].iov_base), static_cast<int>(vec[i].iov_len), 0);
+        auto temp = ::recv(descriptor, reinterpret_cast<char*>(vec[i].iov_base), static_cast<int>(vec[i].iov_len), 0);
         if (temp > 0) {
             result += temp;
         } else {
@@ -273,20 +257,20 @@ flute::ssize_t readv(socket_type descriptor, const struct iovec* vec, int count)
         }
     }
     return result;
-    // DWORD bytesRead;
-    // DWORD flags = 0;
-    // WSABUF buf{};
-    // buf.buf = static_cast<char*>(vec->iov_base);
-    // buf.len = static_cast<ULONG>(vec->iov_len);
-    // if (WSARecv(descriptor, &buf, count, &bytesRead, &flags, nullptr, nullptr)) {
-    //     if (WSAGetLastError() == WSAECONNABORTED)
-    //         result = 0;
-    //     else
-    //         result = -1;
-    // } else {
-    //     result = bytesRead;
-    // }
-    // return result;
+// DWORD bytesRead;
+// DWORD flags = 0;
+// WSABUF buf{};
+// buf.buf = static_cast<char*>(vec->iov_base);
+// buf.len = static_cast<ULONG>(vec->iov_len);
+// if (WSARecv(descriptor, &buf, count, &bytesRead, &flags, nullptr, nullptr)) {
+//     if (WSAGetLastError() == WSAECONNABORTED)
+//         result = 0;
+//     else
+//         result = -1;
+// } else {
+//     result = bytesRead;
+// }
+// return result;
 #endif
 }
 
@@ -299,7 +283,8 @@ flute::ssize_t writev(socket_type descriptor, const struct iovec* vec, int count
         if (vec[i].iov_len <= 0) {
             break;
         }
-        auto temp = ::send(descriptor, reinterpret_cast<const char *>(vec[i].iov_base), static_cast<int>(vec[i].iov_len), 0);
+        auto temp =
+            ::send(descriptor, reinterpret_cast<const char*>(vec[i].iov_base), static_cast<int>(vec[i].iov_len), 0);
         if (temp > 0) {
             result += temp;
         } else {
@@ -312,20 +297,20 @@ flute::ssize_t writev(socket_type descriptor, const struct iovec* vec, int count
         }
     }
     return result;
-    // DWORD bytesSend;
-    // DWORD flags = 0;
-    // WSABUF buf{};
-    // buf.buf = static_cast<char*>(vec->iov_base);
-    // buf.len = static_cast<ULONG>(vec->iov_len);
-    // if (WSASend(descriptor, &buf, count, &bytesSend, flags, nullptr, nullptr)) {
-    //     if (WSAGetLastError() == WSAECONNABORTED)
-    //         result = 0;
-    //     else
-    //         result = -1;
-    // } else {
-    //     result = bytesSend;
-    // }
-    // return result;
+// DWORD bytesSend;
+// DWORD flags = 0;
+// WSABUF buf{};
+// buf.buf = static_cast<char*>(vec->iov_base);
+// buf.len = static_cast<ULONG>(vec->iov_len);
+// if (WSASend(descriptor, &buf, count, &bytesSend, flags, nullptr, nullptr)) {
+//     if (WSAGetLastError() == WSAECONNABORTED)
+//         result = 0;
+//     else
+//         result = -1;
+// } else {
+//     result = bytesSend;
+// }
+// return result;
 #endif
 }
 

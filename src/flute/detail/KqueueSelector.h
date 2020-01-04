@@ -5,17 +5,17 @@
 #ifndef FLUTE_DETAIL_KQUEUE_SELECTOR_H
 #define FLUTE_DETAIL_KQUEUE_SELECTOR_H
 
-#include <flute/flute_types.h>
-#include <flute/Selector.h>
 #include <flute/Logger.h>
+#include <flute/Selector.h>
+#include <flute/flute_types.h>
 #include <flute/socket_ops.h>
 
 #include <sys/event.h>
 
-#include <vector>
 #include <cerrno>
 #include <cstring>
 #include <ctime>
+#include <vector>
 
 namespace flute {
 namespace detail {

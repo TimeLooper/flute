@@ -5,10 +5,10 @@
 #ifndef FLUTE_DETAIL_SELECT_SELECTOR_H
 #define FLUTE_DETAIL_SELECT_SELECTOR_H
 
-#include <flute/flute-config.h>
-#include <flute/Selector.h>
-#include <flute/flute_types.h>
 #include <flute/Logger.h>
+#include <flute/Selector.h>
+#include <flute/flute-config.h>
+#include <flute/flute_types.h>
 
 #include <flute/detail/DescriptorSet.h>
 
@@ -24,7 +24,15 @@ namespace detail {
 
 class SelectSelector : public Selector {
 public:
-    SelectSelector() : m_minDescriptor(0), m_maxDescriptor(0), m_descriptors(), m_readSet(), m_writeSet(), m_readSetOut(), m_writeSetOut(), m_dataMap() {}
+    SelectSelector()
+        : m_minDescriptor(0)
+        , m_maxDescriptor(0)
+        , m_descriptors()
+        , m_readSet()
+        , m_writeSet()
+        , m_readSetOut()
+        , m_writeSetOut()
+        , m_dataMap() {}
     ~SelectSelector() = default;
 
     void addEvent(socket_type descriptor, int old, int events, void* data) override {
@@ -86,13 +94,15 @@ public:
 #ifdef _WIN32
             count = ::select(0, m_readSetOut.getRawSet(), m_writeSetOut.getRawSet(), nullptr, &timeoutSpec);
 #else
-            count = ::select(m_maxDescriptor + 1, m_readSetOut.getRawSet(), m_writeSetOut.getRawSet(), nullptr, &timeoutSpec);
+            count = ::select(m_maxDescriptor + 1, m_readSetOut.getRawSet(), m_writeSetOut.getRawSet(), nullptr,
+                             &timeoutSpec);
 #endif
         } else {
 #ifdef _WIN32
             count = ::select(0, m_readSetOut.getRawSet(), m_writeSetOut.getRawSet(), nullptr, nullptr);
 #else
-            count = ::select(m_maxDescriptor + 1, m_readSetOut.getRawSet(), m_writeSetOut.getRawSet(), nullptr, nullptr);
+            count =
+                ::select(m_maxDescriptor + 1, m_readSetOut.getRawSet(), m_writeSetOut.getRawSet(), nullptr, nullptr);
 #endif
         }
         if (count == -1) {
@@ -131,6 +141,5 @@ private:
 
 } // namespace detail
 } // namespace flute
-
 
 #endif // FLUTE_DETAIL_SELECT_SELECTOR_H

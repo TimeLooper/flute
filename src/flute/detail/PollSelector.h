@@ -5,9 +5,9 @@
 #ifndef FLUTE_DETAIL_POLL_SELECTOR_H
 #define FLUTE_DETAIL_POLL_SELECTOR_H
 
-#include <flute/flute-config.h>
 #include <flute/Logger.h>
 #include <flute/Selector.h>
+#include <flute/flute-config.h>
 
 #include <sys/poll.h>
 
@@ -30,7 +30,7 @@ public:
         auto selectorData = new PollSelectorData();
         selectorData->index = 0;
         selectorData->data = data;
-        auto ret = m_dataMap.insert(std::pair<socket_type, PollSelectorData *>(descriptor, selectorData));
+        auto ret = m_dataMap.insert(std::pair<socket_type, PollSelectorData*>(descriptor, selectorData));
         short e = 0;
         if (temp & SelectorEvent::EVENT_READ) e |= POLLIN;
         if (temp & SelectorEvent::EVENT_WRITE) e |= POLLOUT;
@@ -42,7 +42,7 @@ public:
             pfd.events = e;
             pfd.fd = descriptor;
         } else {
-            pollfd pfd = { descriptor, e, 0 };
+            pollfd pfd = {descriptor, e, 0};
             m_events.push_back(pfd);
             ret.first->second->index = m_events.size() - 1;
         }
@@ -110,7 +110,7 @@ private:
         void* data;
     };
     std::vector<pollfd> m_events;
-    std::map<socket_type, PollSelectorData *> m_dataMap;
+    std::map<socket_type, PollSelectorData*> m_dataMap;
 };
 
 } // namespace detail
