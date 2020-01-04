@@ -81,6 +81,9 @@ public:
         } else {
             ret = ::kevent(m_descriptor, nullptr, 0, m_events.data(), m_events.size(), nullptr);
         }
+        if (ret == -1) {
+            return -1;
+        }
         if (ret > 0 && ret > events.size()) {
             events.resize(ret);
         }

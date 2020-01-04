@@ -106,7 +106,7 @@ public:
 #endif
         }
         if (count == -1) {
-            LOG_ERROR << "select error " << errno << ":" << std::strerror(errno);
+            // LOG_ERROR << "select error " << errno << ":" << std::strerror(errno);
             return -1;
         }
         if (count > 0 && static_cast<std::size_t>(count) > events.size()) {

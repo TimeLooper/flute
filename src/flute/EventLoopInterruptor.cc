@@ -20,7 +20,7 @@ EventLoopInterruptor::EventLoopInterruptor(EventLoop *loop)
     , m_loop(loop)
     , m_channel(nullptr) {
     socket_type fds[2];
-    if (createInterrupterDescriptor(fds) != 0) {
+    if (createInterruptDescriptor(fds) != 0) {
         LOG_FATAL << "create event interruptor failed.";
         exit(-1);
     } else {
