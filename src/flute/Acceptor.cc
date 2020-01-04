@@ -61,7 +61,8 @@ void Acceptor::close() {
     m_socket->close();
     delete m_channel;
     delete m_socket;
-    m_channel = m_socket = nullptr;
+    m_channel = nullptr;
+    m_socket = nullptr;
     m_listening = false;
 }
 

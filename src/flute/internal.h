@@ -50,8 +50,8 @@ inline int createInterrupterDescriptor(socket_type fds[2]) {
     if (flute::socketpair(AF_UNIX, SOCK_STREAM, 0, fds) == 0) {
         if (flute::setSocketCloseOnExec(fds[0]) < 0 || flute::setSocketCloseOnExec(fds[1]) < 0 ||
             flute::setSocketNonblocking(fds[0]) < 0 || flute::setSocketNonblocking(fds[1]) < 0) {
-            flute::close(fds[0]);
-            flute::close(fds[1]);
+            flute::closeSocket(fds[0]);
+            flute::closeSocket(fds[1]);
             fds[0] = fds[1] = flute::FLUTE_INVALID_SOCKET;
             return -1;
         }

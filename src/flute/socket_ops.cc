@@ -249,7 +249,7 @@ flute::ssize_t readv(socket_type descriptor, const struct iovec* vec, int count)
             result += temp;
         } else {
             auto error = WSAGetLastError();
-            if (error == WSAECONNABORTED || error == WSAECONNRESET) {
+            if (error == WSAECONNABORTED) {
                 return 0;
             } else {
                 return -1;
@@ -289,7 +289,7 @@ flute::ssize_t writev(socket_type descriptor, const struct iovec* vec, int count
             result += temp;
         } else {
             auto error = WSAGetLastError();
-            if (error == WSAECONNABORTED || error == WSAECONNRESET) {
+            if (error == WSAECONNABORTED) {
                 return 0;
             } else {
                 return -1;
