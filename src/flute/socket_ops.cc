@@ -27,20 +27,6 @@
 
 namespace flute {
 
-static struct Initialize {
-public:
-    Initialize() {
-#ifdef _WIN32
-        WORD wVersionRequested;
-        WSADATA wsaData;
-        wVersionRequested = MAKEWORD(2, 2);
-        WSAStartup(wVersionRequested, &wsaData);
-#else
-        std::signal(SIGPIPE, SIG_IGN);
-#endif
-    }
-} initialize;
-
 #ifndef FLUTE_HAVE_SOCKETPAIR
 
 #define FLUTE_SOCKET_ERROR() WSAGetLastError()
@@ -139,6 +125,23 @@ tidy_up_and_fail:
 #undef ERR
 }
 #endif
+
+void initialize() {
+#ifdef _WIN32
+    WORD wVersionRequested;
+    WSADATA wsaData;
+    wVersionRequested = MAKEWORD(2, 2);
+    WSAStartup(wVersionRequested, &wsaData);
+#else
+    std::signal(SIGPIPE, SIG_IGN);
+#endif
+}
+
+void deinitialize() {
+#ifdef _WIN32
+    WSACleanup();
+#endif
+}
 
 int setSocketCloseOnExec(socket_type descriptor) {
 #if !defined(_WIN32) && defined(FLUTE_HAVE_SETFD)

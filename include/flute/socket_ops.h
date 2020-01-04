@@ -67,6 +67,10 @@ using ::socketpair;
 FLUTE_API_DECL int socketpair(int domain, int type, int protocol, socket_type descriptors[2]);
 #endif
 
+FLUTE_API_DECL void initialize();
+
+FLUTE_API_DECL void deinitialize();
+
 FLUTE_API_DECL int setSocketCloseOnExec(socket_type descriptor);
 
 FLUTE_API_DECL int setSocketNonblocking(socket_type descriptor);

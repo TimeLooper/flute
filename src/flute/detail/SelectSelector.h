@@ -84,29 +84,21 @@ public:
     }
 
     int select(std::vector<SelectorEvent>& events, int timeout) override {
-        int count = 0;
         m_readSetOut = m_readSet;
         m_writeSetOut = m_writeSet;
+        struct timeval* tv = nullptr;
+        struct timeval timeoutSpec;
         if (timeout > 0) {
-            struct timeval timeoutSpec;
             timeoutSpec.tv_sec = timeout / 1000;
             timeoutSpec.tv_usec = (timeout % 1000) * 1000;
-#ifdef _WIN32
-            count = ::select(0, m_readSetOut.getRawSet(), m_writeSetOut.getRawSet(), nullptr, &timeoutSpec);
-#else
-            count = ::select(m_maxDescriptor + 1, m_readSetOut.getRawSet(), m_writeSetOut.getRawSet(), nullptr,
-                             &timeoutSpec);
-#endif
-        } else {
-#ifdef _WIN32
-            count = ::select(0, m_readSetOut.getRawSet(), m_writeSetOut.getRawSet(), nullptr, nullptr);
-#else
-            count =
-                ::select(m_maxDescriptor + 1, m_readSetOut.getRawSet(), m_writeSetOut.getRawSet(), nullptr, nullptr);
-#endif
+            tv = &timeoutSpec;
         }
+#ifdef _WIN32
+        auto count = ::select(0, m_readSetOut.getRawSet(), m_writeSetOut.getRawSet(), nullptr, tv);
+#else
+        auto count = ::select(m_maxDescriptor + 1, m_readSetOut.getRawSet(), m_writeSetOut.getRawSet(), nullptr, tv);
+#endif
         if (count == -1) {
-            // LOG_ERROR << "select error " << errno << ":" << std::strerror(errno);
             return -1;
         }
         if (count > 0 && static_cast<std::size_t>(count) > events.size()) {

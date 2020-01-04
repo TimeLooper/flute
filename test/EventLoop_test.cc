@@ -7,6 +7,7 @@
 #include <flute/socket_ops.h>
 
 int main(int argc, char* argv[]) {
+    flute::initialize();
     flute::EventLoop loop;
     loop.schedule([&] {
         LOG_DEBUG << "schedule 1000.";
@@ -18,4 +19,5 @@ int main(int argc, char* argv[]) {
         LOG_DEBUG << "schedule 2000.";
     }, 2000, 2);
     loop.dispatch();
+    flute::deinitialize();
 }

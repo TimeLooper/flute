@@ -9,6 +9,7 @@
 #include <flute/TcpConnection.h>
 
 int main(int argc, char* argv[]) {
+    flute::initialize();
     flute::EventLoopGroup loopGroup(0);
     flute::TcpServer server(&loopGroup);
     server.bind(flute::InetAddress(9999));
@@ -16,5 +17,6 @@ int main(int argc, char* argv[]) {
         conn->send(buffer);
     });
     loopGroup.dispatch();
+    flute::deinitialize();
     return 0;
 }
