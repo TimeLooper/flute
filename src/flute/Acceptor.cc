@@ -75,7 +75,8 @@ void Acceptor::handleRead() {
             flute::closeSocket(conn);
         }
     } else {
-        LOG_ERROR << "accept error " << errno << ":" << std::strerror(errno);
+        auto error = getLastError();
+        LOG_ERROR << "accept error " << error << ":" << formatErrorString(error);
     }
 }
 

@@ -122,8 +122,6 @@ void TcpConnection::handleRead() {
     if (result > 0) {
         if (m_messageCallback) {
             m_messageCallback(shared_from_this(), m_inputBuffer);
-        } else {
-            m_inputBuffer.clear();
         }
     } else if (result == 0) {
         handleClose();
@@ -147,7 +145,8 @@ void TcpConnection::handleWrite() {
                 }
             }
         } else {
-            LOG_ERROR << "TcpConnection::handleWrite with error " << errno << ":" << std::strerror(errno) << ".";
+            auto error = m_socket->getSocketError();
+            LOG_ERROR << "TcpConnection::handleWrite with error " << error << ":" << formatErrorString(error) << ".";
         }
     } else {
         LOG_ERROR << "TcpConnection descriptor " << m_channel->descriptor() << " is down.";
@@ -167,7 +166,7 @@ void TcpConnection::handleClose() {
 void TcpConnection::handleError() {
     auto error = m_socket->getSocketError();
     LOG_ERROR << "TcpConnection::handleError " << m_channel->descriptor() << " - SO_ERROR = " << error << " "
-              << std::strerror(error);
+              << formatErrorString(error);
 }
 
 void TcpConnection::shutdownInLoop() {
@@ -195,9 +194,10 @@ void TcpConnection::sendInLoop(const void* buffer, flute::ssize_t length) {
             }
         } else {
             count = 0;
-            if (errno != EWOULDBLOCK && errno != EAGAIN) {
-                LOG_ERROR << "TcpConnection::sendInLoop " << errno << ":" << std::strerror(errno);
-                if (errno == EPIPE || errno == ECONNRESET) {
+            auto error_code = m_socket->getSocketError();
+            if (error_code != FLUTE_ERROR(EWOULDBLOCK) && error_code != EAGAIN) {
+                LOG_ERROR << "TcpConnection::sendInLoop " << error_code << ":" << formatErrorString(error_code);
+                if (error_code == EPIPE || error_code == FLUTE_ERROR(ECONNRESET)) {
                     error = true;
                 }
             }

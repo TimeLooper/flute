@@ -28,7 +28,8 @@ inline int create_epoll() {
     if (result == FLUTE_INVALID_SOCKET) {
         result = ::epoll_create(1024);
         if (result == FLUTE_INVALID_SOCKET) {
-            LOG_FATAL << "epoll_create error " << errno << ": " << std::strerror(errno);
+            auto error = getLastError();
+            LOG_FATAL << "epoll_create error " << error << ": " << formatErrorString(error);
             ::exit(-1);
         }
         setSocketCloseOnExec(result);
@@ -55,7 +56,8 @@ public:
         auto op = old == SelectorEvent::EVENT_NONE ? EPOLL_CTL_ADD : EPOLL_CTL_MOD;
         auto ret = ::epoll_ctl(m_descriptor, op, descriptor, &ev);
         if (ret == -1) {
-            LOG_ERROR << "epoll_ctl error " << errno << ":" << std::strerror(errno);
+            auto error = getLastError();
+            LOG_ERROR << "epoll_ctl error " << error << ":" << formatErrorString();
         }
     }
 
@@ -68,14 +70,16 @@ public:
         auto op = temp == SelectorEvent::EVENT_NONE ? EPOLL_CTL_DEL : EPOLL_CTL_MOD;
         auto ret = ::epoll_ctl(m_descriptor, op, descriptor, &ev);
         if (ret == -1) {
-            LOG_ERROR << "epoll_ctl error " << errno << ":" << std::strerror(errno);
+            auto error = getLastError();
+            LOG_ERROR << "epoll_ctl error " << error << ":" << formatErrorString();
         }
     }
 
     int select(std::vector<SelectorEvent>& events, int timeout) override {
         auto count = ::epoll_wait(m_descriptor, m_events.data(), m_events.size(), timeout);
         if (count == -1) {
-            // LOG_ERROR << "epoll_wait error " << errno << ":" << std::strerror(errno);
+            // auto error = getLastError();
+            // LOG_ERROR << "epoll_wait error " << error << ":" << formatErrorString();
             return -1;
         }
         if (count > 0 && static_cast<std::size_t>(count) > events.size()) {

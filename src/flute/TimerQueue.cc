@@ -72,7 +72,8 @@ std::int64_t TimerQueue::searchNearestTime() {
         if (ret == 0) {
             delay = -1;
         } else {
-            LOG_ERROR << "timerfd_settime error " << errno << ":" << std::strerror(errno);
+            auto error = getLastError();
+            LOG_ERROR << "timerfd_settime error " << error << ":" << formatErrorString(error);
         }
     }
 #endif

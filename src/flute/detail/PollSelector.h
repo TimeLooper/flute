@@ -77,7 +77,8 @@ public:
     int select(std::vector<SelectorEvent>& events, int timeout) override {
         auto count = ::poll(m_events.data(), m_events.size(), timeout);
         if (count == -1) {
-            // LOG_ERROR << "poll error " << errno << ":" << std::strerror(errno);
+            // auto error = getLastError();
+            // LOG_ERROR << "poll error " << error << ":" << formatErrorString();
             return -1;
         }
         if (count > 0 && static_cast<std::size_t>(count) > events.size()) {

@@ -17,14 +17,16 @@ Socket::~Socket() {}
 void Socket::bind(const InetAddress &address) {
     auto result = flute::bind(m_descriptor, address);
     if (result != 0) {
-        LOG_ERROR << "Socket::bind(" << m_descriptor << ") error " << errno << ":" << std::strerror(errno);
+        auto error = getLastError();
+        LOG_ERROR << "Socket::bind(" << m_descriptor << ") error " << error << ":" << formatErrorString(error);
     }
 }
 
 void Socket::listen() {
     auto result = flute::listen(m_descriptor);
     if (result != 0) {
-        LOG_ERROR << "Socket::listen(" << m_descriptor << ") error " << errno << ":" << std::strerror(errno);
+        auto error = getLastError();
+        LOG_ERROR << "Socket::listen(" << m_descriptor << ") error " << error << ":" << formatErrorString(error);
     }
 }
 
@@ -61,13 +63,15 @@ void Socket::setKeepAlive(bool on) {
 
 void Socket::shutdownWrite() {
     if (flute::shutdown(m_descriptor, SHUT_WR) < 0) {
-        LOG_ERROR << "shutdown socket " << m_descriptor << " write with error " << errno << ":" << std::strerror(errno);
+        auto error = getLastError();
+        LOG_ERROR << "shutdown socket " << m_descriptor << " write with error " << error << ":" << formatErrorString(error);
     }
 }
 
 void Socket::shutdownRead() {
     if (flute::shutdown(m_descriptor, SHUT_RD) < 0) {
-        LOG_ERROR << "shutdown socket " << m_descriptor << " read with error " << errno << ":" << std::strerror(errno);
+        auto error = getLastError();
+        LOG_ERROR << "shutdown socket " << m_descriptor << " read with error " << error << ":" << formatErrorString(error);
     }
 }
 

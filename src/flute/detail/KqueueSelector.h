@@ -23,7 +23,8 @@ namespace detail {
 static inline socket_type createKqueue() {
     auto result = kqueue();
     if (result < 0) {
-        LOG_FATAL << "kqueue init failed " << errno << ": " << std::strerror(errno);
+        auto error = getLastError();
+        LOG_FATAL << "kqueue init failed " << error << ": " << formatErrorString();
         exit(-1);
     }
     return result;
@@ -50,7 +51,8 @@ public:
         }
         auto ret = kevent(m_descriptor, ev, n, nullptr, 0, &now);
         if (ret != 0) {
-            LOG_ERROR << "kevent error " << errno << ": " << std::strerror(errno);
+            auto error = getLastError();
+            LOG_ERROR << "kevent error " << error << ": " << formatErrorString();
         }
     }
 
@@ -67,7 +69,8 @@ public:
         }
         auto ret = kevent(m_descriptor, ev, n, nullptr, 0, &now);
         if (ret != 0) {
-            LOG_ERROR << "kevent error " << errno << ": " << std::strerror(errno);
+            auto error = getLastError();
+            LOG_ERROR << "kevent error " << error << ": " << formatErrorString();
         }
     }
 

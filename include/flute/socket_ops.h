@@ -67,6 +67,12 @@ using ::socketpair;
 FLUTE_API_DECL int socketpair(int domain, int type, int protocol, socket_type descriptors[2]);
 #endif
 
+#ifdef _WIN32
+#define FLUTE_ERROR(e) WSA##e
+#else
+#define FLUTE_ERROR(e) e
+#endif
+
 FLUTE_API_DECL void initialize();
 
 FLUTE_API_DECL void deinitialize();
@@ -110,6 +116,10 @@ FLUTE_API_DECL void fromIpPort(const char* ip, std::uint16_t port, sockaddr_in6*
 FLUTE_API_DECL void toIpPort(const sockaddr* addr, char* dst, std::size_t size);
 
 FLUTE_API_DECL int getSocketError(socket_type descriptor);
+
+FLUTE_API_DECL int getLastError();
+
+FLUTE_API_DECL std::string formatErrorString(int error);
 
 } // namespace flute
 

@@ -48,11 +48,6 @@ int socketpair(int domain, int type, int protocol, socket_type descriptors[2]) {
  * for now, and really, when localhost is down sometimes, we
  * have other problems too.
  */
-#ifdef _WIN32
-#define ERR(e) WSA##e
-#else
-#define ERR(e) e
-#endif
     socket_type listener = -1;
     socket_type connector = -1;
     socket_type acceptor = -1;
@@ -67,12 +62,12 @@ int socketpair(int domain, int type, int protocol, socket_type descriptors[2]) {
     family_test = family_test && (domain != AF_UNIX);
 #endif
     if (protocol || family_test) {
-        FLUTE_SET_SOCKET_ERROR(ERR(EAFNOSUPPORT));
+        FLUTE_SET_SOCKET_ERROR(FLUTE_ERROR(EAFNOSUPPORT));
         return -1;
     }
 
     if (!descriptors) {
-        FLUTE_SET_SOCKET_ERROR(ERR(EINVAL));
+        FLUTE_SET_SOCKET_ERROR(FLUTE_ERROR(EINVAL));
         return -1;
     }
 
@@ -113,7 +108,7 @@ int socketpair(int domain, int type, int protocol, socket_type descriptors[2]) {
     return 0;
 
 abort_tidy_up_and_fail:
-    saved_errno = ERR(ECONNABORTED);
+    saved_errno = FLUTE_ERROR(ECONNABORTED);
 tidy_up_and_fail:
     if (saved_errno < 0) saved_errno = FLUTE_SOCKET_ERROR();
     if (listener != -1) closesocket(listener);
@@ -250,11 +245,14 @@ flute::ssize_t readv(socket_type descriptor, const struct iovec* vec, int count)
         auto temp = ::recv(descriptor, reinterpret_cast<char*>(vec[i].iov_base), static_cast<int>(vec[i].iov_len), 0);
         if (temp > 0) {
             result += temp;
+        } else if (temp == 0) {
+            return 0;
         } else {
-            auto error = WSAGetLastError();
+            auto error = FLUTE_SOCKET_ERROR();
             if (error == WSAECONNABORTED) {
                 return 0;
             } else {
+                FLUTE_SET_SOCKET_ERROR(error);
                 return -1;
             }
         }
@@ -290,11 +288,14 @@ flute::ssize_t writev(socket_type descriptor, const struct iovec* vec, int count
             ::send(descriptor, reinterpret_cast<const char*>(vec[i].iov_base), static_cast<int>(vec[i].iov_len), 0);
         if (temp > 0) {
             result += temp;
+        } else if (temp == 0) {
+            return 0;
         } else {
-            auto error = WSAGetLastError();
+            auto error = FLUTE_SOCKET_ERROR();
             if (error == WSAECONNABORTED) {
                 return 0;
             } else {
+                FLUTE_SET_SOCKET_ERROR(error);
                 return -1;
             }
         }
@@ -408,6 +409,9 @@ void toIpPort(const sockaddr* addr, char* dst, std::size_t size) {
 }
 
 int getSocketError(socket_type descriptor) {
+#ifdef _WIN32
+    return FLUTE_SOCKET_ERROR();
+#else
     int optval;
     socklen_t optlen = static_cast<socklen_t>(sizeof optval);
     if (::getsockopt(descriptor, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&optval), &optlen) < 0) {
@@ -415,6 +419,30 @@ int getSocketError(socket_type descriptor) {
     } else {
         return optval;
     }
+#endif
+}
+
+int getLastError() {
+#ifdef _WIN32
+    return GetLastError();
+#else
+    return errno;
+#endif
+}
+
+std::string formatErrorString(int error) {
+#ifdef _WIN32
+    LPVOID buf;
+    if (FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_MAX_WIDTH_MASK, nullptr, error, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), reinterpret_cast<LPTSTR>(&buf), 0, nullptr)) {
+        std::string msg = reinterpret_cast<char *>(buf);
+        LocalFree(buf);
+        return msg;
+    } else {
+        return "Unknown error.";
+    }
+#else
+    return std::strerror(error);
+#endif
 }
 
 } // namespace flute
