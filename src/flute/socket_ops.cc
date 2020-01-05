@@ -256,6 +256,10 @@ flute::ssize_t readv(socket_type descriptor, const struct iovec* vec, int count)
                 return -1;
             }
         }
+        auto remain = getByteAvaliableOnSocket(descriptor);
+        if (remain <= 0) {
+            break;
+        }
     }
     return result;
 // DWORD bytesRead;

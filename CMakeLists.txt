@@ -100,6 +100,7 @@ set(FLUTE_SOURCES
         src/flute/TcpServer.cc
         src/flute/Acceptor.cc
         src/flute/Connector.cc
+        src/flute/TcpClient.cc
 )
 
 if (UNIX OR APPLE)

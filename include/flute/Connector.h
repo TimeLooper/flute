@@ -21,6 +21,7 @@ class Channel;
 class Connector : private noncopyable, public std::enable_shared_from_this<Connector> {
 public:
     FLUTE_API_DECL Connector(EventLoop* loop, const InetAddress& address);
+    FLUTE_API_DECL Connector::Connector(EventLoop* loop, InetAddress&& address);
     FLUTE_API_DECL ~Connector();
 
     FLUTE_API_DECL void start();
@@ -29,6 +30,7 @@ public:
 
     inline void setConnectCallback(ConnectCallback&& callback) { m_connectCallback = std::move(callback); }
     inline void setConnectCallback(const ConnectCallback& callback) { m_connectCallback = callback; }
+    inline const InetAddress& getServerAddress() const { return m_serverAddress; }
     
 private:
     enum ConnectorState { DISCONNECTED, CONNECTING, CONNECTED };
@@ -46,10 +48,11 @@ private:
     static const int DEFALUT_RETRY_DELAY;
 
     void startInLoop();
+    void stopInLoop();
     void connect();
     void connecting(socket_type descriptor);
     void retry(socket_type descriptor);
-    void handleRead();
+    void handleWrite();
     void resetChannel();
     socket_type removeAndResetChannel();
 };

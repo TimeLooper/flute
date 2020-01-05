@@ -115,8 +115,11 @@ std::string Buffer::peekLine() const {
         } else {
             idx = 0;
         }
-        if (idx >= length || index >= bytesAvailable) {
+        if (idx >= length) {
             break;
+        }
+        if (index >= bytesAvailable) {
+            return "";
         }
         index += 1;
     }

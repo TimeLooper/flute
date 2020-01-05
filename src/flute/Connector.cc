@@ -6,6 +6,7 @@
 #include <flute/Channel.h>
 #include <flute/Logger.h>
 
+#include <algorithm>
 #include <cassert>
 #include <cerrno>
 
@@ -15,6 +16,17 @@ const int Connector::MAX_RETRY_DELAY = 30 * 1000;
 const int Connector::DEFALUT_RETRY_DELAY = 500;
 
 Connector::Connector(EventLoop* loop, const InetAddress& address)
+    : m_retryDelay(DEFALUT_RETRY_DELAY)
+    , m_loop(loop)
+    , m_channel(nullptr)
+    , m_serverAddress(address)
+    , m_state(DISCONNECTED)
+    , m_isConnect(false)
+    , m_connectCallback() {
+
+}
+
+Connector::Connector(EventLoop* loop, InetAddress&& address)
     : m_retryDelay(DEFALUT_RETRY_DELAY)
     , m_loop(loop)
     , m_channel(nullptr)
@@ -39,6 +51,11 @@ void Connector::start() {
     m_loop->runInLoop(std::bind(&Connector::startInLoop, shared_from_this()));
 }
 
+void Connector::stop() {
+    m_isConnect = false;
+    m_loop->queueInLoop(std::bind(&Connector::stopInLoop, this));
+}
+
 void Connector::startInLoop() {
     m_loop->assertInLoopThread();
     assert(m_state == DISCONNECTED);
@@ -46,6 +63,15 @@ void Connector::startInLoop() {
         connect();
     } else {
         LOG_DEBUG << "do not connect.";
+    }
+}
+
+void Connector::stopInLoop() {
+    m_loop->assertInLoopThread();
+    if (m_state == ConnectorState::CONNECTING) {
+        m_state = DISCONNECTED;
+        socket_type sockfd = removeAndResetChannel();
+        retry(sockfd);
     }
 }
 
@@ -58,9 +84,12 @@ void Connector::connect() {
     case FLUTE_ERROR(EINPROGRESS):
     case FLUTE_ERROR(EINTR):
     case FLUTE_ERROR(EISCONN):
+    case FLUTE_ERROR(EWOULDBLOCK):
         connecting(descriptor);
         break;
+#ifndef _WIN32
     case FLUTE_ERROR(EAGAIN):
+#endif
     case FLUTE_ERROR(EADDRINUSE):
     case FLUTE_ERROR(EADDRNOTAVAIL):
     case FLUTE_ERROR(ECONNREFUSED):
@@ -69,7 +98,9 @@ void Connector::connect() {
         break;
 
     case FLUTE_ERROR(EACCES):
+#ifndef _WIN32
     case FLUTE_ERROR(EPERM):
+#endif
     case FLUTE_ERROR(EAFNOSUPPORT):
     case FLUTE_ERROR(EALREADY):
     case FLUTE_ERROR(EBADF):
@@ -86,16 +117,23 @@ void Connector::connect() {
     }
 }
 
+void Connector::restart() {
+    m_loop->assertInLoopThread();
+    m_state = DISCONNECTED;
+    m_retryDelay = DEFALUT_RETRY_DELAY;
+    m_isConnect = true;
+    startInLoop();
+}
+
 void Connector::connecting(socket_type descriptor) {
     m_state = CONNECTING;
     assert(!m_channel);
     m_channel = new Channel(descriptor, m_loop);
-    m_channel->setWriteCallback(std::bind(&Connector::handleRead, this));
-    m_channel->setReadCallback(std::bind(&Connector::handleRead, this));
+    m_channel->setWriteCallback(std::bind(&Connector::handleWrite, this));
     m_channel->enableWrite();
 }
 
-void Connector::handleRead() {
+void Connector::handleWrite() {
     if (m_state != CONNECTING) {
         assert(m_state == DISCONNECTED);
         return;
@@ -131,6 +169,10 @@ socket_type Connector::removeAndResetChannel() {
     m_loop->queueInLoop(std::bind(&Connector::resetChannel, this));
     return descriptor;
 }
+
+#ifdef min
+#undef min
+#endif
 
 void Connector::retry(socket_type descriptor) {
     flute::closeSocket(descriptor);
