@@ -30,7 +30,7 @@ Connector::Connector(EventLoop* loop, InetAddress&& address)
     : m_retryDelay(DEFALUT_RETRY_DELAY)
     , m_loop(loop)
     , m_channel(nullptr)
-    , m_serverAddress(address)
+    , m_serverAddress(std::move(address))
     , m_state(DISCONNECTED)
     , m_isConnect(false)
     , m_connectCallback() {
@@ -85,11 +85,11 @@ void Connector::connect() {
     case FLUTE_ERROR(EINTR):
     case FLUTE_ERROR(EISCONN):
     case FLUTE_ERROR(EWOULDBLOCK):
-        connecting(descriptor);
-        break;
-#ifndef _WIN32
+#if !defined(_WIN32) && EAGAIN != EWOULDBLOCK
     case FLUTE_ERROR(EAGAIN):
 #endif
+        connecting(descriptor);
+        break;
     case FLUTE_ERROR(EADDRINUSE):
     case FLUTE_ERROR(EADDRNOTAVAIL):
     case FLUTE_ERROR(ECONNREFUSED):

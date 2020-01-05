@@ -21,7 +21,7 @@ class Channel;
 class Connector : private noncopyable, public std::enable_shared_from_this<Connector> {
 public:
     FLUTE_API_DECL Connector(EventLoop* loop, const InetAddress& address);
-    FLUTE_API_DECL Connector::Connector(EventLoop* loop, InetAddress&& address);
+    FLUTE_API_DECL Connector(EventLoop* loop, InetAddress&& address);
     FLUTE_API_DECL ~Connector();
 
     FLUTE_API_DECL void start();

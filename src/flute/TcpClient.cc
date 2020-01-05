@@ -48,7 +48,6 @@ TcpClient::~TcpClient() {
         conn = m_connection;
     }
     if (conn) {
-        void (TcpConnection::*func)(const CloseCallback&) = &TcpConnection::setCloseCallback;
         conn->getEventLoop()->runInLoop([=] {
             conn->setCloseCallback(std::bind(&TcpConnection::handleConnectionDestroy, std::placeholders::_1));
         });
