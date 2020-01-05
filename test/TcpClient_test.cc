@@ -17,9 +17,6 @@ int main(int argc, char* argv[]) {
     client.setMessageCallback([&](const std::shared_ptr<flute::TcpConnection>& conn, flute::Buffer& buffer) {
         buffer.setLineSeparator("\n");
         auto msg = buffer.readLine();
-        if (msg == "") {
-            return;
-        }
         LOG_DEBUG << "receive message from " << conn->getRemoteAddress().toString() << ":" << msg;
         conn->send(msg);
     });

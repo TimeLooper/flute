@@ -233,92 +233,92 @@ socket_type accept(socket_type descriptor, InetAddress* addr) {
     return connectFd;
 }
 
-flute::ssize_t readv(socket_type descriptor, const struct iovec* vec, int count) {
+flute::ssize_t readv(socket_type descriptor, iovec* vec, int count) {
 #ifdef FLUTE_HAVE_SYS_UIO_H
     return ::readv(descriptor, vec, count);
 #else
     auto result = 0;
-    for (auto i = 0; i < count; ++i) {
-        if (vec[i].iov_len <= 0) {
-            break;
-        }
-        auto temp = ::recv(descriptor, reinterpret_cast<char*>(vec[i].iov_base), static_cast<int>(vec[i].iov_len), 0);
-        if (temp > 0) {
-            result += temp;
-        } else if (temp == 0) {
-            return 0;
+    // for (auto i = 0; i < count; ++i) {
+    //     if (vec[i].iov_len <= 0) {
+    //         break;
+    //     }
+    //     auto temp = ::recv(descriptor, reinterpret_cast<char*>(vec[i].iov_base), static_cast<int>(vec[i].iov_len), 0);
+    //     if (temp > 0) {
+    //         result += temp;
+    //     } else if (temp == 0) {
+    //         return 0;
+    //     } else {
+    //         auto error = FLUTE_SOCKET_ERROR();
+    //         if (error == WSAECONNABORTED) {
+    //             return 0;
+    //         } else {
+    //             FLUTE_SET_SOCKET_ERROR(error);
+    //             return -1;
+    //         }
+    //     }
+    //     auto remain = getByteAvaliableOnSocket(descriptor);
+    //     if (remain <= 0) {
+    //         break;
+    //     }
+    // }
+    // return result;
+    DWORD bytesRead;
+    DWORD flags = 0;
+    if (WSARecv(descriptor, vec, count, &bytesRead, &flags, nullptr, nullptr)) {
+        auto error = FLUTE_SOCKET_ERROR();
+        if (error == WSAECONNABORTED) {
+            result = 0;
         } else {
-            auto error = FLUTE_SOCKET_ERROR();
-            if (error == WSAECONNABORTED) {
-                return 0;
-            } else {
-                FLUTE_SET_SOCKET_ERROR(error);
-                return -1;
-            }
+            FLUTE_SET_SOCKET_ERROR(error);
+            result = -1;
         }
-        auto remain = getByteAvaliableOnSocket(descriptor);
-        if (remain <= 0) {
-            break;
-        }
+    } else {
+        result = bytesRead;
     }
     return result;
-// DWORD bytesRead;
-// DWORD flags = 0;
-// WSABUF buf{};
-// buf.buf = static_cast<char*>(vec->iov_base);
-// buf.len = static_cast<ULONG>(vec->iov_len);
-// if (WSARecv(descriptor, &buf, count, &bytesRead, &flags, nullptr, nullptr)) {
-//     if (WSAGetLastError() == WSAECONNABORTED)
-//         result = 0;
-//     else
-//         result = -1;
-// } else {
-//     result = bytesRead;
-// }
-// return result;
 #endif
 }
 
-flute::ssize_t writev(socket_type descriptor, const struct iovec* vec, int count) {
+flute::ssize_t writev(socket_type descriptor, iovec* vec, int count) {
 #ifdef FLUTE_HAVE_SYS_UIO_H
     return ::writev(descriptor, vec, count);
 #else
     auto result = 0;
-    for (auto i = 0; i < count; ++i) {
-        if (vec[i].iov_len <= 0) {
-            break;
-        }
-        auto temp =
-            ::send(descriptor, reinterpret_cast<const char*>(vec[i].iov_base), static_cast<int>(vec[i].iov_len), 0);
-        if (temp > 0) {
-            result += temp;
-        } else if (temp == 0) {
-            return 0;
+    // for (auto i = 0; i < count; ++i) {
+    //     if (vec[i].iov_len <= 0) {
+    //         break;
+    //     }
+    //     auto temp =
+    //         ::send(descriptor, reinterpret_cast<const char*>(vec[i].iov_base), static_cast<int>(vec[i].iov_len), 0);
+    //     if (temp > 0) {
+    //         result += temp;
+    //     } else if (temp == 0) {
+    //         return 0;
+    //     } else {
+    //         auto error = FLUTE_SOCKET_ERROR();
+    //         if (error == WSAECONNABORTED) {
+    //             return 0;
+    //         } else {
+    //             FLUTE_SET_SOCKET_ERROR(error);
+    //             return -1;
+    //         }
+    //     }
+    // }
+    // return result;
+    DWORD bytesSend;
+    DWORD flags = 0;
+    if (WSASend(descriptor, vec, count, &bytesSend, flags, nullptr, nullptr)) {
+        auto error = FLUTE_SOCKET_ERROR();
+        if (error == WSAECONNABORTED) {
+            result = 0;
         } else {
-            auto error = FLUTE_SOCKET_ERROR();
-            if (error == WSAECONNABORTED) {
-                return 0;
-            } else {
-                FLUTE_SET_SOCKET_ERROR(error);
-                return -1;
-            }
+            FLUTE_SET_SOCKET_ERROR(error);
+            result = -1;
         }
+    } else {
+        result = bytesSend;
     }
     return result;
-// DWORD bytesSend;
-// DWORD flags = 0;
-// WSABUF buf{};
-// buf.buf = static_cast<char*>(vec->iov_base);
-// buf.len = static_cast<ULONG>(vec->iov_len);
-// if (WSASend(descriptor, &buf, count, &bytesSend, flags, nullptr, nullptr)) {
-//     if (WSAGetLastError() == WSAECONNABORTED)
-//         result = 0;
-//     else
-//         result = -1;
-// } else {
-//     result = bytesSend;
-// }
-// return result;
 #endif
 }
 

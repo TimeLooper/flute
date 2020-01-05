@@ -46,10 +46,9 @@ class InetAddress;
 #ifdef FLUTE_HAVE_SYS_UIO_H
 using ::iovec;
 #else
-struct iovec {
-    void* iov_base;      /* Pointer to data.  */
-    std::size_t iov_len; /* Length of data.  */
-};
+typedef WSABUF iovec;
+#define iov_base buf
+#define iov_len len
 #endif
 
 using ::getsockopt;
@@ -87,7 +86,7 @@ FLUTE_API_DECL socket_type createNonblockingSocket(unsigned short int family);
 
 FLUTE_API_DECL int bind(socket_type descriptor, const InetAddress& addr);
 
-FLUTE_API_DECL flute::ssize_t readv(socket_type descriptor, const struct iovec* vec, int count);
+FLUTE_API_DECL flute::ssize_t readv(socket_type descriptor, iovec* vec, int count);
 
 FLUTE_API_DECL int connect(socket_type descriptor, const InetAddress& addr);
 
@@ -95,7 +94,7 @@ FLUTE_API_DECL int listen(socket_type descriptor);
 
 FLUTE_API_DECL socket_type accept(socket_type descriptor, InetAddress* addr);
 
-FLUTE_API_DECL flute::ssize_t writev(socket_type descriptor, const struct iovec* vec, int count);
+FLUTE_API_DECL flute::ssize_t writev(socket_type descriptor, iovec* vec, int count);
 
 FLUTE_API_DECL int close(int descriptor);
 

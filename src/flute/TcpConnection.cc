@@ -167,6 +167,9 @@ void TcpConnection::handleError() {
     auto error = m_socket->getSocketError();
     LOG_ERROR << "TcpConnection::handleError " << m_channel->descriptor() << " - SO_ERROR = " << error << " "
               << formatErrorString(error);
+    if (error == FLUTE_ERROR(ECONNRESET)) {
+        handleClose();
+    }
 }
 
 void TcpConnection::shutdownInLoop() {
@@ -184,8 +187,9 @@ void TcpConnection::sendInLoop(const void* buffer, flute::ssize_t length) {
     flute::ssize_t count = 0;
     flute::ssize_t remain = length;
     if (!m_channel->isWriteable() && m_outputBuffer.readableBytes() == 0) {
-        // try to write direct
-        iovec vec = {const_cast<void*>(buffer), static_cast<std::size_t>(length)};
+        iovec vec{};
+        vec.iov_base = reinterpret_cast<char *>(const_cast<void*>(buffer));
+        vec.iov_len = static_cast<std::size_t>(length);
         count = flute::writev(m_socket->descriptor(), &vec, 1);
         if (count >= 0) {
             remain = length - count;

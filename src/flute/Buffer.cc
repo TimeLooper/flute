@@ -231,18 +231,18 @@ flute::ssize_t Buffer::readFromSocket(socket_type descriptor) {
     int count = 1;
     if (m_readIndex <= m_writeIndex) {
         if (m_capacity - m_writeIndex >= bytesAvailable) {
-            vec[0].iov_base = m_buffer + m_writeIndex;
+            vec[0].iov_base = reinterpret_cast<char *>(m_buffer + m_writeIndex);
             vec[0].iov_len = writeableBytes();
             count = 1;
         } else {
-            vec[0].iov_base = m_buffer + m_writeIndex;
+            vec[0].iov_base = reinterpret_cast<char *>(m_buffer + m_writeIndex);
             vec[0].iov_len = m_capacity - m_writeIndex;
-            vec[1].iov_base = m_buffer;
+            vec[1].iov_base = reinterpret_cast<char *>(m_buffer);
             vec[1].iov_len = bytesAvailable + m_writeIndex - m_capacity;
             count = 2;
         }
     } else {
-        vec[0].iov_base = m_buffer + m_writeIndex;
+        vec[0].iov_base = reinterpret_cast<char *>(m_buffer + m_writeIndex);
         vec[0].iov_len = bytesAvailable;
         count = 1;
     }
@@ -258,13 +258,13 @@ flute::ssize_t Buffer::sendToSocket(socket_type descriptor) {
     iovec vec[2]{};
     int count;
     if (m_capacity - m_readIndex >= length) {
-        vec[0].iov_base = m_buffer + m_readIndex;
+        vec[0].iov_base = reinterpret_cast<char *>(m_buffer + m_readIndex);
         vec[0].iov_len = length;
         count = 1;
     } else {
-        vec[0].iov_base = m_buffer + m_readIndex;
+        vec[0].iov_base = reinterpret_cast<char *>(m_buffer + m_readIndex);
         vec[0].iov_len = m_capacity - m_readIndex;
-        vec[1].iov_base = m_buffer;
+        vec[1].iov_base = reinterpret_cast<char *>(m_buffer);
         vec[1].iov_len = length + m_readIndex - m_capacity;
         count = 2;
     }
