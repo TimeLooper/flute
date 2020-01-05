@@ -90,8 +90,8 @@ public:
             auto& e = events[i];
             e.data = ev.data.ptr;
             e.events = 0;
-            if (ev.events & EPOLLIN) e.events |= SelectorEvent::EVENT_READ;
-            if (ev.events & (EPOLLHUP | EPOLLERR | EPOLLOUT | EPOLLRDHUP)) e.events |= SelectorEvent::EVENT_WRITE;
+            if (ev.events & (EPOLLHUP | EPOLLERR | EPOLLIN | EPOLLRDHUP)) e.events |= SelectorEvent::EVENT_READ;
+            if (ev.events & EPOLLOUT) e.events |= SelectorEvent::EVENT_WRITE;
         }
         if (static_cast<std::size_t>(count) == m_events.size() && count < MAX_EVENT_SIZE) {
             m_events.resize(m_events.size() << 1);
