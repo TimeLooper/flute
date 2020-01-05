@@ -120,6 +120,10 @@ FLUTE_API_DECL int getLastError();
 
 FLUTE_API_DECL std::string formatErrorString(int error);
 
+FLUTE_API_DECL int sendto(socket_type descriptor, const void* buffer, size_t length, int flags, const InetAddress& address) {
+    ::sendto()
+}
+
 } // namespace flute
 
 #endif // FLUTE_SOCKET_OPS_H
