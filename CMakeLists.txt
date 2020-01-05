@@ -99,6 +99,7 @@ set(FLUTE_SOURCES
         src/flute/EventLoopGroup.cc
         src/flute/TcpServer.cc
         src/flute/Acceptor.cc
+        src/flute/Connector.cc
 )
 
 if (UNIX OR APPLE)

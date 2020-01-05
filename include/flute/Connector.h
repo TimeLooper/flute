@@ -7,16 +7,51 @@
 
 #include <flute/config.h>
 #include <flute/noncopyable.h>
+#include <flute/flute_types.h>
+#include <flute/InetAddress.h>
+
+#include <atomic>
+#include <memory>
 
 namespace flute {
 
-class Connector : private noncopyable {
+class EventLoop;
+class Channel;
+
+class Connector : private noncopyable, public std::enable_shared_from_this<Connector> {
 public:
-    FLUTE_API_DECL Connector();
+    FLUTE_API_DECL Connector(EventLoop* loop, const InetAddress& address);
     FLUTE_API_DECL ~Connector();
 
-private:
+    FLUTE_API_DECL void start();
+    FLUTE_API_DECL void restart();
+    FLUTE_API_DECL void stop();
 
+    inline void setConnectCallback(ConnectCallback&& callback) { m_connectCallback = std::move(callback); }
+    inline void setConnectCallback(const ConnectCallback& callback) { m_connectCallback = callback; }
+    
+private:
+    enum ConnectorState { DISCONNECTED, CONNECTING, CONNECTED };
+    int m_retryDelay;
+    EventLoop* m_loop;
+    Channel* m_channel;
+    InetAddress m_serverAddress;
+    std::atomic<ConnectorState> m_state;
+    std::atomic<bool> m_isConnect;
+    ConnectCallback m_connectCallback;
+
+    // 30 * 1000
+    static const int MAX_RETRY_DELAY;
+    // 500
+    static const int DEFALUT_RETRY_DELAY;
+
+    void startInLoop();
+    void connect();
+    void connecting(socket_type descriptor);
+    void retry(socket_type descriptor);
+    void handleRead();
+    void resetChannel();
+    socket_type removeAndResetChannel();
 };
 
 } // namespace flute

@@ -7,6 +7,7 @@
 
 #include <flute/flute-config.h>
 #include <flute/flute_types.h>
+#include <flute/copyable.h>
 
 #include <cstdlib>
 
@@ -32,7 +33,7 @@ struct flute_fd_set {
 #define GET_MASK(x) (static_cast<std::uint8_t>(0x1) << (x & static_cast<socket_type>(BYTE_BITS - 1)))
 #endif
 
-struct DescriptorSet {
+class DescriptorSet : private copyable {
 public:
     DescriptorSet();
     DescriptorSet(const DescriptorSet& rhs);
