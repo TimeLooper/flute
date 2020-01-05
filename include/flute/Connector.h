@@ -5,10 +5,10 @@
 #ifndef FLUTE_CONNECTOR_H
 #define FLUTE_CONNECTOR_H
 
-#include <flute/config.h>
-#include <flute/noncopyable.h>
-#include <flute/flute_types.h>
 #include <flute/InetAddress.h>
+#include <flute/config.h>
+#include <flute/flute_types.h>
+#include <flute/noncopyable.h>
 
 #include <atomic>
 #include <memory>
@@ -31,7 +31,7 @@ public:
     inline void setConnectCallback(ConnectCallback&& callback) { m_connectCallback = std::move(callback); }
     inline void setConnectCallback(const ConnectCallback& callback) { m_connectCallback = callback; }
     inline const InetAddress& getServerAddress() const { return m_serverAddress; }
-    
+
 private:
     enum ConnectorState { DISCONNECTED, CONNECTING, CONNECTED };
     int m_retryDelay;
@@ -58,6 +58,5 @@ private:
 };
 
 } // namespace flute
-
 
 #endif // FLUTE_CONNECTOR_H

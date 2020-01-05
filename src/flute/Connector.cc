@@ -2,8 +2,8 @@
 // Created by why on 2020/01/05.
 //
 
-#include <flute/Connector.h>
 #include <flute/Channel.h>
+#include <flute/Connector.h>
 #include <flute/Logger.h>
 
 #include <algorithm>
@@ -22,9 +22,7 @@ Connector::Connector(EventLoop* loop, const InetAddress& address)
     , m_serverAddress(address)
     , m_state(DISCONNECTED)
     , m_isConnect(false)
-    , m_connectCallback() {
-
-}
+    , m_connectCallback() {}
 
 Connector::Connector(EventLoop* loop, InetAddress&& address)
     : m_retryDelay(DEFALUT_RETRY_DELAY)
@@ -33,9 +31,7 @@ Connector::Connector(EventLoop* loop, InetAddress&& address)
     , m_serverAddress(std::move(address))
     , m_state(DISCONNECTED)
     , m_isConnect(false)
-    , m_connectCallback() {
-
-}
+    , m_connectCallback() {}
 
 Connector::~Connector() {
     assert(!m_channel);
@@ -80,40 +76,40 @@ void Connector::connect() {
     int ret = flute::connect(descriptor, m_serverAddress);
     auto savedErrno = (ret == 0) ? 0 : flute::getSocketError(descriptor);
     switch (savedErrno) {
-    case 0:
-    case FLUTE_ERROR(EINPROGRESS):
-    case FLUTE_ERROR(EINTR):
-    case FLUTE_ERROR(EISCONN):
-    case FLUTE_ERROR(EWOULDBLOCK):
+        case 0:
+        case FLUTE_ERROR(EINPROGRESS):
+        case FLUTE_ERROR(EINTR):
+        case FLUTE_ERROR(EISCONN):
+        case FLUTE_ERROR(EWOULDBLOCK):
 #if !defined(_WIN32) && EAGAIN != EWOULDBLOCK
-    case FLUTE_ERROR(EAGAIN):
+        case FLUTE_ERROR(EAGAIN):
 #endif
-        connecting(descriptor);
-        break;
-    case FLUTE_ERROR(EADDRINUSE):
-    case FLUTE_ERROR(EADDRNOTAVAIL):
-    case FLUTE_ERROR(ECONNREFUSED):
-    case FLUTE_ERROR(ENETUNREACH):
-        retry(descriptor);
-        break;
+            connecting(descriptor);
+            break;
+        case FLUTE_ERROR(EADDRINUSE):
+        case FLUTE_ERROR(EADDRNOTAVAIL):
+        case FLUTE_ERROR(ECONNREFUSED):
+        case FLUTE_ERROR(ENETUNREACH):
+            retry(descriptor);
+            break;
 
-    case FLUTE_ERROR(EACCES):
+        case FLUTE_ERROR(EACCES):
 #ifndef _WIN32
-    case FLUTE_ERROR(EPERM):
+        case FLUTE_ERROR(EPERM):
 #endif
-    case FLUTE_ERROR(EAFNOSUPPORT):
-    case FLUTE_ERROR(EALREADY):
-    case FLUTE_ERROR(EBADF):
-    case FLUTE_ERROR(EFAULT):
-    case FLUTE_ERROR(ENOTSOCK):
-        LOG_ERROR << "connect error in Connector::startInLoop " << savedErrno;
-        flute::closeSocket(descriptor);
-        break;
+        case FLUTE_ERROR(EAFNOSUPPORT):
+        case FLUTE_ERROR(EALREADY):
+        case FLUTE_ERROR(EBADF):
+        case FLUTE_ERROR(EFAULT):
+        case FLUTE_ERROR(ENOTSOCK):
+            LOG_ERROR << "connect error in Connector::startInLoop " << savedErrno;
+            flute::closeSocket(descriptor);
+            break;
 
-    default:
-        LOG_ERROR << "Unexpected error in Connector::startInLoop " << savedErrno;
-        flute::closeSocket(descriptor);
-        break;
+        default:
+            LOG_ERROR << "Unexpected error in Connector::startInLoop " << savedErrno;
+            flute::closeSocket(descriptor);
+            break;
     }
 }
 

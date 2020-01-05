@@ -188,7 +188,7 @@ void TcpConnection::sendInLoop(const void* buffer, flute::ssize_t length) {
     flute::ssize_t remain = length;
     if (!m_channel->isWriteable() && m_outputBuffer.readableBytes() == 0) {
         iovec vec{};
-        vec.iov_base = reinterpret_cast<char *>(const_cast<void*>(buffer));
+        vec.iov_base = reinterpret_cast<char*>(const_cast<void*>(buffer));
         vec.iov_len = static_cast<std::size_t>(length);
         count = flute::writev(m_socket->descriptor(), &vec, 1);
         if (count >= 0) {

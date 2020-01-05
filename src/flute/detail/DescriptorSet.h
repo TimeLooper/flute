@@ -5,9 +5,9 @@
 #ifndef FLUTE_DETAIL_DESCRIPTOR_SET_H
 #define FLUTE_DETAIL_DESCRIPTOR_SET_H
 
+#include <flute/copyable.h>
 #include <flute/flute-config.h>
 #include <flute/flute_types.h>
-#include <flute/copyable.h>
 
 #include <cstdlib>
 

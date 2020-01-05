@@ -6,11 +6,11 @@
 #define FLUTE_TCP_CLIENT_H
 
 #include <flute/config.h>
-#include <flute/noncopyable.h>
 #include <flute/flute_types.h>
+#include <flute/noncopyable.h>
 
-#include <memory>
 #include <atomic>
+#include <memory>
 #include <mutex>
 
 namespace flute {
@@ -31,11 +31,17 @@ public:
     FLUTE_API_DECL void disconnect();
     FLUTE_API_DECL void stop();
 
-    inline void setConnectionEstablishedCallback(ConnectionEstablishedCallback&& callback) { m_connectionEstablishedCallback = std::move(callback); }
-    inline void setConnectionEstablishedCallback(const ConnectionEstablishedCallback& callback) { m_connectionEstablishedCallback = callback; }
+    inline void setConnectionEstablishedCallback(ConnectionEstablishedCallback&& callback) {
+        m_connectionEstablishedCallback = std::move(callback);
+    }
+    inline void setConnectionEstablishedCallback(const ConnectionEstablishedCallback& callback) {
+        m_connectionEstablishedCallback = callback;
+    }
     inline void setMessageCallback(MessageCallback&& callback) { m_messageCallback = std::move(callback); }
     inline void setMessageCallback(const MessageCallback& callback) { m_messageCallback = callback; }
-    inline void setWriteCompleteCallback(WriteCompleteCallback&& callback) { m_writeCompleteCallback = std::move(callback); }
+    inline void setWriteCompleteCallback(WriteCompleteCallback&& callback) {
+        m_writeCompleteCallback = std::move(callback);
+    }
     inline void setWriteCompleteCallback(const WriteCompleteCallback& callback) { m_writeCompleteCallback = callback; }
 
 private:

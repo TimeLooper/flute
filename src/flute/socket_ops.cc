@@ -242,8 +242,8 @@ flute::ssize_t readv(socket_type descriptor, iovec* vec, int count) {
     //     if (vec[i].iov_len <= 0) {
     //         break;
     //     }
-    //     auto temp = ::recv(descriptor, reinterpret_cast<char*>(vec[i].iov_base), static_cast<int>(vec[i].iov_len), 0);
-    //     if (temp > 0) {
+    //     auto temp = ::recv(descriptor, reinterpret_cast<char*>(vec[i].iov_base), static_cast<int>(vec[i].iov_len),
+    //     0); if (temp > 0) {
     //         result += temp;
     //     } else if (temp == 0) {
     //         return 0;

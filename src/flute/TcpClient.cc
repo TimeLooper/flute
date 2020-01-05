@@ -2,14 +2,13 @@
 // Created by why on 2020/01/05.
 //
 
-#include <flute/TcpClient.h>
-#include <flute/InetAddress.h>
 #include <flute/Connector.h>
-#include <flute/EventLoopGroup.h>
 #include <flute/EventLoop.h>
-#include <flute/TcpConnection.h>
-#include <flute/Connector.h>
+#include <flute/EventLoopGroup.h>
+#include <flute/InetAddress.h>
 #include <flute/Logger.h>
+#include <flute/TcpClient.h>
+#include <flute/TcpConnection.h>
 
 #include <cassert>
 
@@ -48,9 +47,8 @@ TcpClient::~TcpClient() {
         conn = m_connection;
     }
     if (conn) {
-        conn->getEventLoop()->runInLoop([=] {
-            conn->setCloseCallback(std::bind(&TcpConnection::handleConnectionDestroy, std::placeholders::_1));
-        });
+        conn->getEventLoop()->runInLoop(
+            [=] { conn->setCloseCallback(std::bind(&TcpConnection::handleConnectionDestroy, std::placeholders::_1)); });
         if (unique) {
             conn->forceClose();
         }
@@ -84,7 +82,8 @@ void TcpClient::onConnectSuccess(socket_type descriptor) {
     m_loopGroup->getMasterEventLoop()->assertInLoopThread();
     auto remoteAddress = flute::getRemoteAddr(descriptor);
     auto localAddress = flute::getLocalAddr(descriptor);
-    std::shared_ptr<TcpConnection> conn(new TcpConnection(descriptor, m_loopGroup->chooseSlaveEventLoop(descriptor), localAddress, remoteAddress));
+    std::shared_ptr<TcpConnection> conn(
+        new TcpConnection(descriptor, m_loopGroup->chooseSlaveEventLoop(descriptor), localAddress, remoteAddress));
     conn->setConnectionEstablishedCallback(m_connectionEstablishedCallback);
     conn->setMessageCallback(m_messageCallback);
     conn->setWriteCompleteCallback(m_writeCompleteCallback);
