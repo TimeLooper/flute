@@ -17,6 +17,7 @@ struct SelectorEvent {
     static const int EVENT_NONE = 0x0;
     static const int EVENT_READ = 0x1;
     static const int EVENT_WRITE = 0x2;
+    static const int EVENT_ET = 0x4;
 
     int events;
     void* data;

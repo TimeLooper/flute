@@ -53,6 +53,7 @@ public:
         auto temp = old | events;
         if (temp & SelectorEvent::EVENT_READ) ev.events |= EPOLLIN;
         if (temp & SelectorEvent::EVENT_WRITE) ev.events |= EPOLLOUT;
+        if (temp & SelectorEvent::EVENT_ET) ev.events |= EPOLLET;
         auto op = old == SelectorEvent::EVENT_NONE ? EPOLL_CTL_ADD : EPOLL_CTL_MOD;
         auto ret = ::epoll_ctl(m_descriptor, op, descriptor, &ev);
         if (ret == -1) {
@@ -67,6 +68,7 @@ public:
         auto temp = old & (~events);
         if (temp & SelectorEvent::EVENT_READ) ev.events |= EPOLLIN;
         if (temp & SelectorEvent::EVENT_WRITE) ev.events |= EPOLLOUT;
+        if (temp & SelectorEvent::EVENT_ET) ev.events |= EPOLLET;
         auto op = temp == SelectorEvent::EVENT_NONE ? EPOLL_CTL_DEL : EPOLL_CTL_MOD;
         auto ret = ::epoll_ctl(m_descriptor, op, descriptor, &ev);
         if (ret == -1) {
