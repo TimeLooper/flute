@@ -41,13 +41,13 @@ namespace flute {
 #endif
 
 int socketpair(int domain, int type, int protocol, socket_type descriptors[2]) {
-/* This code is originally from Tor.  Used with permission. */
+    /* This code is originally from Tor.  Used with permission. */
 
-/* This socketpair does not work when localhost is down. So
- * it's really not the same thing at all. But it's close enough
- * for now, and really, when localhost is down sometimes, we
- * have other problems too.
- */
+    /* This socketpair does not work when localhost is down. So
+     * it's really not the same thing at all. But it's close enough
+     * for now, and really, when localhost is down sometimes, we
+     * have other problems too.
+     */
     socket_type listener = -1;
     socket_type connector = -1;
     socket_type acceptor = -1;
@@ -433,8 +433,11 @@ int getLastError() {
 std::string formatErrorString(int error) {
 #ifdef _WIN32
     LPVOID buf;
-    if (FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_MAX_WIDTH_MASK, nullptr, error, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), reinterpret_cast<LPTSTR>(&buf), 0, nullptr)) {
-        std::string msg = reinterpret_cast<char *>(buf);
+    if (FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_FROM_SYSTEM |
+                          FORMAT_MESSAGE_MAX_WIDTH_MASK,
+                      nullptr, error, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), reinterpret_cast<LPTSTR>(&buf), 0,
+                      nullptr)) {
+        std::string msg = reinterpret_cast<char*>(buf);
         LocalFree(buf);
         return msg;
     } else {

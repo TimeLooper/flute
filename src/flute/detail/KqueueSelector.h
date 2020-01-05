@@ -24,7 +24,7 @@ static inline socket_type createKqueue() {
     auto result = kqueue();
     if (result < 0) {
         auto error = getLastError();
-        LOG_FATAL << "kqueue init failed " << error << ": " << formatErrorString();
+        LOG_FATAL << "kqueue init failed " << error << ": " << formatErrorString(error);
         exit(-1);
     }
     return result;
@@ -52,7 +52,7 @@ public:
         auto ret = kevent(m_descriptor, ev, n, nullptr, 0, &now);
         if (ret != 0) {
             auto error = getLastError();
-            LOG_ERROR << "kevent error " << error << ": " << formatErrorString();
+            LOG_ERROR << "kevent error " << error << ": " << formatErrorString(error);
         }
     }
 
@@ -70,7 +70,7 @@ public:
         auto ret = kevent(m_descriptor, ev, n, nullptr, 0, &now);
         if (ret != 0) {
             auto error = getLastError();
-            LOG_ERROR << "kevent error " << error << ": " << formatErrorString();
+            LOG_ERROR << "kevent error " << error << ": " << formatErrorString(error);
         }
     }
 

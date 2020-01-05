@@ -78,7 +78,7 @@ public:
         auto count = ::poll(m_events.data(), m_events.size(), timeout);
         if (count == -1) {
             // auto error = getLastError();
-            // LOG_ERROR << "poll error " << error << ":" << formatErrorString();
+            // LOG_ERROR << "poll error " << error << ":" << formatErrorString(error);
             return -1;
         }
         if (count > 0 && static_cast<std::size_t>(count) > events.size()) {

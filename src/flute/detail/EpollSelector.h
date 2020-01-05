@@ -57,7 +57,7 @@ public:
         auto ret = ::epoll_ctl(m_descriptor, op, descriptor, &ev);
         if (ret == -1) {
             auto error = getLastError();
-            LOG_ERROR << "epoll_ctl error " << error << ":" << formatErrorString();
+            LOG_ERROR << "epoll_ctl error " << error << ":" << formatErrorString(error);
         }
     }
 
@@ -71,7 +71,7 @@ public:
         auto ret = ::epoll_ctl(m_descriptor, op, descriptor, &ev);
         if (ret == -1) {
             auto error = getLastError();
-            LOG_ERROR << "epoll_ctl error " << error << ":" << formatErrorString();
+            LOG_ERROR << "epoll_ctl error " << error << ":" << formatErrorString(error);
         }
     }
 
@@ -79,7 +79,7 @@ public:
         auto count = ::epoll_wait(m_descriptor, m_events.data(), m_events.size(), timeout);
         if (count == -1) {
             // auto error = getLastError();
-            // LOG_ERROR << "epoll_wait error " << error << ":" << formatErrorString();
+            // LOG_ERROR << "epoll_wait error " << error << ":" << formatErrorString(error);
             return -1;
         }
         if (count > 0 && static_cast<std::size_t>(count) > events.size()) {

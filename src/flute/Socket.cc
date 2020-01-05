@@ -64,14 +64,16 @@ void Socket::setKeepAlive(bool on) {
 void Socket::shutdownWrite() {
     if (flute::shutdown(m_descriptor, SHUT_WR) < 0) {
         auto error = getLastError();
-        LOG_ERROR << "shutdown socket " << m_descriptor << " write with error " << error << ":" << formatErrorString(error);
+        LOG_ERROR << "shutdown socket " << m_descriptor << " write with error " << error << ":"
+                  << formatErrorString(error);
     }
 }
 
 void Socket::shutdownRead() {
     if (flute::shutdown(m_descriptor, SHUT_RD) < 0) {
         auto error = getLastError();
-        LOG_ERROR << "shutdown socket " << m_descriptor << " read with error " << error << ":" << formatErrorString(error);
+        LOG_ERROR << "shutdown socket " << m_descriptor << " read with error " << error << ":"
+                  << formatErrorString(error);
     }
 }
 
