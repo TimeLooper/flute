@@ -98,7 +98,7 @@ public:
             e.data = it->second->data;
             e.events = 0;
             if (pfd.revents & (POLLHUP | POLLERR | POLLNVAL | POLLIN)) e.events |= SelectorEvent::EVENT_READ;
-            if (pfd.revents & (POLLHUP | POLLERR | POLLNVAL | POLLOUT)) e.events |= SelectorEvent::EVENT_WRITE;
+            if (pfd.revents & POLLOUT) e.events |= SelectorEvent::EVENT_WRITE;
             index += 1;
         }
         return count;

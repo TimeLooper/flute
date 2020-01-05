@@ -37,7 +37,7 @@ class DescriptorSet : private copyable {
 public:
     DescriptorSet();
     DescriptorSet(const DescriptorSet& rhs);
-    DescriptorSet(DescriptorSet&& rhs);
+    DescriptorSet(DescriptorSet&& rhs) noexcept;
     ~DescriptorSet();
 
     DescriptorSet& operator=(const DescriptorSet& rhs);
@@ -72,7 +72,7 @@ inline DescriptorSet::DescriptorSet()
     std::memset(m_set, 0, sizeof(flute_fd_set) + INIT_FD_SET_SIZE * sizeof(socket_type));
 }
 
-inline DescriptorSet::DescriptorSet(const DescriptorSet& rhs) : DescriptorSet() {
+inline DescriptorSet::DescriptorSet(const DescriptorSet& rhs) {
     if (m_setSize < rhs.m_setSize) {
         m_set =
             static_cast<flute_fd_set*>(std::realloc(m_set, sizeof(flute_fd_set) + rhs.m_setSize * sizeof(socket_type)));
@@ -81,7 +81,7 @@ inline DescriptorSet::DescriptorSet(const DescriptorSet& rhs) : DescriptorSet() 
     std::memcpy(m_set, rhs.m_set, sizeof(flute_fd_set) + rhs.m_setSize * sizeof(socket_type));
 }
 
-inline DescriptorSet::DescriptorSet(DescriptorSet&& rhs) : DescriptorSet() {
+inline DescriptorSet::DescriptorSet(DescriptorSet&& rhs) noexcept {
     std::swap(m_set, rhs.m_set);
     std::swap(m_setSize, rhs.m_setSize);
 }
@@ -160,7 +160,7 @@ inline DescriptorSet::DescriptorSet()
     std::memset(m_set, 0, sizeof(m_setSize));
 }
 
-inline DescriptorSet::DescriptorSet(const DescriptorSet& rhs) : DescriptorSet() {
+inline DescriptorSet::DescriptorSet(const DescriptorSet& rhs) {
     if (m_setSize < rhs.m_setSize) {
         m_set = static_cast<flute_fd_set*>(std::realloc(m_set, rhs.m_setSize));
     }
@@ -168,7 +168,7 @@ inline DescriptorSet::DescriptorSet(const DescriptorSet& rhs) : DescriptorSet() 
     m_setSize = rhs.m_setSize;
 }
 
-inline DescriptorSet::DescriptorSet(DescriptorSet&& rhs) : DescriptorSet() {
+inline DescriptorSet::DescriptorSet(DescriptorSet&& rhs) noexcept {
     std::swap(m_set, rhs.m_set);
     std::swap(m_setSize, rhs.m_setSize);
 }
