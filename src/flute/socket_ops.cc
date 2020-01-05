@@ -454,7 +454,7 @@ flute::ssize_t sendmsg(socket_type descriptor, const msghdr* message, int flags)
 
 flute::ssize_t recvmsg(socket_type descriptor, msghdr* message, int flags) {
 #ifndef _WIN32
-    return ::recvmsg(descriptor, message, int flags);
+    return ::recvmsg(descriptor, message, flags);
 #else
     flute::ssize_t result = 0;
     DWORD bytesRecv;
