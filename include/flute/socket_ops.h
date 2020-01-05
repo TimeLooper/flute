@@ -45,10 +45,29 @@ class InetAddress;
 
 #ifdef FLUTE_HAVE_SYS_UIO_H
 using ::iovec;
+using ::msghdr;
 #else
-typedef WSABUF iovec;
-#define iov_base buf
-#define iov_len len
+struct iovec {
+    void *iov_base;	/* Pointer to data.  */
+    size_t iov_len;	/* Length of data.  */
+};
+/* Structure describing messages sent by
+   `sendmsg' and received by `recvmsg'.  */
+struct msghdr {
+    void *msg_name;		/* Address to send to/receive from.  */
+    socklen_t msg_namelen;	/* Length of address data.  */
+
+    struct iovec *msg_iov;	/* Vector of data to send/receive into.  */
+    size_t msg_iovlen;		/* Number of elements in the vector.  */
+
+    void *msg_control;		/* Ancillary data (eg BSD filedesc passing). */
+    size_t msg_controllen;	/* Ancillary data buffer length.
+				   !! The type should be socklen_t but the
+				   definition of the kernel is incompatible
+				   with this.  */
+
+    int msg_flags;		/* Flags on received message.  */
+};
 #endif
 
 using ::getsockopt;
@@ -120,9 +139,9 @@ FLUTE_API_DECL int getLastError();
 
 FLUTE_API_DECL std::string formatErrorString(int error);
 
-FLUTE_API_DECL int sendto(socket_type descriptor, const void* buffer, size_t length, int flags, const InetAddress& address) {
-    ::sendto()
-}
+FLUTE_API_DECL flute::ssize_t sendmsg(socket_type descriptor, const msghdr* message, int flags);
+
+FLUTE_API_DECL flute::ssize_t recvmsg(socket_type descriptor, msghdr* message, int flags);
 
 } // namespace flute
 
