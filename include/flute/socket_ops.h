@@ -48,25 +48,25 @@ using ::iovec;
 using ::msghdr;
 #else
 struct iovec {
-    void *iov_base;	/* Pointer to data.  */
-    size_t iov_len;	/* Length of data.  */
+    void* iov_base; /* Pointer to data.  */
+    size_t iov_len; /* Length of data.  */
 };
 /* Structure describing messages sent by
    `sendmsg' and received by `recvmsg'.  */
 struct msghdr {
-    LPSOCKADDR msg_name;		/* Address to send to/receive from.  */
-    INT msg_namelen;	/* Length of address data.  */
+    LPSOCKADDR msg_name; /* Address to send to/receive from.  */
+    INT msg_namelen;     /* Length of address data.  */
 
-    struct iovec *msg_iov;	/* Vector of data to send/receive into.  */
-    size_t msg_iovlen;		/* Number of elements in the vector.  */
+    struct iovec* msg_iov; /* Vector of data to send/receive into.  */
+    size_t msg_iovlen;     /* Number of elements in the vector.  */
 
-    void *msg_control;		/* Ancillary data (eg BSD filedesc passing). */
-    size_t msg_controllen;	/* Ancillary data buffer length.
-				   !! The type should be socklen_t but the
-				   definition of the kernel is incompatible
-				   with this.  */
+    void* msg_control;     /* Ancillary data (eg BSD filedesc passing). */
+    size_t msg_controllen; /* Ancillary data buffer length.
+                  !! The type should be socklen_t but the
+                  definition of the kernel is incompatible
+                  with this.  */
 
-    DWORD msg_flags;		/* Flags on received message.  */
+    DWORD msg_flags; /* Flags on received message.  */
 };
 #endif
 
@@ -91,10 +91,7 @@ FLUTE_API_DECL int socketpair(int domain, int type, int protocol, socket_type de
 #define FLUTE_ERROR(e) e
 #endif
 
-enum SocketType {
-    STREAM_SOCKET,
-    DGRAM_SOCKET
-};
+enum SocketType { STREAM_SOCKET, DGRAM_SOCKET };
 
 FLUTE_API_DECL void initialize();
 

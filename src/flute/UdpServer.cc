@@ -2,24 +2,21 @@
 // Created by why on 2020/01/06.
 //
 
+#include <flute/Buffer.h>
+#include <flute/Channel.h>
+#include <flute/EventLoopGroup.h>
+#include <flute/InetAddress.h>
+#include <flute/Logger.h>
+#include <flute/Socket.h>
 #include <flute/UdpServer.h>
 #include <flute/socket_ops.h>
-#include <flute/InetAddress.h>
-#include <flute/EventLoopGroup.h>
-#include <flute/Channel.h>
-#include <flute/Socket.h>
-#include <flute/Buffer.h>
-#include <flute/Logger.h>
 
 namespace flute {
 
-UdpServer::UdpServer(EventLoopGroup* loopGroup) : m_eventLoopGroup(loopGroup), m_channel(nullptr), m_socket(nullptr), m_connections(), m_messageCallback() {
+UdpServer::UdpServer(EventLoopGroup* loopGroup)
+    : m_eventLoopGroup(loopGroup), m_channel(nullptr), m_socket(nullptr), m_messageCallback() {}
 
-}
-
-UdpServer::~UdpServer() {
-
-}
+UdpServer::~UdpServer() {}
 
 void UdpServer::bind(const InetAddress& address) {
     socket_type descriptor = flute::createNonblockingSocket(address.family(), SocketType::DGRAM_SOCKET);
@@ -30,9 +27,6 @@ void UdpServer::bind(const InetAddress& address) {
     m_socket->setReusePort(true);
     m_channel->setReadCallback(std::bind(&UdpServer::handleRead, this));
     m_channel->enableRead();
-    for (auto i = 0; i < m_eventLoopGroup->getChildLoopSize(); ++i) {
-        socket_type child = dup(m_socket->descriptor());
-    }
 }
 
 void UdpServer::close() {
@@ -60,8 +54,6 @@ void UdpServer::handleRead() {
     }
 }
 
-void UdpServer::handleWrite() {
-
-}
+void UdpServer::handleWrite() {}
 
 } // namespace flute

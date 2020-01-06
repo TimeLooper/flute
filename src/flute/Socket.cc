@@ -2,9 +2,9 @@
 // Created by why on 2019/12/30.
 //
 
+#include <flute/InetAddress.h>
 #include <flute/Logger.h>
 #include <flute/Socket.h>
-#include <flute/InetAddress.h>
 
 #include <cerrno>
 #include <cstring>

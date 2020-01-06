@@ -197,7 +197,8 @@ socket_type createNonblockingSocket(unsigned short int family, SocketType type) 
 #endif
     if (result == FLUTE_INVALID_SOCKET) {
         auto error = flute::getLastError();
-        LOG_ERROR << "flute::createNonblockingSocket(" << family << ") failed " << error << ":" << flute::formatErrorString(error);
+        LOG_ERROR << "flute::createNonblockingSocket(" << family << ") failed " << error << ":"
+                  << flute::formatErrorString(error);
     }
     return result;
 }
@@ -230,7 +231,7 @@ socket_type accept(socket_type descriptor, InetAddress& addr) {
 #if defined(FLUTE_HAVE_ACCEPT4) && defined(SOCK_NONBLOCK) && defined(SOCK_CLOEXEC)
     connectFd = ::accept4(descriptor, addr.getSocketAddress(), &length, SOCK_NONBLOCK | SOCK_CLOEXEC);
 #else
-    connectFd = ::accept(descriptor, raddr.getSocketAddress(), &length);
+    connectFd = ::accept(descriptor, addr.getSocketAddress(), &length);
     setSocketNonblocking(connectFd);
     setSocketCloseOnExec(connectFd);
 #endif
@@ -246,7 +247,7 @@ flute::ssize_t readv(socket_type descriptor, iovec* vec, int count) {
     DWORD flags = 0;
     WSABUF* buf = new WSABUF[count];
     for (auto i = 0; i < count; ++i) {
-        buf[i].buf = reinterpret_cast<char *>(vec[i].iov_base);
+        buf[i].buf = reinterpret_cast<char*>(vec[i].iov_base);
         buf[i].len = static_cast<ULONG>(vec[i].iov_len);
     }
     if (WSARecv(descriptor, buf, count, &bytesRecv, &flags, nullptr, nullptr)) {
@@ -274,7 +275,7 @@ flute::ssize_t writev(socket_type descriptor, iovec* vec, int count) {
     DWORD flags = 0;
     WSABUF* buf = new WSABUF[count];
     for (auto i = 0; i < count; ++i) {
-        buf[i].buf = reinterpret_cast<char *>(vec[i].iov_base);
+        buf[i].buf = reinterpret_cast<char*>(vec[i].iov_base);
         buf[i].len = static_cast<ULONG>(vec[i].iov_len);
     }
     if (WSASend(descriptor, buf, count, &bytesSend, flags, nullptr, nullptr)) {
@@ -434,11 +435,11 @@ flute::ssize_t sendmsg(socket_type descriptor, const msghdr* message, int flags)
     msg.namelen = message->msg_namelen;
     msg.lpBuffers = new WSABUF[message->msg_iovlen];
     for (auto i = 0; i < message->msg_iovlen; ++i) {
-        msg.lpBuffers[i].buf = reinterpret_cast<char *>(message->msg_iov[i].iov_base);
+        msg.lpBuffers[i].buf = reinterpret_cast<char*>(message->msg_iov[i].iov_base);
         msg.lpBuffers[i].len = static_cast<ULONG>(message->msg_iov[i].iov_len);
     }
     msg.dwFlags = message->msg_flags;
-    msg.Control.buf = reinterpret_cast<char *>(message->msg_control);
+    msg.Control.buf = reinterpret_cast<char*>(message->msg_control);
     msg.Control.len = static_cast<ULONG>(message->msg_controllen);
     msg.dwBufferCount = static_cast<ULONG>(message->msg_iovlen);
     if (WSASendMsg(descriptor, &msg, flags, &bytesSend, nullptr, nullptr)) {
@@ -464,10 +465,11 @@ flute::ssize_t recvmsg(socket_type descriptor, msghdr* message, int flags) {
     DWORD bytesRecv;
     auto buffers = new WSABUF[message->msg_iovlen];
     for (auto i = 0; i < message->msg_iovlen; ++i) {
-        buffers[i].buf = reinterpret_cast<char *>(message->msg_iov[i].iov_base);
+        buffers[i].buf = reinterpret_cast<char*>(message->msg_iov[i].iov_base);
         buffers[i].len = static_cast<ULONG>(message->msg_iov[i].iov_len);
     }
-    if (WSARecvFrom(descriptor, buffers, static_cast<DWORD>(message->msg_iovlen), &bytesRecv, &message->msg_flags, message->msg_name, &message->msg_namelen, nullptr, nullptr)) {
+    if (WSARecvFrom(descriptor, buffers, static_cast<DWORD>(message->msg_iovlen), &bytesRecv, &message->msg_flags,
+                    message->msg_name, &message->msg_namelen, nullptr, nullptr)) {
         auto error = FLUTE_SOCKET_ERROR();
         if (error == WSAECONNABORTED) {
             result = 0;

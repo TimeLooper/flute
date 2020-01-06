@@ -101,7 +101,6 @@ set(FLUTE_SOURCES
         src/flute/Acceptor.cc
         src/flute/Connector.cc
         src/flute/TcpClient.cc
-        src/flute/UdpConnection.cc
         src/flute/UdpServer.cc
 )
 

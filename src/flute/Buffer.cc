@@ -3,10 +3,10 @@
 //
 
 #include <flute/Buffer.h>
+#include <flute/InetAddress.h>
 #include <flute/Logger.h>
 #include <flute/endian.h>
 #include <flute/socket_ops.h>
-#include <flute/InetAddress.h>
 
 #include <cassert>
 #include <cerrno>
@@ -284,7 +284,7 @@ flute::ssize_t Buffer::sendToSocket(socket_type descriptor) {
     return result;
 }
 
-flute::ssize_t Buffer::readFromSocket(socket_type descriptor, InetAddress& address) {
+flute::ssize_t Buffer::readFromSocket(socket_type descriptor, InetAddress &address) {
     auto writeableSize = writeableBytes();
     auto bytesAvailable = flute::getByteAvaliableOnSocket(descriptor);
     if (bytesAvailable >= writeableSize) {
@@ -322,7 +322,7 @@ flute::ssize_t Buffer::readFromSocket(socket_type descriptor, InetAddress& addre
     return result;
 }
 
-flute::ssize_t Buffer::sendToSocket(socket_type descriptor, const InetAddress& address) {
+flute::ssize_t Buffer::sendToSocket(socket_type descriptor, const InetAddress &address) {
     auto length = readableBytes();
     iovec vec[2]{};
     int count;

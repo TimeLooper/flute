@@ -6,12 +6,12 @@
 #define FLUTE_UDP_SERVER_H
 
 #include <flute/config.h>
-#include <flute/noncopyable.h>
 #include <flute/flute_types.h>
+#include <flute/noncopyable.h>
 
-#include <memory>
-#include <map>
 #include <atomic>
+#include <map>
+#include <memory>
 
 namespace flute {
 
@@ -36,8 +36,6 @@ private:
     EventLoopGroup* m_eventLoopGroup;
     Channel* m_channel;
     Socket* m_socket;
-    std::vector<Socket *> m_sockets;
-    std::map<InetAddress, std::shared_ptr<UdpConnection>> m_connections;
 
     UdpMessageCallback m_messageCallback;
 
