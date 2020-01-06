@@ -7,6 +7,8 @@
 #include <flute/Logger.h>
 #include <flute/EventLoop.h>
 
+#include <cassert>
+
 namespace flute {
 
 UdpConnection::UdpConnection(socket_type descriptor, EventLoop* loop, const InetAddress& localAddress,
@@ -20,8 +22,6 @@ UdpConnection::UdpConnection(socket_type descriptor, EventLoop* loop, const Inet
     , m_remoteAddress(remoteAddress)
     , m_messageCallback()
     , m_closeCallback()
-    , m_writeCompleteCallback()
-    , m_highWaterMarkCallback()
     , m_connectionEstablishedCallback()
     , m_connectionDestroyCallback()
     , m_inputBuffer()
@@ -119,9 +119,6 @@ void UdpConnection::handleWrite() {
         if (count > 0) {
             m_channel->disableWrite();
             if (m_outputBuffer.readableBytes() <= 0) {
-                if (m_writeCompleteCallback) {
-                    m_loop->queueInLoop(std::bind(m_writeCompleteCallback, shared_from_this()));
-                }
                 if (m_state == ConnectionState::DISCONNECTING) {
                     shutdownInLoop();
                 }
@@ -140,9 +137,6 @@ void UdpConnection::handleClose() {
     m_state = ConnectionState::DISCONNECTING;
     m_channel->disableAll();
     auto conn = shared_from_this();
-    if (m_closeCallback) {
-        m_closeCallback(conn);
-    }
 }
 
 void UdpConnection::handleError() {
@@ -172,12 +166,18 @@ void UdpConnection::sendInLoop(const void* buffer, flute::ssize_t length) {
         iovec vec{};
         vec.iov_base = reinterpret_cast<char*>(const_cast<void*>(buffer));
         vec.iov_len = static_cast<std::size_t>(length);
-        count = flute::writev(m_socket->descriptor(), &vec, 1);
+        // count = flute::writev(m_socket->descriptor(), &vec, 1);
+        msghdr message{};
+        message.msg_name = const_cast<sockaddr *>(m_remoteAddress.getSocketAddress());
+        message.msg_namelen = m_remoteAddress.getSocketLength();
+        message.msg_iov = &vec;
+        message.msg_iovlen = 1;
+        flute::sendmsg(m_socket->descriptor(), &message, 0);
         if (count >= 0) {
             remain = length - count;
-            if (remain <= 0 && m_writeCompleteCallback) {
-                m_loop->queueInLoop(std::bind(m_writeCompleteCallback, shared_from_this()));
-            }
+            // if (remain <= 0 && m_writeCompleteCallback) {
+            //     m_loop->queueInLoop(std::bind(m_writeCompleteCallback, shared_from_this()));
+            // }
         } else {
             count = 0;
             auto error_code = m_socket->getSocketError();
@@ -193,9 +193,9 @@ void UdpConnection::sendInLoop(const void* buffer, flute::ssize_t length) {
     assert(remain <= length);
     if (!error && remain > 0) {
         auto len = m_outputBuffer.readableBytes();
-        if (len + remain >= m_highWaterMark && len < m_highWaterMark && m_highWaterMarkCallback) {
-            m_loop->queueInLoop(std::bind(m_highWaterMarkCallback, shared_from_this(), len + remain));
-        }
+        // if (len + remain >= m_highWaterMark && len < m_highWaterMark && m_highWaterMarkCallback) {
+        //     m_loop->queueInLoop(std::bind(m_highWaterMarkCallback, shared_from_this(), len + remain));
+        // }
         m_outputBuffer.append(reinterpret_cast<const std::uint8_t*>(buffer) + count, remain);
         if (!m_channel->isWriteable()) {
             m_channel->enableWrite();
@@ -209,7 +209,43 @@ void UdpConnection::sendInLoop(const std::string& message) {
 
 void UdpConnection::sendInLoop(Buffer& buffer) {
     m_loop->assertInLoopThread();
-    flute::
+    auto length = buffer.readableBytes();
+    if (m_state == ConnectionState::DISCONNECTED) {
+        LOG_WARN << "write bytes to a disconnected connection.";
+        return;
+    }
+    bool error = false;
+    flute::ssize_t count = 0;
+    flute::ssize_t remain = length;
+    if (!m_channel->isWriteable() && m_outputBuffer.readableBytes() == 0) {
+        count = buffer.sendToSocket(m_channel->descriptor());
+        if (count >= 0) {
+            remain = length - count;
+            // if (remain <= 0 && m_writeCompleteCallback) {
+            //     m_loop->queueInLoop(std::bind(m_writeCompleteCallback, shared_from_this()));
+            // }
+        }
+    } else {
+        count = 0;
+        if (errno != EWOULDBLOCK && errno != EAGAIN) {
+            LOG_ERROR << "TcpConnection::sendInLoop";
+            if (errno == EPIPE || errno == ECONNRESET) {
+                error = true;
+            }
+        }
+    }
+
+    assert(remain <= length);
+    if (!error && remain > 0) {
+        auto len = m_outputBuffer.readableBytes();
+        // if (len + remain >= m_highWaterMark && len < m_highWaterMark && m_highWaterMarkCallback) {
+        //     m_loop->queueInLoop(std::bind(m_highWaterMarkCallback, shared_from_this(), len + remain));
+        // }
+        m_outputBuffer.append(buffer);
+        if (!m_channel->isWriteable()) {
+            m_channel->enableWrite();
+        }
+    }
 }
 
 void UdpConnection::handleConnectionEstablishedInLoop() {

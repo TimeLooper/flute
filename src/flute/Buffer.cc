@@ -6,6 +6,7 @@
 #include <flute/Logger.h>
 #include <flute/endian.h>
 #include <flute/socket_ops.h>
+#include <flute/InetAddress.h>
 
 #include <cassert>
 #include <cerrno>
@@ -269,6 +270,71 @@ flute::ssize_t Buffer::sendToSocket(socket_type descriptor) {
         count = 2;
     }
     auto result = flute::writev(descriptor, vec, count);
+    if (result > 0) {
+        UPDATE_READ_INDEX(m_capacity, m_readIndex, m_bufferSize, result);
+    }
+    return result;
+}
+
+flute::ssize_t Buffer::readFromSocket(socket_type descriptor, InetAddress& address) {
+    auto writeableSize = writeableBytes();
+    auto bytesAvailable = flute::getByteAvaliableOnSocket(descriptor);
+    if (bytesAvailable >= writeableSize) {
+        // expand buffer
+        expand(bytesAvailable);
+    }
+    iovec vec[2]{};
+    int count = 1;
+    if (m_readIndex <= m_writeIndex) {
+        if (m_capacity - m_writeIndex >= bytesAvailable) {
+            vec[0].iov_base = reinterpret_cast<char *>(m_buffer + m_writeIndex);
+            vec[0].iov_len = writeableBytes();
+            count = 1;
+        } else {
+            vec[0].iov_base = reinterpret_cast<char *>(m_buffer + m_writeIndex);
+            vec[0].iov_len = m_capacity - m_writeIndex;
+            vec[1].iov_base = reinterpret_cast<char *>(m_buffer);
+            vec[1].iov_len = bytesAvailable + m_writeIndex - m_capacity;
+            count = 2;
+        }
+    } else {
+        vec[0].iov_base = reinterpret_cast<char *>(m_buffer + m_writeIndex);
+        vec[0].iov_len = bytesAvailable;
+        count = 1;
+    }
+    msghdr message{};
+    message.msg_name = address.getSocketAddress();
+    message.msg_namelen = address.getSocketLength();
+    message.msg_iov = vec;
+    message.msg_iovlen = count;
+    auto result = flute::recvmsg(descriptor, &message, 0);
+    if (result > 0) {
+        UPDATE_WRITE_INDEX(m_capacity, m_writeIndex, m_bufferSize, result);
+    }
+    return result;
+}
+
+flute::ssize_t Buffer::sendToSocket(socket_type descriptor, const InetAddress& address) {
+    auto length = readableBytes();
+    iovec vec[2]{};
+    int count;
+    if (m_capacity - m_readIndex >= length) {
+        vec[0].iov_base = reinterpret_cast<char *>(m_buffer + m_readIndex);
+        vec[0].iov_len = length;
+        count = 1;
+    } else {
+        vec[0].iov_base = reinterpret_cast<char *>(m_buffer + m_readIndex);
+        vec[0].iov_len = m_capacity - m_readIndex;
+        vec[1].iov_base = reinterpret_cast<char *>(m_buffer);
+        vec[1].iov_len = length + m_readIndex - m_capacity;
+        count = 2;
+    }
+    msghdr message{};
+    message.msg_name = const_cast<sockaddr *>(address.getSocketAddress());
+    message.msg_namelen = address.getSocketLength();
+    message.msg_iov = vec;
+    message.msg_iovlen = count;
+    auto result = flute::sendmsg(descriptor, &message, 0);
     if (result > 0) {
         UPDATE_READ_INDEX(m_capacity, m_readIndex, m_bufferSize, result);
     }

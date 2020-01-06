@@ -21,6 +21,8 @@ public:
 
     inline unsigned short int family() const { return m_addr.sa_family; }
     inline const sockaddr* getSocketAddress() const { return &m_addr; }
+    inline sockaddr* getSocketAddress() { return &m_addr; }
+    inline const std::size_t getSocketLength() const { return sizeof(sockaddr_in6); }
 
     FLUTE_API_DECL void setScopeId(std::uint32_t scopeId);
     FLUTE_API_DECL std::string toString() const;

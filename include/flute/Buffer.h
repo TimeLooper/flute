@@ -13,6 +13,8 @@
 
 namespace flute {
 
+class InetAddress;
+
 class Buffer : private copyable {
 public:
     FLUTE_API_DECL Buffer();
@@ -49,6 +51,8 @@ public:
     FLUTE_API_DECL const std::string& getLineSeparator() const;
     FLUTE_API_DECL flute::ssize_t readFromSocket(socket_type descriptor);
     FLUTE_API_DECL flute::ssize_t sendToSocket(socket_type descriptor);
+    FLUTE_API_DECL flute::ssize_t readFromSocket(socket_type descriptor, InetAddress& address);
+    FLUTE_API_DECL flute::ssize_t sendToSocket(socket_type descriptor, const InetAddress& address);
     FLUTE_API_DECL void clear();
 
 private:
