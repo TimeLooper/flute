@@ -32,11 +32,11 @@ void UdpServer::bind(const InetAddress& address) {
 flute::ssize_t UdpServer::send(const InetAddress& address, const void* buffer, flute::ssize_t length) {
     msghdr message{};
     iovec vec{};
-    message.msg_name = const_cast<sockaddr *>(address.getSocketAddress());
+    message.msg_name = const_cast<sockaddr*>(address.getSocketAddress());
     message.msg_namelen = static_cast<socklen_t>(address.getSocketLength());
     message.msg_iov = &vec;
     message.msg_iovlen = 1;
-    vec.iov_base = const_cast<void *>(buffer);
+    vec.iov_base = const_cast<void*>(buffer);
     vec.iov_len = length;
     return flute::sendmsg(m_socket->descriptor(), &message, 0);
 }
@@ -44,11 +44,11 @@ flute::ssize_t UdpServer::send(const InetAddress& address, const void* buffer, f
 flute::ssize_t UdpServer::send(const InetAddress& address, const std::string& message) {
     msghdr msg{};
     iovec vec{};
-    msg.msg_name = const_cast<sockaddr *>(address.getSocketAddress());
+    msg.msg_name = const_cast<sockaddr*>(address.getSocketAddress());
     msg.msg_namelen = static_cast<socklen_t>(address.getSocketLength());
     msg.msg_iov = &vec;
     msg.msg_iovlen = 1;
-    vec.iov_base = const_cast<char *>(message.c_str());
+    vec.iov_base = const_cast<char*>(message.c_str());
     vec.iov_len = message.length();
     return flute::sendmsg(m_socket->descriptor(), &msg, 0);
 }
