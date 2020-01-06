@@ -30,6 +30,9 @@ public:
     inline void setMessageCallback(const UdpMessageCallback& cb) { m_messageCallback = cb; }
 
     FLUTE_API_DECL void bind(const InetAddress& address);
+    FLUTE_API_DECL flute::ssize_t send(const InetAddress& address, const void* buffer, flute::ssize_t length);
+    FLUTE_API_DECL flute::ssize_t send(const InetAddress& address, const std::string& message);
+    FLUTE_API_DECL flute::ssize_t send(const InetAddress& address, Buffer& buffer);
     FLUTE_API_DECL void close();
 
 private:
@@ -40,7 +43,6 @@ private:
     UdpMessageCallback m_messageCallback;
 
     void handleRead();
-    void handleWrite();
 };
 
 } // namespace flute

@@ -52,6 +52,7 @@ class TcpConnection;
 class UdpConnection;
 class Buffer;
 class InetAddress;
+class UdpServer;
 
 typedef std::function<void(const std::shared_ptr<TcpConnection>&, Buffer&)> MessageCallback;
 typedef std::function<void(const std::shared_ptr<TcpConnection>&)> CloseCallback;
@@ -62,7 +63,7 @@ typedef std::function<void(const std::shared_ptr<TcpConnection>&)> ConnectionDes
 typedef std::function<void(const socket_type)> AcceptCallback;
 typedef std::function<void(const socket_type)> ConnectCallback;
 
-typedef std::function<void(InetAddress address, Buffer& buffer)> UdpMessageCallback;
+typedef std::function<void(const std::shared_ptr<UdpServer>&, const InetAddress& address, Buffer& buffer)> UdpMessageCallback;
 
 } // namespace flute
 
