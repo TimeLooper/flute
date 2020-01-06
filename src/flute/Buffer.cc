@@ -312,7 +312,7 @@ flute::ssize_t Buffer::readFromSocket(socket_type descriptor, InetAddress &addre
     }
     msghdr message{};
     message.msg_name = address.getSocketAddress();
-    message.msg_namelen = static_cast<INT>(address.getSocketLength());
+    message.msg_namelen = static_cast<socklen_t>(address.getSocketLength());
     message.msg_iov = vec;
     message.msg_iovlen = count;
     auto result = flute::recvmsg(descriptor, &message, 0);
@@ -339,7 +339,7 @@ flute::ssize_t Buffer::sendToSocket(socket_type descriptor, const InetAddress &a
     }
     msghdr message{};
     message.msg_name = const_cast<sockaddr *>(address.getSocketAddress());
-    message.msg_namelen = static_cast<INT>(address.getSocketLength());
+    message.msg_namelen = static_cast<socklen_t>(address.getSocketLength());
     message.msg_iov = vec;
     message.msg_iovlen = count;
     auto result = flute::sendmsg(descriptor, &message, 0);
