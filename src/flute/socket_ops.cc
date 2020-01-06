@@ -426,7 +426,7 @@ flute::ssize_t sendmsg(socket_type descriptor, const msghdr* message, int flags)
     flute::ssize_t result = 0;
     DWORD bytesSend;
     WSAMSG msg;
-    msg.name = reinterpret_cast<LPSOCKADDR>(message->msg_name);
+    msg.name = message->msg_name;
     msg.namelen = message->msg_namelen;
     msg.lpBuffers = new WSABUF[message->msg_iovlen];
     for (auto i = 0; i < message->msg_iovlen; ++i) {
@@ -463,8 +463,7 @@ flute::ssize_t recvmsg(socket_type descriptor, msghdr* message, int flags) {
         buffers[i].buf = reinterpret_cast<char *>(message->msg_iov[i].iov_base);
         buffers[i].len = static_cast<ULONG>(message->msg_iov[i].iov_len);
     }
-    DWORD msg_flags = flags;
-    if (WSARecvFrom(descriptor, buffers, static_cast<DWORD>(message->msg_iovlen), &bytesRecv, &msg_flags, reinterpret_cast<sockaddr*>(message->msg_name), &message->msg_namelen, nullptr, nullptr)) {
+    if (WSARecvFrom(descriptor, buffers, static_cast<DWORD>(message->msg_iovlen), &bytesRecv, &message->msg_flags, message->msg_name, &message->msg_namelen, nullptr, nullptr)) {
         auto error = FLUTE_SOCKET_ERROR();
         if (error == WSAECONNABORTED) {
             result = 0;
@@ -475,7 +474,6 @@ flute::ssize_t recvmsg(socket_type descriptor, msghdr* message, int flags) {
     } else {
         result = bytesRecv;
     }
-    message->msg_flags = msg_flags;
     return result;
 #endif
 }

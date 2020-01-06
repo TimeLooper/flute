@@ -54,8 +54,8 @@ struct iovec {
 /* Structure describing messages sent by
    `sendmsg' and received by `recvmsg'.  */
 struct msghdr {
-    void *msg_name;		/* Address to send to/receive from.  */
-    socklen_t msg_namelen;	/* Length of address data.  */
+    LPSOCKADDR msg_name;		/* Address to send to/receive from.  */
+    INT msg_namelen;	/* Length of address data.  */
 
     struct iovec *msg_iov;	/* Vector of data to send/receive into.  */
     size_t msg_iovlen;		/* Number of elements in the vector.  */
@@ -66,7 +66,7 @@ struct msghdr {
 				   definition of the kernel is incompatible
 				   with this.  */
 
-    int msg_flags;		/* Flags on received message.  */
+    DWORD msg_flags;		/* Flags on received message.  */
 };
 #endif
 
