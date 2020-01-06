@@ -17,7 +17,7 @@ class EventLoop;
 
 class EventLoopGroup : private noncopyable {
 public:
-    FLUTE_API_DECL explicit EventLoopGroup(std::size_t childSize);
+    FLUTE_API_DECL explicit EventLoopGroup(std::size_t childLoopSize);
     FLUTE_API_DECL ~EventLoopGroup();
 
     FLUTE_API_DECL void shutdown();
@@ -25,7 +25,10 @@ public:
     FLUTE_API_DECL EventLoop* getMasterEventLoop();
     FLUTE_API_DECL void dispatch();
 
+    inline std::size_t getChildLoopSize() const { return m_childLoopSize; }
+
 private:
+    std::size_t m_childLoopSize;
     EventLoop* m_masterEventLoop;
     std::vector<EventLoop*> m_slaveEventLoops;
     ThreadPool m_threadPool;

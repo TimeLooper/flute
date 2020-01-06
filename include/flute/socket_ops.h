@@ -91,6 +91,11 @@ FLUTE_API_DECL int socketpair(int domain, int type, int protocol, socket_type de
 #define FLUTE_ERROR(e) e
 #endif
 
+enum SocketType {
+    STREAM_SOCKET,
+    DGRAM_SOCKET
+};
+
 FLUTE_API_DECL void initialize();
 
 FLUTE_API_DECL void deinitialize();
@@ -101,7 +106,7 @@ FLUTE_API_DECL int setSocketNonblocking(socket_type descriptor);
 
 FLUTE_API_DECL socket_type socket(int domain, int type, int protocol);
 
-FLUTE_API_DECL socket_type createNonblockingSocket(unsigned short int family);
+FLUTE_API_DECL socket_type createNonblockingSocket(unsigned short int family, SocketType type);
 
 FLUTE_API_DECL int bind(socket_type descriptor, const InetAddress& addr);
 
@@ -111,7 +116,7 @@ FLUTE_API_DECL int connect(socket_type descriptor, const InetAddress& addr);
 
 FLUTE_API_DECL int listen(socket_type descriptor);
 
-FLUTE_API_DECL socket_type accept(socket_type descriptor, InetAddress* addr);
+FLUTE_API_DECL socket_type accept(socket_type descriptor, InetAddress& addr);
 
 FLUTE_API_DECL flute::ssize_t writev(socket_type descriptor, iovec* vec, int count);
 

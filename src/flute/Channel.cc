@@ -36,7 +36,7 @@ void Channel::disableRead() {
 
 void Channel::enableRead() {
     if (!(m_events & SelectorEvent::EVENT_READ)) {
-        m_loop->addEvent(this, SelectorEvent::EVENT_READ | SelectorEvent::EVENT_ET);
+        m_loop->addEvent(this, SelectorEvent::EVENT_READ);
         m_events |= SelectorEvent::EVENT_READ;
     }
 }
@@ -50,7 +50,7 @@ void Channel::disableWrite() {
 
 void Channel::enableWrite() {
     if (!(m_events & SelectorEvent::EVENT_WRITE)) {
-        m_loop->addEvent(this, SelectorEvent::EVENT_WRITE | SelectorEvent::EVENT_ET);
+        m_loop->addEvent(this, SelectorEvent::EVENT_WRITE);
         m_events |= SelectorEvent::EVENT_WRITE;
     }
 }

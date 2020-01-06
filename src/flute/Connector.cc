@@ -72,7 +72,7 @@ void Connector::stopInLoop() {
 }
 
 void Connector::connect() {
-    auto descriptor = flute::createNonblockingSocket(m_serverAddress.family());
+    auto descriptor = flute::createNonblockingSocket(m_serverAddress.family(), SocketType::STREAM_SOCKET);
     int ret = flute::connect(descriptor, m_serverAddress);
     auto savedErrno = (ret == 0) ? 0 : flute::getSocketError(descriptor);
     switch (savedErrno) {

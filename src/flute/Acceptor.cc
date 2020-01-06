@@ -28,7 +28,7 @@ Acceptor::~Acceptor() {
 }
 
 void Acceptor::bind(const InetAddress& address) {
-    m_socket = new Socket(flute::createNonblockingSocket(address.family()));
+    m_socket = new Socket(flute::createNonblockingSocket(address.family(), SocketType::STREAM_SOCKET));
     m_socket->bind(address);
     m_socket->setReuseAddress(m_reuseAddress);
     m_socket->setReusePort(m_reusePort);

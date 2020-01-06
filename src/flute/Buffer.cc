@@ -52,6 +52,14 @@ Buffer::Buffer(const Buffer &buffer) : Buffer() { appendInternal(buffer); }
 
 Buffer::Buffer(Buffer &&buffer) : Buffer() { this->swap(buffer); }
 
+Buffer::Buffer(std::size_t size)
+    : m_readIndex(0)
+    , m_writeIndex(0)
+    , m_bufferSize(0)
+    , m_capacity(size)
+    , m_buffer(static_cast<std::uint8_t *>(std::malloc(sizeof(std::uint8_t) * size)))
+    , m_lineSeparator("\r\n") {}
+
 Buffer::~Buffer() { std::free(m_buffer); }
 
 Buffer &Buffer::operator=(const Buffer &buffer) {

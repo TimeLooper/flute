@@ -4,6 +4,7 @@
 
 #include <flute/Logger.h>
 #include <flute/Socket.h>
+#include <flute/InetAddress.h>
 
 #include <cerrno>
 #include <cstring>
@@ -30,7 +31,10 @@ void Socket::listen() {
     }
 }
 
-socket_type Socket::accept() { return flute::accept(m_descriptor, nullptr); }
+socket_type Socket::accept() {
+    InetAddress address;
+    return flute::accept(m_descriptor, address);
+}
 
 void Socket::setTcpNoDelay(bool on) {
     int option = on ? 1 : 0;

@@ -180,16 +180,24 @@ int setSocketNonblocking(socket_type descriptor) {
 
 socket_type socket(int domain, int type, int protocol) { return ::socket(domain, type, protocol); }
 
-socket_type createNonblockingSocket(unsigned short int family) {
+socket_type createNonblockingSocket(unsigned short int family, SocketType type) {
     socket_type result = FLUTE_INVALID_SOCKET;
+    auto temp = SOCK_STREAM;
+    auto protocol = IPPROTO_TCP;
+    if (type == SocketType::DGRAM_SOCKET) {
+        temp = SOCK_DGRAM;
+        protocol = IPPROTO_UDP;
+    }
 #if defined(SOCK_NONBLOCK) && defined(SOCK_CLOEXEC)
-    result = flute::socket(family, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, IPPROTO_TCP);
+    result = flute::socket(family, temp | SOCK_NONBLOCK | SOCK_CLOEXEC, protocol);
 #else
-    result = flute::socket(family, SOCK_STREAM, IPPROTO_TCP);
+    result = flute::socket(family, temp, protocol);
     setSocketNonblocking(result);
+    setSocketCloseOnExec(result);
 #endif
     if (result == FLUTE_INVALID_SOCKET) {
-        LOG_ERROR << "flute::createNonblockingSocket(" << family << ") failed.";
+        auto error = flute::getLastError();
+        LOG_ERROR << "flute::createNonblockingSocket(" << family << ") failed " << error << ":" << flute::formatErrorString(error);
     }
     return result;
 }
@@ -216,20 +224,16 @@ int connect(socket_type descriptor, const InetAddress& addr) {
 
 int listen(socket_type descriptor) { return ::listen(descriptor, SOMAXCONN); }
 
-socket_type accept(socket_type descriptor, InetAddress* addr) {
+socket_type accept(socket_type descriptor, InetAddress& addr) {
     socket_type connectFd = FLUTE_INVALID_SOCKET;
-    sockaddr_in6 tmp{};
-    socklen_t length = sizeof(tmp);
+    auto length = static_cast<socklen_t>(addr.getSocketLength());
 #if defined(FLUTE_HAVE_ACCEPT4) && defined(SOCK_NONBLOCK) && defined(SOCK_CLOEXEC)
-    connectFd = ::accept4(descriptor, reinterpret_cast<sockaddr*>(&tmp), &length, SOCK_NONBLOCK | SOCK_CLOEXEC);
+    connectFd = ::accept4(descriptor, addr.getSocketAddress(), &length, SOCK_NONBLOCK | SOCK_CLOEXEC);
 #else
-    connectFd = ::accept(descriptor, reinterpret_cast<sockaddr*>(&tmp), &length);
+    connectFd = ::accept(descriptor, raddr.getSocketAddress(), &length);
     setSocketNonblocking(connectFd);
     setSocketCloseOnExec(connectFd);
 #endif
-    if (addr) {
-        *addr = InetAddress(tmp);
-    }
     return connectFd;
 }
 

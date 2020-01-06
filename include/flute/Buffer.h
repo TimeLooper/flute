@@ -20,6 +20,7 @@ public:
     FLUTE_API_DECL Buffer();
     FLUTE_API_DECL Buffer(const Buffer& buffer);
     FLUTE_API_DECL Buffer(Buffer&& buffer);
+    FLUTE_API_DECL explicit Buffer(std::size_t size);
     FLUTE_API_DECL ~Buffer();
 
     FLUTE_API_DECL Buffer& operator=(const Buffer& buffer);
