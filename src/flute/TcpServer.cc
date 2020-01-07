@@ -70,7 +70,7 @@ void TcpServer::handleAcceptConnection(flute::socket_type descriptor) {
     EventLoop* ioLoop = m_eventLoopGroup->chooseSlaveEventLoop(m_connections.size());
     auto localAddress = flute::getLocalAddr(descriptor);
     auto remoteAddress = flute::getRemoteAddr(descriptor);
-    std::shared_ptr<TcpConnection> conn(new TcpConnection(descriptor, ioLoop, localAddress, remoteAddress));
+    TcpConnectionPtr conn(new TcpConnection(descriptor, ioLoop, localAddress, remoteAddress));
     assert(m_connections.find(descriptor) == m_connections.end());
     m_connections[descriptor] = conn;
     conn->setConnectionDestroyCallback(std::bind(&TcpServer::handleConnectionDestroy, this, std::placeholders::_1));

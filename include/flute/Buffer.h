@@ -42,6 +42,7 @@ public:
     FLUTE_API_DECL std::string readLine();
     FLUTE_API_DECL void read(void* buffer, flute::ssize_t length);
     FLUTE_API_DECL void append(Buffer& buffer);
+    FLUTE_API_DECL void append(Buffer& buffer, flute::ssize_t length);
     FLUTE_API_DECL void append(const void* buffer, flute::ssize_t length);
     FLUTE_API_DECL void appendInt8(std::int8_t value);
     FLUTE_API_DECL void appendInt16(std::int16_t value);
@@ -65,7 +66,7 @@ private:
     std::string m_lineSeparator;
 
     void expand(flute::ssize_t length);
-    void appendInternal(const Buffer& buffer);
+    void appendInternal(const Buffer& buffer, flute::ssize_t length);
 };
 
 } // namespace flute

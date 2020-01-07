@@ -52,7 +52,7 @@ private:
     EventLoopGroup* m_eventLoopGroup;
     std::atomic<ServerState> m_state;
     std::unique_ptr<Acceptor> m_acceptor;
-    std::map<flute::socket_type, std::shared_ptr<TcpConnection>> m_connections;
+    std::map<flute::socket_type, TcpConnectionPtr> m_connections;
 
     MessageCallback m_messageCallback;
     WriteCompleteCallback m_writeCompleteCallback;
@@ -61,11 +61,11 @@ private:
     ConnectionEstablishedCallback m_connectionEstablishedCallback;
     CloseCallback m_closeCallback;
 
-    void handleConnectionClose(const std::shared_ptr<TcpConnection>& conn);
+    void handleConnectionClose(const TcpConnectionPtr& conn);
     void handleAcceptConnection(socket_type descriptor);
-    void handleConnectionCloseInLoop(const std::shared_ptr<TcpConnection>& conn);
-    void handleConnectionDestroy(const std::shared_ptr<TcpConnection>& conn);
-    void handleConnectionDestroyInLoop(const std::shared_ptr<TcpConnection>& conn);
+    void handleConnectionCloseInLoop(const TcpConnectionPtr& conn);
+    void handleConnectionDestroy(const TcpConnectionPtr& conn);
+    void handleConnectionDestroyInLoop(const TcpConnectionPtr& conn);
 };
 
 } // namespace flute

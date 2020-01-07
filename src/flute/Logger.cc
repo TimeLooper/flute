@@ -87,7 +87,13 @@ void Logger::start() {
         std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
     std::chrono::time_point<std::chrono::system_clock> t1(ms);
     std::time_t t = std::chrono::system_clock::to_time_t(t1);
-    auto temp = std::put_time(std::localtime(&t), "%Y-%m-%d %H:%M:%S");
+    struct tm time {};
+#ifdef _WIN32
+    localtime_s(&time, &t);
+#else
+    localtime_r(&t, &time);
+#endif
+    auto temp = std::put_time(&time, "%Y-%m-%d %H:%M:%S");
     getStream() << temp << "," << std::setw(3) << std::setfill('0') << ms.count() % 1000 << " "
                 << getLogLevelTag(m_impl->m_logLevel) << " - ";
 }

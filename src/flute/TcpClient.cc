@@ -39,7 +39,7 @@ TcpClient::TcpClient(EventLoopGroup* loopGroup, InetAddress&& address)
 }
 
 TcpClient::~TcpClient() {
-    std::shared_ptr<TcpConnection> conn;
+    TcpConnectionPtr conn;
     bool unique = false;
     {
         std::lock_guard<std::mutex> lock(m_mutex);
@@ -82,7 +82,7 @@ void TcpClient::onConnectSuccess(socket_type descriptor) {
     m_loopGroup->getMasterEventLoop()->assertInLoopThread();
     auto remoteAddress = flute::getRemoteAddr(descriptor);
     auto localAddress = flute::getLocalAddr(descriptor);
-    std::shared_ptr<TcpConnection> conn(
+    TcpConnectionPtr conn(
         new TcpConnection(descriptor, m_loopGroup->chooseSlaveEventLoop(descriptor), localAddress, remoteAddress));
     conn->setConnectionEstablishedCallback(m_connectionEstablishedCallback);
     conn->setMessageCallback(m_messageCallback);
@@ -95,7 +95,7 @@ void TcpClient::onConnectSuccess(socket_type descriptor) {
     conn->handleConnectionEstablished();
 }
 
-void TcpClient::removeConnection(const std::shared_ptr<TcpConnection>& connection) {
+void TcpClient::removeConnection(const TcpConnectionPtr& connection) {
     connection->getEventLoop()->assertInLoopThread();
     {
         std::lock_guard<std::mutex> lock(m_mutex);

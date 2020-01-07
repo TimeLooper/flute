@@ -168,3 +168,4 @@ set_target_properties(${LIB_FULL_NAME} PROPERTIES CLEAN_DIRECT_OUTPUT 1)
 set_target_properties(${LIB_FULL_NAME} PROPERTIES VERSION 1.0.0 SOVERSION 1)
 
 add_subdirectory(test)
+add_subdirectory(examples/gameserver)

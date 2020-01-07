@@ -50,13 +50,13 @@ private:
     std::atomic<bool> m_isConnect;
     mutable std::mutex m_mutex;
     std::shared_ptr<Connector> m_connector;
-    std::shared_ptr<TcpConnection> m_connection;
+    TcpConnectionPtr m_connection;
     ConnectionEstablishedCallback m_connectionEstablishedCallback;
     MessageCallback m_messageCallback;
     WriteCompleteCallback m_writeCompleteCallback;
 
     void onConnectSuccess(socket_type descriptor);
-    void removeConnection(const std::shared_ptr<TcpConnection>& connection);
+    void removeConnection(const TcpConnectionPtr& connection);
 };
 
 } // namespace flute

@@ -48,7 +48,7 @@ Buffer::Buffer()
     , m_buffer(static_cast<std::uint8_t *>(std::malloc(sizeof(std::uint8_t) * DEFAULT_BUFFER_SIZE)))
     , m_lineSeparator("\r\n") {}
 
-Buffer::Buffer(const Buffer &buffer) : Buffer() { appendInternal(buffer); }
+Buffer::Buffer(const Buffer &buffer) : Buffer() { appendInternal(buffer, buffer.readableBytes()); }
 
 Buffer::Buffer(Buffer &&buffer) : Buffer() { this->swap(buffer); }
 
@@ -64,7 +64,7 @@ Buffer::~Buffer() { std::free(m_buffer); }
 
 Buffer &Buffer::operator=(const Buffer &buffer) {
     this->m_readIndex = this->m_writeIndex = this->m_bufferSize = 0;
-    appendInternal(buffer);
+    appendInternal(buffer, buffer.readableBytes());
     return *this;
 }
 
@@ -182,7 +182,13 @@ void Buffer::read(void *buffer, flute::ssize_t length) {
 }
 
 void Buffer::append(Buffer &buffer) {
-    appendInternal(buffer);
+    appendInternal(buffer, buffer.readableBytes());
+    UPDATE_WRITE_INDEX(m_capacity, m_writeIndex, m_bufferSize, buffer.readableBytes());
+    buffer.m_readIndex = buffer.m_writeIndex = buffer.m_bufferSize = 0;
+}
+
+void Buffer::append(Buffer &buffer, flute::ssize_t length) {
+    appendInternal(buffer, buffer.readableBytes());
     UPDATE_WRITE_INDEX(m_capacity, m_writeIndex, m_bufferSize, buffer.readableBytes());
     buffer.m_readIndex = buffer.m_writeIndex = buffer.m_bufferSize = 0;
 }
@@ -372,8 +378,7 @@ void Buffer::expand(flute::ssize_t length) {
     }
 }
 
-void Buffer::appendInternal(const Buffer &buffer) {
-    auto length = buffer.readableBytes();
+void Buffer::appendInternal(const Buffer &buffer, flute::ssize_t length) {
     if (length > writeableBytes()) {
         // expand buffer
         expand(length);
