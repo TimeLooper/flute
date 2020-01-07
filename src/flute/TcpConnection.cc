@@ -242,13 +242,14 @@ void TcpConnection::sendInLoop(Buffer& buffer) {
             if (remain <= 0 && m_writeCompleteCallback) {
                 m_loop->queueInLoop(std::bind(m_writeCompleteCallback, shared_from_this()));
             }
-        }
-    } else {
-        count = 0;
-        if (errno != EWOULDBLOCK && errno != EAGAIN) {
-            LOG_ERROR << "TcpConnection::sendInLoop";
-            if (errno == EPIPE || errno == ECONNRESET) {
-                error = true;
+        } else {
+            count = 0;
+            auto error_code = m_socket->getSocketError();
+            if (error_code != FLUTE_ERROR(EWOULDBLOCK) && error_code != EAGAIN) {
+                LOG_ERROR << "TcpConnection::sendInLoop " << error_code << ":" << formatErrorString(error_code);
+                if (error_code == EPIPE || error_code == FLUTE_ERROR(ECONNRESET)) {
+                    error = true;
+                }
             }
         }
     }
