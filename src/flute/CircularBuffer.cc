@@ -2,7 +2,7 @@
 // Created by why on 2019/12/30.
 //
 
-#include <flute/Buffer.h>
+#include <flute/CircularBuffer.h>
 #include <flute/InetAddress.h>
 #include <flute/Logger.h>
 #include <flute/endian.h>
@@ -40,7 +40,7 @@ inline std::int32_t getCapacity(std::int32_t length, std::int32_t capacity) {
     return result;
 }
 
-Buffer::Buffer()
+CircularBuffer::CircularBuffer()
     : m_readIndex(0)
     , m_writeIndex(0)
     , m_bufferSize(0)
@@ -48,11 +48,13 @@ Buffer::Buffer()
     , m_buffer(static_cast<std::uint8_t *>(std::malloc(sizeof(std::uint8_t) * DEFAULT_BUFFER_SIZE)))
     , m_lineSeparator("\r\n") {}
 
-Buffer::Buffer(const Buffer &buffer) : Buffer() { appendInternal(buffer, buffer.readableBytes()); }
+CircularBuffer::CircularBuffer(const CircularBuffer &buffer) : CircularBuffer() {
+    appendInternal(buffer, buffer.readableBytes());
+}
 
-Buffer::Buffer(Buffer &&buffer) : Buffer() { this->swap(buffer); }
+CircularBuffer::CircularBuffer(CircularBuffer &&buffer) noexcept : CircularBuffer() { this->swap(buffer); }
 
-Buffer::Buffer(flute::ssize_t size)
+CircularBuffer::CircularBuffer(flute::ssize_t size)
     : m_readIndex(0)
     , m_writeIndex(0)
     , m_bufferSize(0)
@@ -60,20 +62,20 @@ Buffer::Buffer(flute::ssize_t size)
     , m_buffer(static_cast<std::uint8_t *>(std::malloc(sizeof(std::uint8_t) * size)))
     , m_lineSeparator("\r\n") {}
 
-Buffer::~Buffer() { std::free(m_buffer); }
+CircularBuffer::~CircularBuffer() { std::free(m_buffer); }
 
-Buffer &Buffer::operator=(const Buffer &buffer) {
+CircularBuffer &CircularBuffer::operator=(const CircularBuffer &buffer) {
     this->m_readIndex = this->m_writeIndex = this->m_bufferSize = 0;
     appendInternal(buffer, buffer.readableBytes());
     return *this;
 }
 
-Buffer &Buffer::operator=(Buffer &&buffer) {
+CircularBuffer &CircularBuffer::operator=(CircularBuffer &&buffer) noexcept {
     this->swap(buffer);
     return *this;
 }
 
-void Buffer::swap(Buffer &buf) {
+void CircularBuffer::swap(CircularBuffer &buf) {
     std::swap(m_readIndex, buf.m_readIndex);
     std::swap(m_writeIndex, buf.m_writeIndex);
     std::swap(m_bufferSize, buf.m_bufferSize);
@@ -82,35 +84,35 @@ void Buffer::swap(Buffer &buf) {
     m_lineSeparator.swap(buf.m_lineSeparator);
 }
 
-flute::ssize_t Buffer::readableBytes() const { return m_bufferSize; }
+flute::ssize_t CircularBuffer::readableBytes() const { return m_bufferSize; }
 
-flute::ssize_t Buffer::writeableBytes() const { return m_capacity - m_bufferSize; }
+flute::ssize_t CircularBuffer::writeableBytes() const { return m_capacity - m_bufferSize; }
 
-std::int8_t Buffer::peekInt8() const {
+std::int8_t CircularBuffer::peekInt8() const {
     std::int8_t result = 0;
     peek(reinterpret_cast<std::uint8_t *>(&result), sizeof(result));
     return result;
 }
 
-std::int16_t Buffer::peekInt16() const {
+std::int16_t CircularBuffer::peekInt16() const {
     std::int16_t result = 0;
     peek(reinterpret_cast<std::uint8_t *>(&result), sizeof(result));
     return flute::network2Host(result);
 }
 
-std::int32_t Buffer::peekInt32() const {
+std::int32_t CircularBuffer::peekInt32() const {
     std::int32_t result = 0;
     peek(reinterpret_cast<std::uint8_t *>(&result), sizeof(result));
     return flute::network2Host(result);
 }
 
-std::int64_t Buffer::peekInt64() const {
+std::int64_t CircularBuffer::peekInt64() const {
     std::int64_t result = 0;
     peek(reinterpret_cast<std::uint8_t *>(&result), sizeof(result));
     return flute::network2Host(result);
 }
 
-std::string Buffer::peekLine() const {
+std::string CircularBuffer::peekLine() const {
     auto temp = m_lineSeparator.c_str();
     flute::ssize_t length = static_cast<flute::ssize_t>(m_lineSeparator.length());
     auto bytesAvailable = readableBytes();
@@ -135,7 +137,7 @@ std::string Buffer::peekLine() const {
     return ss.str();
 }
 
-void Buffer::peek(void *buffer, flute::ssize_t length) const {
+void CircularBuffer::peek(void *buffer, flute::ssize_t length) const {
     assert(length <= readableBytes());
     if (m_capacity - m_readIndex >= length) {
         std::memcpy(buffer, m_buffer + m_readIndex, length);
@@ -146,54 +148,54 @@ void Buffer::peek(void *buffer, flute::ssize_t length) const {
     }
 }
 
-std::int8_t Buffer::readInt8() {
+std::int8_t CircularBuffer::readInt8() {
     auto result = peekInt8();
     UPDATE_READ_INDEX(m_capacity, m_readIndex, m_bufferSize, sizeof(result));
     return result;
 }
 
-std::int16_t Buffer::readInt16() {
+std::int16_t CircularBuffer::readInt16() {
     auto result = peekInt16();
     UPDATE_READ_INDEX(m_capacity, m_readIndex, m_bufferSize, sizeof(result));
     return result;
 }
 
-std::int32_t Buffer::readInt32() {
+std::int32_t CircularBuffer::readInt32() {
     auto result = peekInt32();
     UPDATE_READ_INDEX(m_capacity, m_readIndex, m_bufferSize, sizeof(result));
     return result;
 }
 
-std::int64_t Buffer::readInt64() {
+std::int64_t CircularBuffer::readInt64() {
     auto result = peekInt64();
     UPDATE_READ_INDEX(m_capacity, m_readIndex, m_bufferSize, sizeof(result));
     return result;
 }
 
-std::string Buffer::readLine() {
+std::string CircularBuffer::readLine() {
     auto result = peekLine();
     UPDATE_READ_INDEX(m_capacity, m_readIndex, m_bufferSize, static_cast<flute::ssize_t>(result.length()));
     return result;
 }
 
-void Buffer::read(void *buffer, flute::ssize_t length) {
+void CircularBuffer::read(void *buffer, flute::ssize_t length) {
     peek(buffer, length);
     UPDATE_READ_INDEX(m_capacity, m_readIndex, m_bufferSize, length);
 }
 
-void Buffer::append(Buffer &buffer) {
+void CircularBuffer::append(CircularBuffer &buffer) {
     appendInternal(buffer, buffer.readableBytes());
     UPDATE_WRITE_INDEX(m_capacity, m_writeIndex, m_bufferSize, buffer.readableBytes());
     buffer.m_readIndex = buffer.m_writeIndex = buffer.m_bufferSize = 0;
 }
 
-void Buffer::append(Buffer &buffer, flute::ssize_t length) {
+void CircularBuffer::append(CircularBuffer &buffer, flute::ssize_t length) {
     appendInternal(buffer, buffer.readableBytes());
     UPDATE_WRITE_INDEX(m_capacity, m_writeIndex, m_bufferSize, buffer.readableBytes());
     buffer.m_readIndex = buffer.m_writeIndex = buffer.m_bufferSize = 0;
 }
 
-void Buffer::append(const void *buffer, flute::ssize_t length) {
+void CircularBuffer::append(const void *buffer, flute::ssize_t length) {
     if (length > writeableBytes()) {
         // expand buffer
         expand(length);
@@ -212,30 +214,30 @@ void Buffer::append(const void *buffer, flute::ssize_t length) {
     UPDATE_WRITE_INDEX(m_capacity, m_writeIndex, m_bufferSize, length);
 }
 
-void Buffer::appendInt8(std::int8_t value) { append(reinterpret_cast<std::uint8_t *>(&value), sizeof(value)); }
+void CircularBuffer::appendInt8(std::int8_t value) { append(reinterpret_cast<std::uint8_t *>(&value), sizeof(value)); }
 
-void Buffer::appendInt16(std::int16_t value) {
+void CircularBuffer::appendInt16(std::int16_t value) {
     value = host2Network(value);
     append(reinterpret_cast<std::uint8_t *>(&value), sizeof(value));
 }
 
-void Buffer::appendInt32(std::int32_t value) {
+void CircularBuffer::appendInt32(std::int32_t value) {
     value = host2Network(value);
     append(reinterpret_cast<std::uint8_t *>(&value), sizeof(value));
 }
 
-void Buffer::appendInt64(std::int64_t value) {
+void CircularBuffer::appendInt64(std::int64_t value) {
     value = host2Network(value);
     append(reinterpret_cast<std::uint8_t *>(&value), sizeof(value));
 }
 
-void Buffer::setLineSeparator(std::string &&separator) { m_lineSeparator = std::move(separator); }
+void CircularBuffer::setLineSeparator(std::string &&separator) { m_lineSeparator = std::move(separator); }
 
-void Buffer::setLineSeparator(const std::string &separator) { m_lineSeparator = separator; }
+void CircularBuffer::setLineSeparator(const std::string &separator) { m_lineSeparator = separator; }
 
-const std::string &Buffer::getLineSeparator() const { return m_lineSeparator; }
+const std::string &CircularBuffer::getLineSeparator() const { return m_lineSeparator; }
 
-flute::ssize_t Buffer::readFromSocket(socket_type descriptor) {
+flute::ssize_t CircularBuffer::readFromSocket(socket_type descriptor) {
     auto writeableSize = writeableBytes();
     auto bytesAvailable = flute::getByteAvaliableOnSocket(descriptor);
     if (bytesAvailable >= writeableSize) {
@@ -268,7 +270,7 @@ flute::ssize_t Buffer::readFromSocket(socket_type descriptor) {
     return result;
 }
 
-flute::ssize_t Buffer::sendToSocket(socket_type descriptor) {
+flute::ssize_t CircularBuffer::sendToSocket(socket_type descriptor) {
     auto length = readableBytes();
     iovec vec[2]{};
     int count;
@@ -290,7 +292,7 @@ flute::ssize_t Buffer::sendToSocket(socket_type descriptor) {
     return result;
 }
 
-flute::ssize_t Buffer::readFromSocket(socket_type descriptor, InetAddress &address) {
+flute::ssize_t CircularBuffer::readFromSocket(socket_type descriptor, InetAddress &address) {
     auto writeableSize = writeableBytes();
     auto bytesAvailable = flute::getByteAvaliableOnSocket(descriptor);
     if (bytesAvailable >= writeableSize) {
@@ -328,7 +330,7 @@ flute::ssize_t Buffer::readFromSocket(socket_type descriptor, InetAddress &addre
     return result;
 }
 
-flute::ssize_t Buffer::sendToSocket(socket_type descriptor, const InetAddress &address) {
+flute::ssize_t CircularBuffer::sendToSocket(socket_type descriptor, const InetAddress &address) {
     auto length = readableBytes();
     iovec vec[2]{};
     int count;
@@ -355,9 +357,9 @@ flute::ssize_t Buffer::sendToSocket(socket_type descriptor, const InetAddress &a
     return result;
 }
 
-void Buffer::clear() { m_readIndex = m_writeIndex = m_bufferSize = 0; }
+void CircularBuffer::clear() { m_readIndex = m_writeIndex = m_bufferSize = 0; }
 
-void Buffer::expand(flute::ssize_t length) {
+void CircularBuffer::expand(flute::ssize_t length) {
     auto capacity = getCapacity(length, m_capacity);
     auto new_buffer = static_cast<std::uint8_t *>(std::realloc(m_buffer, capacity));
     if (!new_buffer) {
@@ -378,7 +380,7 @@ void Buffer::expand(flute::ssize_t length) {
     }
 }
 
-void Buffer::appendInternal(const Buffer &buffer, flute::ssize_t length) {
+void CircularBuffer::appendInternal(const CircularBuffer &buffer, flute::ssize_t length) {
     if (length > writeableBytes()) {
         // expand buffer
         expand(length);

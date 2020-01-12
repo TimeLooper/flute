@@ -2,13 +2,14 @@
 // Created by why on 2020/01/06.
 //
 
+#include <flute/CircularBuffer.h>
 #include <flute/EventLoopGroup.h>
 #include <flute/InetAddress.h>
 #include <flute/Logger.h>
 #include <flute/UdpServer.h>
-#include <flute/Buffer.h>
 
-void handleMessage(const std::shared_ptr<flute::UdpServer>& server, const flute::InetAddress& address, flute::Buffer& buffer) {
+void handleMessage(const std::shared_ptr<flute::UdpServer>& server, const flute::InetAddress& address,
+                   flute::CircularBuffer& buffer) {
     buffer.setLineSeparator("\n");
     std::string message = buffer.readLine();
     LOG_DEBUG << "receive message from " << address.toString() << " -> " << message;

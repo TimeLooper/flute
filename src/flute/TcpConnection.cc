@@ -69,14 +69,14 @@ void TcpConnection::send(const std::string& message) {
     }
 }
 
-void TcpConnection::send(Buffer& buffer) {
+void TcpConnection::send(CircularBuffer& buffer) {
     if (m_state != ConnectionState::CONNECTED) {
         return;
     }
     if (m_loop->isInLoopThread()) {
         sendInLoop(buffer);
     } else {
-        void (TcpConnection::*func)(Buffer & buffer) = &TcpConnection::sendInLoop;
+        void (TcpConnection::*func)(CircularBuffer & buffer) = &TcpConnection::sendInLoop;
         m_loop->runInLoop(std::bind(func, shared_from_this(), buffer));
     }
 }
@@ -225,7 +225,7 @@ void TcpConnection::sendInLoop(const std::string& message) {
     sendInLoop(message.c_str(), static_cast<flute::ssize_t>(message.length()));
 }
 
-void TcpConnection::sendInLoop(Buffer& buffer) {
+void TcpConnection::sendInLoop(CircularBuffer& buffer) {
     m_loop->assertInLoopThread();
     auto length = buffer.readableBytes();
     if (m_state == ConnectionState::DISCONNECTED) {

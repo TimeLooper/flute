@@ -2,8 +2,8 @@
 // Created by why on 2020/01/06.
 //
 
-#include <flute/Buffer.h>
 #include <flute/Channel.h>
+#include <flute/CircularBuffer.h>
 #include <flute/EventLoopGroup.h>
 #include <flute/InetAddress.h>
 #include <flute/Logger.h>
@@ -53,7 +53,7 @@ flute::ssize_t UdpServer::send(const InetAddress& address, const std::string& me
     return flute::sendmsg(m_socket->descriptor(), &msg, 0);
 }
 
-flute::ssize_t UdpServer::send(const InetAddress& address, Buffer& buffer) {
+flute::ssize_t UdpServer::send(const InetAddress& address, CircularBuffer& buffer) {
     return buffer.sendToSocket(m_socket->descriptor(), address);
 }
 
@@ -69,7 +69,7 @@ void UdpServer::close() {
 }
 
 void UdpServer::handleRead() {
-    Buffer buffer;
+    CircularBuffer buffer;
     InetAddress address;
     auto ret = buffer.readFromSocket(m_socket->descriptor(), address);
     if (ret == -1) {

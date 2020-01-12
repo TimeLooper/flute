@@ -2,8 +2,8 @@
 // Created by why on 2019/12/30.
 //
 
-#ifndef FLUTE_BUFFER_H
-#define FLUTE_BUFFER_H
+#ifndef FLUTE_CIRCULAR_BUFFER_H
+#define FLUTE_CIRCULAR_BUFFER_H
 
 #include <flute/config.h>
 #include <flute/copyable.h>
@@ -15,17 +15,17 @@ namespace flute {
 
 class InetAddress;
 
-class Buffer : private copyable {
+class CircularBuffer : private copyable {
 public:
-    FLUTE_API_DECL Buffer();
-    FLUTE_API_DECL Buffer(const Buffer& buffer);
-    FLUTE_API_DECL Buffer(Buffer&& buffer);
-    FLUTE_API_DECL explicit Buffer(flute::ssize_t size);
-    FLUTE_API_DECL ~Buffer();
+    FLUTE_API_DECL CircularBuffer();
+    FLUTE_API_DECL CircularBuffer(const CircularBuffer& buffer);
+    FLUTE_API_DECL CircularBuffer(CircularBuffer&& buffer) noexcept;
+    FLUTE_API_DECL explicit CircularBuffer(flute::ssize_t size);
+    FLUTE_API_DECL ~CircularBuffer();
 
-    FLUTE_API_DECL Buffer& operator=(const Buffer& buffer);
-    FLUTE_API_DECL Buffer& operator=(Buffer&& buffer);
-    FLUTE_API_DECL void swap(Buffer& buffer);
+    FLUTE_API_DECL CircularBuffer& operator=(const CircularBuffer& buffer);
+    FLUTE_API_DECL CircularBuffer& operator=(CircularBuffer&& buffer) noexcept;
+    FLUTE_API_DECL void swap(CircularBuffer& buffer);
 
     FLUTE_API_DECL flute::ssize_t readableBytes() const;
     FLUTE_API_DECL flute::ssize_t writeableBytes() const;
@@ -41,8 +41,8 @@ public:
     FLUTE_API_DECL std::int64_t readInt64();
     FLUTE_API_DECL std::string readLine();
     FLUTE_API_DECL void read(void* buffer, flute::ssize_t length);
-    FLUTE_API_DECL void append(Buffer& buffer);
-    FLUTE_API_DECL void append(Buffer& buffer, flute::ssize_t length);
+    FLUTE_API_DECL void append(CircularBuffer& buffer);
+    FLUTE_API_DECL void append(CircularBuffer& buffer, flute::ssize_t length);
     FLUTE_API_DECL void append(const void* buffer, flute::ssize_t length);
     FLUTE_API_DECL void appendInt8(std::int8_t value);
     FLUTE_API_DECL void appendInt16(std::int16_t value);
@@ -66,9 +66,9 @@ private:
     std::string m_lineSeparator;
 
     void expand(flute::ssize_t length);
-    void appendInternal(const Buffer& buffer, flute::ssize_t length);
+    void appendInternal(const CircularBuffer& buffer, flute::ssize_t length);
 };
 
 } // namespace flute
 
-#endif // FLUTE_BUFFER_H
+#endif // FLUTE_CIRCULAR_BUFFER_H

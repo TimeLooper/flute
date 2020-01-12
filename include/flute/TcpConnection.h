@@ -5,7 +5,7 @@
 #ifndef FLUTE_TCP_CONNECTION_H
 #define FLUTE_TCP_CONNECTION_H
 
-#include <flute/Buffer.h>
+#include <flute/CircularBuffer.h>
 #include <flute/InetAddress.h>
 #include <flute/Socket.h>
 #include <flute/flute_types.h>
@@ -30,7 +30,7 @@ public:
     FLUTE_API_DECL void shutdown();
     FLUTE_API_DECL void send(const void* buffer, flute::ssize_t length);
     FLUTE_API_DECL void send(const std::string& message);
-    FLUTE_API_DECL void send(Buffer& buffer);
+    FLUTE_API_DECL void send(CircularBuffer& buffer);
     FLUTE_API_DECL void handleConnectionEstablished();
     FLUTE_API_DECL void handleConnectionDestroy();
     FLUTE_API_DECL void startRead();
@@ -78,8 +78,8 @@ private:
     HighWaterMarkCallback m_highWaterMarkCallback;
     ConnectionEstablishedCallback m_connectionEstablishedCallback;
     ConnectionDestroyCallback m_connectionDestroyCallback;
-    Buffer m_inputBuffer;
-    Buffer m_outputBuffer;
+    CircularBuffer m_inputBuffer;
+    CircularBuffer m_outputBuffer;
 
     void handleRead();
     void handleWrite();
@@ -88,7 +88,7 @@ private:
     void shutdownInLoop();
     void sendInLoop(const void* buffer, flute::ssize_t length);
     void sendInLoop(const std::string& message);
-    void sendInLoop(Buffer& buffer);
+    void sendInLoop(CircularBuffer& buffer);
     void handleConnectionEstablishedInLoop();
     void handleConnectionDestroyInLoop();
     void forceCloseInLoop();

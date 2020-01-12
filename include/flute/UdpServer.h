@@ -32,7 +32,7 @@ public:
     FLUTE_API_DECL void bind(const InetAddress& address);
     FLUTE_API_DECL flute::ssize_t send(const InetAddress& address, const void* buffer, flute::ssize_t length);
     FLUTE_API_DECL flute::ssize_t send(const InetAddress& address, const std::string& message);
-    FLUTE_API_DECL flute::ssize_t send(const InetAddress& address, Buffer& buffer);
+    FLUTE_API_DECL flute::ssize_t send(const InetAddress& address, CircularBuffer& buffer);
     FLUTE_API_DECL void close();
 
 private:

@@ -93,7 +93,7 @@ set(FLUTE_SOURCES
         src/flute/EventLoopInterruptor.cc
         src/flute/Channel.cc
         src/flute/InetAddress.cc
-        src/flute/Buffer.cc
+        src/flute/CircularBuffer.cc
         src/flute/TcpConnection.cc
         src/flute/Socket.cc
         src/flute/EventLoopGroup.cc
