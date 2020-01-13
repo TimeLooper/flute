@@ -27,7 +27,7 @@ inline std::uint64_t host2Network(std::uint64_t value) {
 #if defined(FLUTE_HAVE_ENDIAN_H) || defined(FLUTE_HAVE_SYS_ENDIAN_H)
     return htobe64(value);
 #endif
-#if defined(FLUTE_HAVE_MACHINE_ENDIAN_H) || defined(_WIN32)
+#if (!defined(__FreeBSD__) && defined(FLUTE_HAVE_MACHINE_ENDIAN_H)) || defined(_WIN32)
     return htonll(value);
 #endif
 }
@@ -38,7 +38,7 @@ inline std::uint32_t host2Network(std::uint32_t value) {
 #if defined(FLUTE_HAVE_ENDIAN_H) || defined(FLUTE_HAVE_SYS_ENDIAN_H)
     return htobe32(value);
 #endif
-#if defined(FLUTE_HAVE_MACHINE_ENDIAN_H) || defined(_WIN32)
+#if (!defined(__FreeBSD__) && defined(FLUTE_HAVE_MACHINE_ENDIAN_H)) || defined(_WIN32)
     return htonl(value);
 #endif
 }
@@ -49,7 +49,7 @@ inline std::uint16_t host2Network(std::uint16_t value) {
 #if defined(FLUTE_HAVE_ENDIAN_H) || defined(FLUTE_HAVE_SYS_ENDIAN_H)
     return htobe16(value);
 #endif
-#if defined(FLUTE_HAVE_MACHINE_ENDIAN_H) || defined(_WIN32)
+#if (!defined(__FreeBSD__) && defined(FLUTE_HAVE_MACHINE_ENDIAN_H)) || defined(_WIN32)
     return htons(value);
 #endif
 }
@@ -60,7 +60,7 @@ inline std::uint64_t network2Host(std::uint64_t value) {
 #if defined(FLUTE_HAVE_ENDIAN_H) || defined(FLUTE_HAVE_SYS_ENDIAN_H)
     return be64toh(value);
 #endif
-#if defined(FLUTE_HAVE_MACHINE_ENDIAN_H) || defined(_WIN32)
+#if (!defined(__FreeBSD__) && defined(FLUTE_HAVE_MACHINE_ENDIAN_H)) || defined(_WIN32)
     return ntohll(value);
 #endif
 }
@@ -71,7 +71,7 @@ inline std::uint32_t network2Host(std::uint32_t value) {
 #if defined(FLUTE_HAVE_ENDIAN_H) || defined(FLUTE_HAVE_SYS_ENDIAN_H)
     return be32toh(value);
 #endif
-#if defined(FLUTE_HAVE_MACHINE_ENDIAN_H) || defined(_WIN32)
+#if (!defined(__FreeBSD__) && defined(FLUTE_HAVE_MACHINE_ENDIAN_H)) || defined(_WIN32)
     return ntohl(value);
 #endif
 }
@@ -82,7 +82,7 @@ inline std::uint16_t network2Host(std::uint16_t value) {
 #if defined(FLUTE_HAVE_ENDIAN_H) || defined(FLUTE_HAVE_SYS_ENDIAN_H)
     return be16toh(value);
 #endif
-#if defined(FLUTE_HAVE_MACHINE_ENDIAN_H) || defined(_WIN32)
+#if (!defined(__FreeBSD__) && defined(FLUTE_HAVE_MACHINE_ENDIAN_H)) || defined(_WIN32)
     return ntohs(value);
 #endif
 }
