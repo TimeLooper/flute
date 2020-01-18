@@ -69,18 +69,6 @@ void TcpConnection::send(const std::string& message) {
     }
 }
 
-void TcpConnection::send(CircularBuffer& buffer) {
-    if (m_state != ConnectionState::CONNECTED) {
-        return;
-    }
-    if (m_loop->isInLoopThread()) {
-        sendInLoop(buffer);
-    } else {
-        void (TcpConnection::*func)(CircularBuffer & buffer) = &TcpConnection::sendInLoop;
-        m_loop->runInLoop(std::bind(func, shared_from_this(), buffer));
-    }
-}
-
 void TcpConnection::forceClose() {
     if (m_state == ConnectionState::CONNECTED || m_state == ConnectionState::CONNECTING) {
         m_state = ConnectionState::DISCONNECTING;
@@ -223,48 +211,6 @@ void TcpConnection::sendInLoop(const void* buffer, flute::ssize_t length) {
 
 void TcpConnection::sendInLoop(const std::string& message) {
     sendInLoop(message.c_str(), static_cast<flute::ssize_t>(message.length()));
-}
-
-void TcpConnection::sendInLoop(CircularBuffer& buffer) {
-    m_loop->assertInLoopThread();
-    auto length = buffer.readableBytes();
-    if (m_state == ConnectionState::DISCONNECTED) {
-        LOG_WARN << "write bytes to a disconnected connection.";
-        return;
-    }
-    bool error = false;
-    flute::ssize_t count = 0;
-    flute::ssize_t remain = length;
-    if (!m_channel->isWriteable() && m_outputBuffer.readableBytes() == 0) {
-        count = buffer.sendToSocket(m_channel->descriptor());
-        if (count >= 0) {
-            remain = length - count;
-            if (remain <= 0 && m_writeCompleteCallback) {
-                m_loop->queueInLoop(std::bind(m_writeCompleteCallback, shared_from_this()));
-            }
-        } else {
-            count = 0;
-            auto error_code = m_socket->getSocketError();
-            if (error_code != FLUTE_ERROR(EWOULDBLOCK) && error_code != EAGAIN) {
-                LOG_ERROR << "TcpConnection::sendInLoop " << error_code << ":" << formatErrorString(error_code);
-                if (error_code == EPIPE || error_code == FLUTE_ERROR(ECONNRESET)) {
-                    error = true;
-                }
-            }
-        }
-    }
-
-    assert(remain <= length);
-    if (!error && remain > 0) {
-        auto len = m_outputBuffer.readableBytes();
-        if (len + remain >= m_highWaterMark && len < m_highWaterMark && m_highWaterMarkCallback) {
-            m_loop->queueInLoop(std::bind(m_highWaterMarkCallback, shared_from_this(), len + remain));
-        }
-        m_outputBuffer.append(buffer);
-        if (!m_channel->isWriteable()) {
-            m_channel->enableWrite();
-        }
-    }
 }
 
 void TcpConnection::handleConnectionEstablishedInLoop() {

@@ -15,10 +15,10 @@ int main(int argc, char* argv[]) {
     flute::EventLoopGroup group(0);
     flute::TcpClient client(&group, flute::InetAddress("127.0.0.1", 9999));
     client.setMessageCallback([&](const std::shared_ptr<flute::TcpConnection>& conn, flute::CircularBuffer& buffer) {
-        buffer.setLineSeparator("\n");
-        auto msg = buffer.readLine();
-        LOG_DEBUG << "receive message from " << conn->getRemoteAddress().toString() << ":" << msg;
-        conn->send(msg);
+        char temp[4096] = { 0 };
+        auto length = buffer.read(temp, static_cast<flute::ssize_t>(sizeof(temp)));
+        LOG_DEBUG << "receive message from " << conn->getRemoteAddress().toString() << ":" << temp;
+        conn->send(temp, length);
     });
     client.setConnectionEstablishedCallback([&](const std::shared_ptr<flute::TcpConnection>& conn) {
         conn->send("hello\n");

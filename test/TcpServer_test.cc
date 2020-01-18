@@ -14,7 +14,10 @@ int main(int argc, char* argv[]) {
     flute::TcpServer server(&loopGroup);
     server.bind(flute::InetAddress(9999));
     server.setMessageCallback(
-        [&](const std::shared_ptr<flute::TcpConnection>& conn, flute::CircularBuffer& buffer) { conn->send(buffer);
+        [&](const std::shared_ptr<flute::TcpConnection>& conn, flute::CircularBuffer& buffer) {
+            char temp[4096] = { 0 };
+            auto length = buffer.read(temp, static_cast<flute::ssize_t>(sizeof(temp)));
+            conn->send(temp, length);
     });
     loopGroup.dispatch();
     flute::deinitialize();

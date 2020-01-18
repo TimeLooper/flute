@@ -10,10 +10,10 @@
 
 void handleMessage(const std::shared_ptr<flute::UdpServer>& server, const flute::InetAddress& address,
                    flute::CircularBuffer& buffer) {
-    buffer.setLineSeparator("\n");
-    std::string message = buffer.readLine();
-    LOG_DEBUG << "receive message from " << address.toString() << " -> " << message;
-    server->send(address, message);
+    char temp[4096] = {0};
+    auto length = buffer.read(temp, static_cast<flute::ssize_t>(sizeof(temp)));
+    LOG_DEBUG << "receive message from " << address.toString() << " -> " << temp;
+    server->send(address, temp, length);
 }
 
 int main(int argc, char* argv[]) {

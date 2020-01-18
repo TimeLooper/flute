@@ -94,6 +94,7 @@ set(FLUTE_SOURCES
         src/flute/Channel.cc
         src/flute/InetAddress.cc
         src/flute/CircularBuffer.cc
+        src/flute/ByteBuffer.cc
         src/flute/TcpConnection.cc
         src/flute/Socket.cc
         src/flute/EventLoopGroup.cc

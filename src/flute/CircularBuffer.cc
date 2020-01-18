@@ -48,27 +48,9 @@ CircularBuffer::CircularBuffer()
     , m_buffer(static_cast<std::uint8_t *>(std::malloc(sizeof(std::uint8_t) * DEFAULT_BUFFER_SIZE)))
     , m_lineSeparator("\r\n") {}
 
-CircularBuffer::CircularBuffer(const CircularBuffer &buffer) : CircularBuffer() {
-    appendInternal(buffer, buffer.readableBytes());
-}
-
-CircularBuffer::CircularBuffer(CircularBuffer &&buffer) noexcept : CircularBuffer() { this->swap(buffer); }
-
-CircularBuffer::CircularBuffer(flute::ssize_t size)
-    : m_readIndex(0)
-    , m_writeIndex(0)
-    , m_bufferSize(0)
-    , m_capacity(size)
-    , m_buffer(static_cast<std::uint8_t *>(std::malloc(sizeof(std::uint8_t) * size)))
-    , m_lineSeparator("\r\n") {}
+CircularBuffer::CircularBuffer(CircularBuffer&& buffer) noexcept { this->swap(buffer); }
 
 CircularBuffer::~CircularBuffer() { std::free(m_buffer); }
-
-CircularBuffer &CircularBuffer::operator=(const CircularBuffer &buffer) {
-    this->m_readIndex = this->m_writeIndex = this->m_bufferSize = 0;
-    appendInternal(buffer, buffer.readableBytes());
-    return *this;
-}
 
 CircularBuffer &CircularBuffer::operator=(CircularBuffer &&buffer) noexcept {
     this->swap(buffer);
@@ -81,7 +63,6 @@ void CircularBuffer::swap(CircularBuffer &buf) {
     std::swap(m_bufferSize, buf.m_bufferSize);
     std::swap(m_capacity, buf.m_capacity);
     std::swap(m_buffer, buf.m_buffer);
-    m_lineSeparator.swap(buf.m_lineSeparator);
 }
 
 flute::ssize_t CircularBuffer::readableBytes() const { return m_bufferSize; }
@@ -112,33 +93,10 @@ std::int64_t CircularBuffer::peekInt64() const {
     return flute::network2Host(result);
 }
 
-std::string CircularBuffer::peekLine() const {
-    auto temp = m_lineSeparator.c_str();
-    flute::ssize_t length = static_cast<flute::ssize_t>(m_lineSeparator.length());
-    auto bytesAvailable = readableBytes();
-    flute::ssize_t index = 0;
-    flute::ssize_t idx = 0;
-    std::stringstream ss;
-    while (true) {
-        ss << *(m_buffer + ((m_readIndex + index) & (m_capacity - 1)));
-        if (*(m_buffer + ((m_readIndex + index) & (m_capacity - 1))) == temp[idx]) {
-            idx += 1;
-        } else {
-            idx = 0;
-        }
-        if (idx >= length) {
-            break;
-        }
-        if (index >= bytesAvailable) {
-            return "";
-        }
-        index += 1;
-    }
-    return ss.str();
-}
-
-void CircularBuffer::peek(void *buffer, flute::ssize_t length) const {
-    assert(length <= readableBytes());
+flute::ssize_t CircularBuffer::peek(void *buffer, flute::ssize_t length) const {
+    // assert(length <= readableBytes());
+    auto bytesAvaliable = readableBytes();
+    length = length > bytesAvaliable ? bytesAvaliable : length;
     if (m_capacity - m_readIndex >= length) {
         std::memcpy(buffer, m_buffer + m_readIndex, length);
     } else {
@@ -146,6 +104,7 @@ void CircularBuffer::peek(void *buffer, flute::ssize_t length) const {
         std::memcpy(reinterpret_cast<std::uint8_t *>(buffer) + m_capacity - m_readIndex, m_buffer,
                     length + m_readIndex - m_capacity);
     }
+    return bytesAvaliable;
 }
 
 std::int8_t CircularBuffer::readInt8() {
@@ -172,15 +131,10 @@ std::int64_t CircularBuffer::readInt64() {
     return result;
 }
 
-std::string CircularBuffer::readLine() {
-    auto result = peekLine();
-    UPDATE_READ_INDEX(m_capacity, m_readIndex, m_bufferSize, static_cast<flute::ssize_t>(result.length()));
-    return result;
-}
-
-void CircularBuffer::read(void *buffer, flute::ssize_t length) {
-    peek(buffer, length);
-    UPDATE_READ_INDEX(m_capacity, m_readIndex, m_bufferSize, length);
+flute::ssize_t CircularBuffer::read(void *buffer, flute::ssize_t length) {
+    auto count = peek(buffer, length);
+    UPDATE_READ_INDEX(m_capacity, m_readIndex, m_bufferSize, count);
+    return count;
 }
 
 void CircularBuffer::append(CircularBuffer &buffer) {
@@ -190,7 +144,7 @@ void CircularBuffer::append(CircularBuffer &buffer) {
 }
 
 void CircularBuffer::append(CircularBuffer &buffer, flute::ssize_t length) {
-    appendInternal(buffer, buffer.readableBytes());
+    appendInternal(buffer, length);
     UPDATE_WRITE_INDEX(m_capacity, m_writeIndex, m_bufferSize, buffer.readableBytes());
     buffer.m_readIndex = buffer.m_writeIndex = buffer.m_bufferSize = 0;
 }
