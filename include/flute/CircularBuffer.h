@@ -6,8 +6,8 @@
 #define FLUTE_CIRCULAR_BUFFER_H
 
 #include <flute/config.h>
-#include <flute/noncopyable.h>
 #include <flute/flute_types.h>
+#include <flute/noncopyable.h>
 
 #include <string>
 

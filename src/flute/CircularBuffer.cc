@@ -48,7 +48,7 @@ CircularBuffer::CircularBuffer()
     , m_buffer(static_cast<std::uint8_t *>(std::malloc(sizeof(std::uint8_t) * DEFAULT_BUFFER_SIZE)))
     , m_lineSeparator("\r\n") {}
 
-CircularBuffer::CircularBuffer(CircularBuffer&& buffer) noexcept { this->swap(buffer); }
+CircularBuffer::CircularBuffer(CircularBuffer &&buffer) noexcept { this->swap(buffer); }
 
 CircularBuffer::~CircularBuffer() { std::free(m_buffer); }
 

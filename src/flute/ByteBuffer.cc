@@ -3,10 +3,10 @@
 //
 
 #include <flute/ByteBuffer.h>
-#include <flute/endian.h>
-#include <flute/socket_ops.h>
 #include <flute/InetAddress.h>
 #include <flute/Logger.h>
+#include <flute/endian.h>
+#include <flute/socket_ops.h>
 
 #include <cstdlib>
 #include <cstring>
@@ -29,13 +29,11 @@ ByteBuffer::ByteBuffer()
     , m_capacity(DEFAULT_BUFFER_SIZE)
     , m_buffer(static_cast<std::uint8_t *>(std::malloc(sizeof(std::uint8_t) * DEFAULT_BUFFER_SIZE))) {}
 
-ByteBuffer::ByteBuffer(ByteBuffer&& buffer) noexcept { this->swap(buffer); }
+ByteBuffer::ByteBuffer(ByteBuffer &&buffer) noexcept { this->swap(buffer); }
 
-ByteBuffer::~ByteBuffer() {
-    std::free(m_buffer);
-}
+ByteBuffer::~ByteBuffer() { std::free(m_buffer); }
 
-ByteBuffer& ByteBuffer::operator=(ByteBuffer&& buffer) noexcept {
+ByteBuffer &ByteBuffer::operator=(ByteBuffer &&buffer) noexcept {
     if (this == &buffer) {
         return *this;
     }
@@ -43,7 +41,7 @@ ByteBuffer& ByteBuffer::operator=(ByteBuffer&& buffer) noexcept {
     return *this;
 }
 
-void ByteBuffer::swap(ByteBuffer& buffer) {
+void ByteBuffer::swap(ByteBuffer &buffer) {
     std::swap(m_readIndex, buffer.m_readIndex);
     std::swap(m_writeIndex, buffer.m_writeIndex);
     std::swap(m_capacity, buffer.m_capacity);
