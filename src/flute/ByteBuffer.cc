@@ -15,7 +15,7 @@ namespace flute {
 
 static const int DEFAULT_BUFFER_SIZE = 1024;
 
-inline std::int32_t getCapacity(std::int32_t length, std::int32_t capacity) {
+inline flute::ssize_t getCapacity(flute::ssize_t length, flute::ssize_t capacity) {
     int result = capacity ? capacity : 1;
     while (result < length + capacity) {
         result <<= 1;
@@ -81,7 +81,7 @@ flute::ssize_t ByteBuffer::peek(void *buffer, flute::ssize_t length) const {
     auto bytesAvaliable = readableBytes();
     length = length > bytesAvaliable ? bytesAvaliable : length;
     std::memcpy(buffer, m_buffer + m_readIndex, length);
-    return bytesAvaliable;
+    return length;
 }
 
 std::int8_t ByteBuffer::readInt8() {

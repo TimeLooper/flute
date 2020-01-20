@@ -32,7 +32,7 @@ static const int DEFAULT_BUFFER_SIZE = 1024;
         bufferSize += size;                                        \
     } while (0)
 
-inline std::int32_t getCapacity(std::int32_t length, std::int32_t capacity) {
+inline flute::ssize_t getCapacity(flute::ssize_t length, flute::ssize_t capacity) {
     int result = capacity ? capacity : 1;
     while (result < length + capacity) {
         result <<= 1;
@@ -45,8 +45,7 @@ CircularBuffer::CircularBuffer()
     , m_writeIndex(0)
     , m_bufferSize(0)
     , m_capacity(DEFAULT_BUFFER_SIZE)
-    , m_buffer(static_cast<std::uint8_t *>(std::malloc(sizeof(std::uint8_t) * DEFAULT_BUFFER_SIZE)))
-    , m_lineSeparator("\r\n") {}
+    , m_buffer(static_cast<std::uint8_t *>(std::malloc(sizeof(std::uint8_t) * DEFAULT_BUFFER_SIZE))) {}
 
 CircularBuffer::CircularBuffer(CircularBuffer &&buffer) noexcept { this->swap(buffer); }
 
@@ -104,7 +103,7 @@ flute::ssize_t CircularBuffer::peek(void *buffer, flute::ssize_t length) const {
         std::memcpy(reinterpret_cast<std::uint8_t *>(buffer) + m_capacity - m_readIndex, m_buffer,
                     length + m_readIndex - m_capacity);
     }
-    return bytesAvaliable;
+    return length;
 }
 
 std::int8_t CircularBuffer::readInt8() {
@@ -184,12 +183,6 @@ void CircularBuffer::appendInt64(std::int64_t value) {
     value = host2Network(value);
     append(reinterpret_cast<std::uint8_t *>(&value), sizeof(value));
 }
-
-void CircularBuffer::setLineSeparator(std::string &&separator) { m_lineSeparator = std::move(separator); }
-
-void CircularBuffer::setLineSeparator(const std::string &separator) { m_lineSeparator = separator; }
-
-const std::string &CircularBuffer::getLineSeparator() const { return m_lineSeparator; }
 
 flute::ssize_t CircularBuffer::readFromSocket(socket_type descriptor) {
     auto writeableSize = writeableBytes();

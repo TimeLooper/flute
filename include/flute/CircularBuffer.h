@@ -43,9 +43,6 @@ public:
     FLUTE_API_DECL void appendInt16(std::int16_t value);
     FLUTE_API_DECL void appendInt32(std::int32_t value);
     FLUTE_API_DECL void appendInt64(std::int64_t value);
-    FLUTE_API_DECL void setLineSeparator(std::string&& separator);
-    FLUTE_API_DECL void setLineSeparator(const std::string& separator);
-    FLUTE_API_DECL const std::string& getLineSeparator() const;
     FLUTE_API_DECL flute::ssize_t readFromSocket(socket_type descriptor);
     FLUTE_API_DECL flute::ssize_t sendToSocket(socket_type descriptor);
     FLUTE_API_DECL flute::ssize_t readFromSocket(socket_type descriptor, InetAddress& address);
@@ -58,7 +55,6 @@ private:
     flute::ssize_t m_bufferSize;
     flute::ssize_t m_capacity;
     std::uint8_t* m_buffer;
-    std::string m_lineSeparator;
 
     void expand(flute::ssize_t length);
     void appendInternal(const CircularBuffer& buffer, flute::ssize_t length);
