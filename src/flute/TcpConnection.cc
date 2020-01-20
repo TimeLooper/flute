@@ -28,8 +28,8 @@ TcpConnection::TcpConnection(socket_type descriptor, EventLoop* loop, const Inet
     , m_highWaterMarkCallback()
     , m_connectionEstablishedCallback()
     , m_connectionDestroyCallback()
-    , m_inputBuffer()
-    , m_outputBuffer() {
+    , m_inputBuffer(1024)
+    , m_outputBuffer(1024) {
     m_socket->setTcpNoDelay(true);
     m_socket->setKeepAlive(true);
     m_channel->setReadCallback(std::bind(&TcpConnection::handleRead, this));

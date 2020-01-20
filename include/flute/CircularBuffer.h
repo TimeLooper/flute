@@ -17,7 +17,7 @@ class InetAddress;
 
 class CircularBuffer : private noncopyable {
 public:
-    FLUTE_API_DECL CircularBuffer();
+    FLUTE_API_DECL CircularBuffer(flute::ssize_t size);
     FLUTE_API_DECL CircularBuffer(CircularBuffer&& buffer) noexcept;
     FLUTE_API_DECL ~CircularBuffer();
 

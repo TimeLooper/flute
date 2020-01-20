@@ -16,13 +16,15 @@
 
 namespace flute {
 
-static const int DEFAULT_BUFFER_SIZE = 1024;
-
-#define UPDATE_READ_INDEX(capacity, readIndex, bufferSize, size) \
-    do {                                                         \
-        readIndex += size;                                       \
-        readIndex &= capacity - 1;                               \
-        bufferSize -= size;                                      \
+#define UPDATE_READ_INDEX(capacity, readIndex, writeIndex, bufferSize, size) \
+    do {                                                                     \
+        if (bufferSize >= static_cast<flute::ssize_t>(size)) {               \
+            readIndex = writeIndex = bufferSize = 0;                         \
+        } else {                                                             \
+            readIndex += size;                                               \
+            readIndex &= capacity - 1;                                       \
+            bufferSize -= size;                                              \
+        }                                                                    \
     } while (0)
 
 #define UPDATE_WRITE_INDEX(capacity, writeIndex, bufferSize, size) \
@@ -40,16 +42,22 @@ inline flute::ssize_t getCapacity(flute::ssize_t length, flute::ssize_t capacity
     return result;
 }
 
-CircularBuffer::CircularBuffer()
-    : m_readIndex(0)
-    , m_writeIndex(0)
-    , m_bufferSize(0)
-    , m_capacity(DEFAULT_BUFFER_SIZE)
-    , m_buffer(static_cast<std::uint8_t *>(std::malloc(sizeof(std::uint8_t) * DEFAULT_BUFFER_SIZE))) {}
+CircularBuffer::CircularBuffer(flute::ssize_t size)
+    : m_readIndex(0), m_writeIndex(0), m_bufferSize(0), m_capacity(size), m_buffer(nullptr) {
+    if (m_capacity > 0) {
+        m_buffer = static_cast<std::uint8_t *>(std::malloc(sizeof(std::uint8_t) * size));
+    }
+}
 
-CircularBuffer::CircularBuffer(CircularBuffer &&buffer) noexcept { this->swap(buffer); }
+CircularBuffer::CircularBuffer(CircularBuffer &&buffer) noexcept : CircularBuffer(0) { this->swap(buffer); }
 
-CircularBuffer::~CircularBuffer() { std::free(m_buffer); }
+CircularBuffer::~CircularBuffer() {
+    if (m_buffer) {
+        std::free(m_buffer);
+        m_buffer = nullptr;
+        m_readIndex = m_writeIndex = m_bufferSize = 0;
+    }
+}
 
 CircularBuffer &CircularBuffer::operator=(CircularBuffer &&buffer) noexcept {
     this->swap(buffer);
@@ -108,31 +116,31 @@ flute::ssize_t CircularBuffer::peek(void *buffer, flute::ssize_t length) const {
 
 std::int8_t CircularBuffer::readInt8() {
     auto result = peekInt8();
-    UPDATE_READ_INDEX(m_capacity, m_readIndex, m_bufferSize, sizeof(result));
+    UPDATE_READ_INDEX(m_capacity, m_readIndex, m_writeIndex, m_bufferSize, sizeof(result));
     return result;
 }
 
 std::int16_t CircularBuffer::readInt16() {
     auto result = peekInt16();
-    UPDATE_READ_INDEX(m_capacity, m_readIndex, m_bufferSize, sizeof(result));
+    UPDATE_READ_INDEX(m_capacity, m_readIndex, m_writeIndex, m_bufferSize, sizeof(result));
     return result;
 }
 
 std::int32_t CircularBuffer::readInt32() {
     auto result = peekInt32();
-    UPDATE_READ_INDEX(m_capacity, m_readIndex, m_bufferSize, sizeof(result));
+    UPDATE_READ_INDEX(m_capacity, m_readIndex, m_writeIndex, m_bufferSize, sizeof(result));
     return result;
 }
 
 std::int64_t CircularBuffer::readInt64() {
     auto result = peekInt64();
-    UPDATE_READ_INDEX(m_capacity, m_readIndex, m_bufferSize, sizeof(result));
+    UPDATE_READ_INDEX(m_capacity, m_readIndex, m_writeIndex, m_bufferSize, sizeof(result));
     return result;
 }
 
 flute::ssize_t CircularBuffer::read(void *buffer, flute::ssize_t length) {
     auto count = peek(buffer, length);
-    UPDATE_READ_INDEX(m_capacity, m_readIndex, m_bufferSize, count);
+    UPDATE_READ_INDEX(m_capacity, m_readIndex, m_writeIndex, m_bufferSize, count);
     return count;
 }
 
@@ -234,7 +242,7 @@ flute::ssize_t CircularBuffer::sendToSocket(socket_type descriptor) {
     }
     auto result = flute::writev(descriptor, vec, count);
     if (result > 0) {
-        UPDATE_READ_INDEX(m_capacity, m_readIndex, m_bufferSize, result);
+        UPDATE_READ_INDEX(m_capacity, m_readIndex, m_writeIndex, m_bufferSize, result);
     }
     return result;
 }
@@ -299,7 +307,7 @@ flute::ssize_t CircularBuffer::sendToSocket(socket_type descriptor, const InetAd
     message.msg_iovlen = count;
     auto result = flute::sendmsg(descriptor, &message, 0);
     if (result > 0) {
-        UPDATE_READ_INDEX(m_capacity, m_readIndex, m_bufferSize, result);
+        UPDATE_READ_INDEX(m_capacity, m_readIndex, m_writeIndex, m_bufferSize, result);
     }
     return result;
 }

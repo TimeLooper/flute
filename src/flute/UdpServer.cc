@@ -69,7 +69,7 @@ void UdpServer::close() {
 }
 
 void UdpServer::handleRead() {
-    CircularBuffer buffer;
+    CircularBuffer buffer(1024);
     InetAddress address;
     auto ret = buffer.readFromSocket(m_socket->descriptor(), address);
     if (ret == -1) {
