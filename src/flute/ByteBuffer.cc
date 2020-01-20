@@ -9,6 +9,7 @@
 #include <flute/Logger.h>
 
 #include <cstdlib>
+#include <cstring>
 
 namespace flute {
 
