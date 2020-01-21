@@ -76,6 +76,22 @@ std::int64_t ByteBuffer::peekInt64() const {
     return flute::network2Host(result);
 }
 
+float ByteBuffer::peekFloat() const {
+    float result = 0.0f;
+    auto p = reinterpret_cast<std::uint32_t *>(&result);
+    peek(p, sizeof(result));
+    *p = network2Host(*p);
+    return result;
+}
+
+double ByteBuffer::peekDouble() const {
+    double result = 0.0f;
+    auto p = reinterpret_cast<std::uint64_t *>(&result);
+    peek(p, sizeof(result));
+    *p = network2Host(*p);
+    return result;
+}
+
 flute::ssize_t ByteBuffer::peek(void *buffer, flute::ssize_t length) const {
     // assert(length <= readableBytes());
     auto bytesAvaliable = readableBytes();
@@ -104,6 +120,18 @@ std::int32_t ByteBuffer::readInt32() {
 
 std::int64_t ByteBuffer::readInt64() {
     auto result = peekInt64();
+    m_readIndex += sizeof(result);
+    return result;
+}
+
+float ByteBuffer::readFloat() {
+    auto result = peekFloat();
+    m_readIndex += sizeof(result);
+    return result;
+}
+
+double ByteBuffer::readDouble() {
+    auto result = peekDouble();
     m_readIndex += sizeof(result);
     return result;
 }
@@ -150,6 +178,18 @@ void ByteBuffer::appendInt32(std::int32_t value) {
 void ByteBuffer::appendInt64(std::int64_t value) {
     value = host2Network(value);
     append(reinterpret_cast<std::uint8_t *>(&value), sizeof(value));
+}
+
+void ByteBuffer::appendFloat(float value) {
+    auto p = reinterpret_cast<std::uint32_t *>(&value);
+    *p = host2Network(*p);
+    append(reinterpret_cast<std::uint8_t *>(p), sizeof(value));
+}
+
+void ByteBuffer::appendDouble(double value) {
+    auto p = reinterpret_cast<std::uint64_t *>(&value);
+    *p = host2Network(*p);
+    append(reinterpret_cast<std::uint8_t *>(p), sizeof(value));
 }
 
 flute::ssize_t ByteBuffer::readFromSocket(socket_type descriptor) {

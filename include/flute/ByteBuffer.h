@@ -28,11 +28,15 @@ public:
     FLUTE_API_DECL std::int16_t peekInt16() const;
     FLUTE_API_DECL std::int32_t peekInt32() const;
     FLUTE_API_DECL std::int64_t peekInt64() const;
+    FLUTE_API_DECL float peekFloat() const;
+    FLUTE_API_DECL double peekDouble() const;
     FLUTE_API_DECL flute::ssize_t peek(void* buffer, flute::ssize_t length) const;
     FLUTE_API_DECL std::int8_t readInt8();
     FLUTE_API_DECL std::int16_t readInt16();
     FLUTE_API_DECL std::int32_t readInt32();
     FLUTE_API_DECL std::int64_t readInt64();
+    FLUTE_API_DECL float readFloat();
+    FLUTE_API_DECL double readDouble();
     FLUTE_API_DECL flute::ssize_t read(void* buffer, flute::ssize_t length);
     FLUTE_API_DECL void append(ByteBuffer& buffer);
     FLUTE_API_DECL void append(ByteBuffer& buffer, flute::ssize_t length);
@@ -41,6 +45,8 @@ public:
     FLUTE_API_DECL void appendInt16(std::int16_t value);
     FLUTE_API_DECL void appendInt32(std::int32_t value);
     FLUTE_API_DECL void appendInt64(std::int64_t value);
+    FLUTE_API_DECL void appendFloat(float value);
+    FLUTE_API_DECL void appendDouble(double value);
     FLUTE_API_DECL flute::ssize_t readFromSocket(socket_type descriptor);
     FLUTE_API_DECL flute::ssize_t sendToSocket(socket_type descriptor);
     FLUTE_API_DECL flute::ssize_t readFromSocket(socket_type descriptor, InetAddress& address);
@@ -55,6 +61,8 @@ private:
 
     void expand(flute::ssize_t length);
     void appendInternal(const ByteBuffer& buffer, flute::ssize_t length);
+
+    friend class CircularBuffer;
 };
 
 } // namespace flute
