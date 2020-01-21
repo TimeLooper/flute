@@ -88,7 +88,7 @@ inline DescriptorSet::DescriptorSet(DescriptorSet&& rhs) noexcept {
 
 inline DescriptorSet::~DescriptorSet() { std::free(m_set); }
 
-DescriptorSet& DescriptorSet::operator=(const DescriptorSet& rhs) {
+inline DescriptorSet& DescriptorSet::operator=(const DescriptorSet& rhs) {
     if (this == &rhs) {
         return *this;
     }
@@ -101,7 +101,7 @@ DescriptorSet& DescriptorSet::operator=(const DescriptorSet& rhs) {
     return *this;
 }
 
-DescriptorSet& DescriptorSet::operator=(DescriptorSet&& rhs) {
+inline DescriptorSet& DescriptorSet::operator=(DescriptorSet&& rhs) {
     if (this == &rhs) {
         return *this;
     }
@@ -175,7 +175,7 @@ inline DescriptorSet::DescriptorSet(DescriptorSet&& rhs) noexcept {
 
 inline DescriptorSet::~DescriptorSet() { std::free(m_set); }
 
-DescriptorSet& DescriptorSet::operator=(const DescriptorSet& rhs) {
+inline DescriptorSet& DescriptorSet::operator=(const DescriptorSet& rhs) {
     if (this == &rhs) {
         return *this;
     }
@@ -187,7 +187,7 @@ DescriptorSet& DescriptorSet::operator=(const DescriptorSet& rhs) {
     return *this;
 }
 
-DescriptorSet& DescriptorSet::operator=(DescriptorSet&& rhs) {
+inline DescriptorSet& DescriptorSet::operator=(DescriptorSet&& rhs) {
     if (this == &rhs) {
         return *this;
     }
