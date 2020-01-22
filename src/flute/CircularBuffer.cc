@@ -15,9 +15,6 @@
 #include <cstring>
 #include <sstream>
 
-static_assert(sizeof(std::uint64_t) == sizeof(double));
-static_assert(sizeof(std::uint32_t) == sizeof(float));
-
 namespace flute {
 
 #define UPDATE_READ_INDEX(capacity, readIndex, writeIndex, bufferSize, size) \
