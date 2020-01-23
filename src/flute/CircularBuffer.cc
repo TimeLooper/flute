@@ -2,8 +2,8 @@
 // Created by why on 2019/12/30.
 //
 
-#include <flute/CircularBuffer.h>
 #include <flute/ByteBuffer.h>
+#include <flute/CircularBuffer.h>
 #include <flute/InetAddress.h>
 #include <flute/Logger.h>
 #include <flute/endian.h>
@@ -173,7 +173,7 @@ flute::ssize_t CircularBuffer::read(void *buffer, flute::ssize_t length) {
     return count;
 }
 
-void CircularBuffer::read(ByteBuffer& buffer, flute::ssize_t length) {
+void CircularBuffer::read(ByteBuffer &buffer, flute::ssize_t length) {
     if (buffer.m_capacity < length) {
         buffer.expand(length);
     }
@@ -213,7 +213,7 @@ void CircularBuffer::append(const void *buffer, flute::ssize_t length) {
     UPDATE_WRITE_INDEX(m_capacity, m_writeIndex, m_bufferSize, length);
 }
 
-void CircularBuffer::append(ByteBuffer& buffer) {
+void CircularBuffer::append(ByteBuffer &buffer) {
     auto nbytes = buffer.readableBytes();
     if (nbytes <= 0) {
         return;
