@@ -76,13 +76,33 @@ configure_file(
         ${CMAKE_CURRENT_BINARY_DIR}/include/flute/flute-config.h
         NEWLINE_STYLE UNIX)
 
-# 设置头文件路径
-include_directories(${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR}/include)
+set(FLUTE_HEADERS
+        include/flute/Acceptor.h
+        include/flute/ByteBuffer.h
+        include/flute/Channel.h
+        include/flute/CircularBuffer.h
+        include/flute/config.h
+        include/flute/Connector.h
+        include/flute/copyable.h
+        include/flute/endian.h
+        include/flute/EventLoop.h
+        include/flute/EventLoopGroup.h
+        include/flute/flute_types.h
+        include/flute/InetAddress.h
+        include/flute/Logger.h
+        include/flute/noncopyable.h
+        include/flute/Selector.h
+        include/flute/socket_ops.h
+        include/flute/Socket.h
+        include/flute/TcpClient.h
+        include/flute/TcpConnection.h
+        include/flute/TcpServer.h
+        include/flute/ThreadPool.h
+        include/flute/UdpServer.h
 
-file(GLOB_RECURSE HEADERS "include/*.h")
-add_custom_target(headers SOURCES ${HEADERS})
+        ${CMAKE_CURRENT_BINARY_DIR}/include/flute/flute-config.h
+)
 
-#file(GLOB_RECURSE FLUTE_SOURCES "src/*.cpp")
 set(FLUTE_SOURCES
         src/flute/Logger.cc
         src/flute/Selector.cc
@@ -140,7 +160,7 @@ set(LIB_BUILD_TYPE SHARED)
 endif("${LIBS_EXPORT_TYPE}" STREQUAL "shared")
 
 # 编译动态链接库
-add_library(${LIB_FULL_NAME} ${LIB_BUILD_TYPE} ${FLUTE_SOURCES})
+add_library(${LIB_FULL_NAME} ${LIB_BUILD_TYPE} ${FLUTE_SOURCES} ${FLUTE_HEADERS})
 
 target_compile_definitions(${LIB_FULL_NAME} PRIVATE FLUTE_INSIDE_LIBRARY)
 
@@ -151,7 +171,6 @@ endif()
 
 # 设置依赖选项
 target_link_libraries(${LIB_FULL_NAME}
-        ${CMAKE_THREAD_LIBS_INIT}
         ${LIB_PLATFORM}
         ${LIB_LIBRARIES}
 )
@@ -167,5 +186,8 @@ set_target_properties(${LIB_FULL_NAME} PROPERTIES CLEAN_DIRECT_OUTPUT 1)
 
 # 设置动态链接库版本号
 set_target_properties(${LIB_FULL_NAME} PROPERTIES VERSION 1.0.0 SOVERSION 1)
+
+target_include_directories(${LIB_FULL_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/include ${CMAKE_CURRENT_BINARY_DIR}/include)
+target_include_directories(${LIB_FULL_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/src)
 
 add_subdirectory(test)
