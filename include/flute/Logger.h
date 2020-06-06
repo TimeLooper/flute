@@ -13,7 +13,7 @@
 
 namespace flute {
 
-enum LogLevel { LEVEL_TRACE, LEVEL_DEBUG, LEVEL_INFO, LEVEL_WARN, LEVEL_ERROR, LEVEL_FATAL };
+enum class LogLevel { LEVEL_TRACE, LEVEL_DEBUG, LEVEL_INFO, LEVEL_WARN, LEVEL_ERROR, LEVEL_FATAL };
 
 typedef std::function<void(const char*, int)> LogCallback;
 

@@ -23,7 +23,7 @@ namespace flute {
 
 static const char* LEVEL_TAGS[] = {"[TRACE]", "[DEBUG]", "[INFO] ", "[WARN] ", "[ERROR]", "[FATAL]"};
 
-static inline const char* getLogLevelTag(int level) {
+static inline const char* getLogLevelTag(LogLevel level) {
     switch (level) {
         case LogLevel::LEVEL_TRACE:
         case LogLevel::LEVEL_DEBUG:
@@ -31,7 +31,7 @@ static inline const char* getLogLevelTag(int level) {
         case LogLevel::LEVEL_WARN:
         case LogLevel::LEVEL_ERROR:
         case LogLevel::LEVEL_FATAL:
-            return LEVEL_TAGS[level];
+            return LEVEL_TAGS[static_cast<int>(level)];
         default:
             return LEVEL_TAGS[0];
     }

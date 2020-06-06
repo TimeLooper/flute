@@ -91,7 +91,7 @@ FLUTE_API_DECL int socketpair(int domain, int type, int protocol, socket_type de
 #define FLUTE_ERROR(e) e
 #endif
 
-enum SocketType { STREAM_SOCKET, DGRAM_SOCKET };
+enum class SocketType { STREAM_SOCKET, DGRAM_SOCKET };
 
 FLUTE_API_DECL void initialize();
 

@@ -33,7 +33,7 @@ public:
     inline const InetAddress& getServerAddress() const { return m_serverAddress; }
 
 private:
-    enum ConnectorState { DISCONNECTED, CONNECTING, CONNECTED };
+    enum class ConnectorState { DISCONNECTED, CONNECTING, CONNECTED };
     int m_retryDelay;
     EventLoop* m_loop;
     Channel* m_channel;

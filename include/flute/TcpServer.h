@@ -48,7 +48,7 @@ public:
     FLUTE_API_DECL void close();
 
 private:
-    enum ServerState { STOPPED, STARTING, STARTED, STOPPING };
+    enum class ServerState { STOPPED, STARTING, STARTED, STOPPING };
     EventLoopGroup* m_eventLoopGroup;
     std::atomic<ServerState> m_state;
     std::unique_ptr<Acceptor> m_acceptor;

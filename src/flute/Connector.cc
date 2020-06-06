@@ -20,7 +20,7 @@ Connector::Connector(EventLoop* loop, const InetAddress& address)
     , m_loop(loop)
     , m_channel(nullptr)
     , m_serverAddress(address)
-    , m_state(DISCONNECTED)
+    , m_state(ConnectorState::DISCONNECTED)
     , m_isConnect(false)
     , m_connectCallback() {}
 
@@ -29,7 +29,7 @@ Connector::Connector(EventLoop* loop, InetAddress&& address)
     , m_loop(loop)
     , m_channel(nullptr)
     , m_serverAddress(std::move(address))
-    , m_state(DISCONNECTED)
+    , m_state(ConnectorState::DISCONNECTED)
     , m_isConnect(false)
     , m_connectCallback() {}
 
@@ -54,7 +54,7 @@ void Connector::stop() {
 
 void Connector::startInLoop() {
     m_loop->assertInLoopThread();
-    assert(m_state == DISCONNECTED);
+    assert(m_state == ConnectorState::DISCONNECTED);
     if (m_isConnect) {
         connect();
     } else {
@@ -65,7 +65,7 @@ void Connector::startInLoop() {
 void Connector::stopInLoop() {
     m_loop->assertInLoopThread();
     if (m_state == ConnectorState::CONNECTING) {
-        m_state = DISCONNECTED;
+        m_state = ConnectorState::DISCONNECTED;
         socket_type sockfd = removeAndResetChannel();
         retry(sockfd);
     }
@@ -115,14 +115,14 @@ void Connector::connect() {
 
 void Connector::restart() {
     m_loop->assertInLoopThread();
-    m_state = DISCONNECTED;
+    m_state = ConnectorState::DISCONNECTED;
     m_retryDelay = DEFALUT_RETRY_DELAY;
     m_isConnect = true;
     startInLoop();
 }
 
 void Connector::connecting(socket_type descriptor) {
-    m_state = CONNECTING;
+    m_state = ConnectorState::CONNECTING;
     assert(!m_channel);
     m_channel = new Channel(descriptor, m_loop);
     m_channel->setWriteCallback(std::bind(&Connector::handleWrite, this));
@@ -130,8 +130,8 @@ void Connector::connecting(socket_type descriptor) {
 }
 
 void Connector::handleWrite() {
-    if (m_state != CONNECTING) {
-        assert(m_state == DISCONNECTED);
+    if (m_state != ConnectorState::CONNECTING) {
+        assert(m_state == ConnectorState::DISCONNECTED);
         return;
     }
     auto descriptor = removeAndResetChannel();
@@ -143,7 +143,7 @@ void Connector::handleWrite() {
         LOG_WARN << "Connector::handleRead - self connection";
         retry(descriptor);
     } else {
-        m_state = CONNECTED;
+        m_state = ConnectorState::CONNECTED;
         if (m_isConnect && m_connectCallback) {
             m_connectCallback(descriptor);
         } else {
@@ -172,7 +172,7 @@ socket_type Connector::removeAndResetChannel() {
 
 void Connector::retry(socket_type descriptor) {
     flute::closeSocket(descriptor);
-    m_state = DISCONNECTED;
+    m_state = ConnectorState::DISCONNECTED;
     if (m_isConnect) {
         LOG_INFO << "retry connecting to " << m_serverAddress.toString() << " in " << m_retryDelay << " milliseconds.";
         m_loop->schedule(std::bind(&Connector::startInLoop, shared_from_this()), m_retryDelay, 1);

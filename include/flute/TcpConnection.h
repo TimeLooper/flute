@@ -63,7 +63,7 @@ public:
     inline bool connected() const { return m_state == ConnectionState::CONNECTED; }
 
 private:
-    enum ConnectionState { DISCONNECTED, CONNECTING, CONNECTED, DISCONNECTING };
+    enum class ConnectionState { DISCONNECTED, CONNECTING, CONNECTED, DISCONNECTING };
     flute::ssize_t m_highWaterMark;
     EventLoop* m_loop;
     std::atomic<ConnectionState> m_state;
