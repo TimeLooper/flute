@@ -19,7 +19,7 @@ namespace flute {
 
 #define UPDATE_READ_INDEX(capacity, readIndex, writeIndex, bufferSize, size) \
     do {                                                                     \
-        if (bufferSize >= static_cast<flute::ssize_t>(size)) {               \
+        if (bufferSize <= static_cast<flute::ssize_t>(size)) {               \
             readIndex = writeIndex = bufferSize = 0;                         \
         } else {                                                             \
             readIndex += size;                                               \
