@@ -70,6 +70,8 @@ CHECK_FUNCTION_EXISTS(socketpair FLUTE_HAVE_SOCKETPAIR)
 # 检测变量符号等
 CHECK_SYMBOL_EXISTS(F_SETFD fcntl.h FLUTE_HAVE_SETFD)
 
+CHECK_TYPE_SIZE("void *" FLUTE_SIZEOF_PTR)
+
 # 配置文件生成
 configure_file(
         ${CMAKE_CURRENT_SOURCE_DIR}/flute-config.h.cmake

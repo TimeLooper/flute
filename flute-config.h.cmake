@@ -66,4 +66,6 @@
 
 #cmakedefine FLUTE_HAVE_SETFD 1
 
+#define FLUTE_SIZEOF_PTR @FLUTE_SIZEOF_PTR@
+
 #endif // _FLUTE_CONFIG_H_

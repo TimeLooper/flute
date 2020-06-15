@@ -41,9 +41,13 @@ typedef int socket_type;
 const socket_type FLUTE_INVALID_SOCKET = static_cast<socket_type>(~0);
 
 #ifdef WIN32
+#if FLUTE_SIZEOF_PTR == 4
 typedef int ssize_t;
-#elif _WIN64
+#elif FLUTE_SIZEOF_PTR == 8
 typedef long int ssize_t;
+#else
+#error
+#endif
 #else
 typedef ::ssize_t ssize_t;
 #endif
