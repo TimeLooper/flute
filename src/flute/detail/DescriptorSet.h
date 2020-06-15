@@ -57,11 +57,7 @@ private:
     std::size_t m_setSize;
     flute_fd_set* m_set;
 
-#ifdef _WIN32
     static const int INIT_FD_SET_SIZE = FD_SETSIZE;
-#else
-    static const int INIT_FD_SET_SIZE = FD_SETSIZE;
-#endif
 };
 
 #ifdef _WIN32
