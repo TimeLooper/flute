@@ -9,6 +9,8 @@
 #include <flute/copyable.h>
 #include <flute/socket_ops.h>
 
+#include <string>
+
 namespace flute {
 
 class InetAddress : private copyable {

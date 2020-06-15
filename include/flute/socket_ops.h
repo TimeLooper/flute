@@ -10,6 +10,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <string>
 
 #ifdef FLUTE_HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
