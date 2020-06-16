@@ -72,6 +72,7 @@ void TimerHeap::pop() {
         return;
     }
     std::swap(m_timers.back(), m_timers.front());
+    m_timers.pop_back();
     m_timers.front()->index = 0;
     shift_down(0);
 }
@@ -83,7 +84,7 @@ void TimerHeap::remove(Timer* timer) {
     auto last = m_timers.back();
     m_timers.pop_back();
     m_timers[timer->index] = last;
-    auto parent = (timer->index - 1) / 2;
+    auto parent = (timer->index & 1 ? timer->index - 1 : timer->index - 2) / 2;
     if (timer->index > 0 && compare(m_timers[parent], last)) {
         shift_up(timer->index);
     } else {
@@ -93,7 +94,7 @@ void TimerHeap::remove(Timer* timer) {
 }
 
 void TimerHeap::update(Timer* timer) {
-    auto parent = (timer->index - 1) / 2;
+    auto parent = (timer->index & 1 ? timer->index - 1 : timer->index - 2) / 2;
     if (timer->index > 0 && compare(m_timers[parent], timer)) {
         shift_up(timer->index);
     } else {
@@ -130,19 +131,12 @@ void TimerHeap::shift_down(TimerHeap::size_type index) {
 
 void TimerHeap::shift_up(TimerHeap::size_type index) {
     auto temp = m_timers[index];
-    auto parent = (index - 1) / 2;
-    if ((index & 1) == 0) {
-        parent = (index - 2) / 2;
-    }
+    auto parent = (index & 1 ? index - 1 : index - 2) / 2;
     while (index && compare(m_timers[parent], temp)) {
         m_timers[index] = m_timers[parent];
         m_timers[index]->index = static_cast<int>(index);
         index = parent;
-        if (index & 1) {
-            parent = (index - 1) / 2;
-        } else {
-            parent = (index - 2) / 2;
-        }
+        parent = (index & 1 ? index - 1 : index - 2) / 2;
     }
     m_timers[index] = temp;
     temp->index = static_cast<int>(index);

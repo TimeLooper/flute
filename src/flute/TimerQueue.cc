@@ -102,8 +102,9 @@ void TimerQueue::handleTimerEvent() {
             break;
         }
     }
+    currentTime = currentMilliseconds();
     for (auto timer : timers) {
-        if (timer->loopCount > 0) {
+        if (timer->loopCount > 0 || timer->loopCount == -1) {
             timer->startTime = currentTime;
             m_timerHeap->push(timer);
         } else {
