@@ -78,17 +78,19 @@ void TimerHeap::pop() {
 }
 
 void TimerHeap::remove(Timer* timer) {
-    if (timer->index < 0 || static_cast<size_type>(timer->index) > m_timers.size()) {
+    if (timer->index < 0 || static_cast<size_type>(timer->index) >= m_timers.size()) {
         return;
     }
     auto last = m_timers.back();
     m_timers.pop_back();
-    m_timers[timer->index] = last;
-    auto parent = (timer->index & 1 ? timer->index - 1 : timer->index - 2) / 2;
-    if (timer->index > 0 && compare(m_timers[parent], last)) {
-        shift_up(timer->index);
-    } else {
-        shift_down(timer->index);
+    if (m_timers.size()) {
+        m_timers[timer->index] = last;
+        auto parent = (timer->index & 1 ? timer->index - 1 : timer->index - 2) / 2;
+        if (timer->index > 0 && compare(m_timers[parent], last)) {
+            shift_up(timer->index);
+        } else {
+            shift_down(timer->index);
+        }
     }
     timer->index = -1;
 }

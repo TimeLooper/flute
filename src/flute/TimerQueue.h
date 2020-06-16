@@ -31,8 +31,8 @@ public:
     std::uint64_t schedule(std::function<void()>&& callback, std::int64_t delay, int loopCount);
     std::uint64_t schedule(const std::function<void()>& callback, std::int64_t delay, int loopCount);
     void cancel(std::uint64_t timerId);
-    std::int64_t searchNearestTime();
-    void handleTimerEvent();
+    std::int64_t searchNearestTime(std::int64_t now);
+    void handleTimerEvent(std::int64_t now);
 
 private:
     EventLoop* m_loop;

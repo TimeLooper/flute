@@ -9,6 +9,8 @@
 #include <flute/Selector.h>
 #include <flute/TimerQueue.h>
 
+#include <flute/internal.h>
+
 namespace flute {
 
 EventLoop::EventLoop()
@@ -48,11 +50,12 @@ void EventLoop::dispatch() {
     m_quit = false;
     std::vector<SelectorEvent> events(32);
     while (!m_quit) {
-        auto ret = m_selector->select(events, static_cast<int>(m_timerQueue->searchNearestTime()));
+        auto now = currentMilliseconds();
+        m_timerQueue->handleTimerEvent(now);
+        auto ret = m_selector->select(events, static_cast<int>(m_timerQueue->searchNearestTime(now)));
         if (ret == -1) {
             continue;
         }
-        m_timerQueue->handleTimerEvent();
         for (auto i = 0; i < ret; ++i) {
             auto& e = events[i];
             auto ch = static_cast<Channel*>(e.data);

@@ -57,12 +57,12 @@ void TimerQueue::cancel(std::uint64_t timerId) {
     m_loop->runInLoop(std::bind(&TimerQueue::cancelTimerInLoop, this, timerId));
 }
 
-std::int64_t TimerQueue::searchNearestTime() {
+std::int64_t TimerQueue::searchNearestTime(std::int64_t now) {
     if (m_timerHeap->empty()) {
         return -1;
     }
     auto top = m_timerHeap->top();
-    auto delay = top->delay - currentMilliseconds() + top->startTime;
+    auto delay = top->delay - now + top->startTime;
 #ifdef USING_TIMERFD
     if (m_channel) {
         itimerspec spec{};
@@ -80,15 +80,14 @@ std::int64_t TimerQueue::searchNearestTime() {
     return delay;
 }
 
-void TimerQueue::handleTimerEvent() {
+void TimerQueue::handleTimerEvent(std::int64_t now) {
     if (m_timerHeap->empty()) {
         return;
     }
-    auto currentTime = currentMilliseconds();
     std::vector<Timer *> timers;
     while (!m_timerHeap->empty()) {
         auto timer = m_timerHeap->top();
-        auto offset = timer->delay + timer->startTime - currentTime;
+        auto offset = timer->delay + timer->startTime - now;
         if (offset <= 0) {
             if (timer->callback) {
                 timer->callback();
@@ -102,10 +101,9 @@ void TimerQueue::handleTimerEvent() {
             break;
         }
     }
-    currentTime = currentMilliseconds();
     for (auto timer : timers) {
         if (timer->loopCount > 0 || timer->loopCount == -1) {
-            timer->startTime = currentTime;
+            timer->startTime = now;
             m_timerHeap->push(timer);
         } else {
             delete timer;

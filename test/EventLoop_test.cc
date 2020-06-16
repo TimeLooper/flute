@@ -17,7 +17,7 @@ int main(int argc, char* argv[]) {
     }, 500, -1);
     loop.schedule([&] {
         LOG_DEBUG << "schedule 2000.";
-    }, 2000, 2);
+    }, 2000, -1);
     loop.dispatch();
     flute::deinitialize();
 }
