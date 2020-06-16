@@ -131,11 +131,18 @@ void TimerHeap::shift_down(TimerHeap::size_type index) {
 void TimerHeap::shift_up(TimerHeap::size_type index) {
     auto temp = m_timers[index];
     auto parent = (index - 1) / 2;
+    if ((index & 1) == 0) {
+        parent = (index - 2) / 2;
+    }
     while (index && compare(m_timers[parent], temp)) {
         m_timers[index] = m_timers[parent];
         m_timers[index]->index = static_cast<int>(index);
         index = parent;
-        parent = (index - 1) / 2;
+        if (index & 1) {
+            parent = (index - 1) / 2;
+        } else {
+            parent = (index - 2) / 2;
+        }
     }
     m_timers[index] = temp;
     temp->index = static_cast<int>(index);

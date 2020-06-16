@@ -85,6 +85,7 @@ void TimerQueue::handleTimerEvent() {
         return;
     }
     auto currentTime = currentMilliseconds();
+    std::vector<Timer *> timers;
     while (!m_timerHeap->empty()) {
         auto timer = m_timerHeap->top();
         auto offset = timer->delay + timer->startTime - currentTime;
@@ -95,15 +96,18 @@ void TimerQueue::handleTimerEvent() {
             if (timer->loopCount > 0) {
                 timer->loopCount -= 1;
             }
-            if (timer->loopCount == 0) {
-                m_timerHeap->remove(timer);
-                delete timer;
-            } else {
-                timer->startTime += timer->delay;
-                m_timerHeap->update(timer);
-            }
+            timers.push_back(timer);
+            m_timerHeap->remove(timer);
         } else {
             break;
+        }
+    }
+    for (auto timer : timers) {
+        if (timer->loopCount > 0) {
+            timer->startTime = currentTime;
+            m_timerHeap->push(timer);
+        } else {
+            delete timer;
         }
     }
 }
