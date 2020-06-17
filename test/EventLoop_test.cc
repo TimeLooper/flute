@@ -11,13 +11,13 @@ int main(int argc, char* argv[]) {
     flute::EventLoop loop;
     loop.schedule([&] {
         LOG_DEBUG << "schedule 1000.";
+        loop.schedule([&] {
+            LOG_DEBUG << "inner schedule 500";
+        }, 500, 1);
+        loop.schedule([&] {
+            LOG_DEBUG << "inner schedule 1000";
+        }, 1000, 1);
     }, 1000, -1);
-    loop.schedule([&] {
-        LOG_DEBUG << "schedule 500.";
-    }, 500, -1);
-    loop.schedule([&] {
-        LOG_DEBUG << "schedule 2000.";
-    }, 2000, -1);
     loop.dispatch();
     flute::deinitialize();
 }
