@@ -47,7 +47,7 @@ public:
 
     FLUTE_API_DECL std::int64_t getTime() const { return m_microSeconds; }
 
-    FLUTE_API_DECL void setTime(std::int64_t time) { m_microSeconds = time; }
+    FLUTE_API_DECL void setTime(std::int64_t microSeconds) { m_microSeconds = microSeconds; }
 
     static Timestamp now();
 
