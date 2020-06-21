@@ -17,9 +17,15 @@ class Timestamp : private copyable {
 public:
     FLUTE_API_DECL Timestamp() : m_microSeconds(0) {}
 
+    FLUTE_API_DECL Timestamp(const Timestamp& other) : m_microSeconds(other.m_microSeconds) {}
+
+    FLUTE_API_DECL Timestamp(Timestamp&& other) {
+        std::swap(m_microSeconds, other.m_microSeconds);
+    }
+
     FLUTE_API_DECL explicit Timestamp(std::int64_t microSeconds) : m_microSeconds(microSeconds) {}
 
-    FLUTE_API_DECL ~Timestamp();
+    FLUTE_API_DECL ~Timestamp() = default;
 
     FLUTE_API_DECL bool operator==(const Timestamp& rhs) { return this->m_microSeconds == rhs.m_microSeconds; }
 
