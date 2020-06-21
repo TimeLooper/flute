@@ -101,6 +101,7 @@ set(FLUTE_HEADERS
         include/flute/TcpServer.h
         include/flute/ThreadPool.h
         include/flute/UdpServer.h
+        include/flute/Timestamp.h
 
         ${CMAKE_CURRENT_BINARY_DIR}/include/flute/flute-config.h
 )
@@ -125,6 +126,7 @@ set(FLUTE_SOURCES
         src/flute/Connector.cc
         src/flute/TcpClient.cc
         src/flute/UdpServer.cc
+        src/flute/Timestamp.cc
 )
 
 if (UNIX OR APPLE)
