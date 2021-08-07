@@ -52,20 +52,24 @@ void EventLoopInterruptor::interrupt() const {
         return;
     }
     std::uint64_t num = 1;
+    flute::ssize_t len;
 #ifdef _WIN32
-    flute::send(m_writeDescriptor, reinterpret_cast<char *>(&num), sizeof(num), 0);
+    len = flute::send(m_writeDescriptor, reinterpret_cast<char *>(&num), sizeof(num), 0);
 #else
-    flute::write(m_writeDescriptor, &num, sizeof(num));
+    len = flute::write(m_writeDescriptor, &num, sizeof(num));
 #endif
+    (void)len;
 }
 
 void EventLoopInterruptor::handleRead() {
     std::uint64_t num;
+    flute::ssize_t len;
 #ifdef _WIN32
-    flute::recv(m_readDescriptor, reinterpret_cast<char *>(&num), sizeof(num), 0);
+    len = flute::recv(m_readDescriptor, reinterpret_cast<char *>(&num), sizeof(num), 0);
 #else
-    flute::read(m_readDescriptor, &num, sizeof(num));
+    len = flute::read(m_readDescriptor, &num, sizeof(num));
 #endif
+    (void)len;
 }
 
 } // namespace flute
