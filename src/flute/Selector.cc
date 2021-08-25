@@ -3,7 +3,6 @@
 //
 
 #include <flute/Selector.h>
-
 #include <flute/flute-config.h>
 
 #define INIT_EVENT_SIZE 32

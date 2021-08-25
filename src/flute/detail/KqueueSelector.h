@@ -9,7 +9,6 @@
 #include <flute/Selector.h>
 #include <flute/flute_types.h>
 #include <flute/socket_ops.h>
-
 #include <sys/event.h>
 
 #include <cerrno>

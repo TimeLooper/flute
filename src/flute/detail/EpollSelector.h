@@ -5,17 +5,15 @@
 #ifndef FLUTE_DETAIL_EPOLL_SELECTOR_H
 #define FLUTE_DETAIL_EPOLL_SELECTOR_H
 
-#include <flute/flute-config.h>
-
 #include <flute/Logger.h>
 #include <flute/Selector.h>
+#include <flute/flute-config.h>
 #include <flute/socket_ops.h>
+#include <sys/epoll.h>
 
 #include <cerrno>
 #include <cstring>
 #include <vector>
-
-#include <sys/epoll.h>
 
 namespace flute {
 namespace detail {

@@ -7,10 +7,9 @@
 
 #include <flute/Logger.h>
 #include <flute/Selector.h>
+#include <flute/detail/DescriptorSet.h>
 #include <flute/flute-config.h>
 #include <flute/flute_types.h>
-
-#include <flute/detail/DescriptorSet.h>
 
 #ifdef FLUTE_HAVE_SYS_SELECT_H
 #include <sys/select.h>

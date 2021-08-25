@@ -18,6 +18,8 @@
 #define USING_TIMERFD
 #endif
 
+#include <unordered_map>
+
 namespace flute {
 
 class TimerHeap;

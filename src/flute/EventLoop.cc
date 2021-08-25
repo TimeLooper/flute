@@ -8,7 +8,6 @@
 #include <flute/Logger.h>
 #include <flute/Selector.h>
 #include <flute/TimerQueue.h>
-
 #include <flute/internal.h>
 
 namespace flute {

@@ -5,7 +5,6 @@
 #include <flute/Logger.h>
 
 #include <algorithm>
-
 #include <chrono>
 #include <cstdarg>
 #include <cstdio>

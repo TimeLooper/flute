@@ -84,7 +84,7 @@ void TimerQueue::handleTimerEvent(std::int64_t now) {
     if (m_timerHeap->empty()) {
         return;
     }
-    std::vector<Timer *> timers;
+    std::vector<Timer*> timers;
     while (!m_timerHeap->empty()) {
         auto timer = m_timerHeap->top();
         auto offset = timer->delay + timer->startTime - now;

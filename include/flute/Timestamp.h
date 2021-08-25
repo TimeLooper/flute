@@ -8,8 +8,8 @@
 #include <flute/config.h>
 #include <flute/copyable.h>
 
-#include <cstdint>
 #include <algorithm>
+#include <cstdint>
 
 namespace flute {
 
@@ -19,9 +19,7 @@ public:
 
     FLUTE_API_DECL Timestamp(const Timestamp& other) : m_microSeconds(other.m_microSeconds) {}
 
-    FLUTE_API_DECL Timestamp(Timestamp&& other) {
-        std::swap(m_microSeconds, other.m_microSeconds);
-    }
+    FLUTE_API_DECL Timestamp(Timestamp&& other) { std::swap(m_microSeconds, other.m_microSeconds); }
 
     FLUTE_API_DECL explicit Timestamp(std::int64_t microSeconds) : m_microSeconds(microSeconds) {}
 

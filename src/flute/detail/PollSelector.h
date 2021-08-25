@@ -8,7 +8,6 @@
 #include <flute/Logger.h>
 #include <flute/Selector.h>
 #include <flute/flute-config.h>
-
 #include <sys/poll.h>
 
 #include <cassert>
