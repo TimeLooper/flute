@@ -19,7 +19,9 @@ TimerQueue::TimerQueue(flute::EventLoop* loop)
 #ifdef USING_TIMERFD
     , m_channel(nullptr)
 #endif
-    , m_timerHeap(new TimerHeap()) {
+    , m_timerHeap(new TimerHeap())
+    , m_timerIdGen(0)
+    , m_timersTable() {
 #ifdef USING_TIMERFD
     auto descriptor = ::timerfd_create(CLOCK_MONOTONIC, TFD_CLOEXEC | TFD_NONBLOCK);
     if (descriptor != FLUTE_INVALID_SOCKET) {
@@ -41,19 +43,19 @@ TimerQueue::~TimerQueue() {
     delete m_timerHeap;
 }
 
-std::uint64_t TimerQueue::schedule(std::function<void()>&& callback, std::int64_t delay, int loopCount) {
-    auto timer = new Timer(std::move(callback), delay, loopCount);
+std::int64_t TimerQueue::schedule(std::function<void()>&& callback, std::int64_t delay, int loopCount) {
+    auto timer = new Timer(std::move(callback), delay, loopCount, genTimerId());
     m_loop->runInLoop(std::bind(&TimerQueue::scheduleInLoop, this, timer));
-    return reinterpret_cast<std::uint64_t>(timer);
+    return timer->timerId;
 }
 
-std::uint64_t TimerQueue::schedule(const std::function<void()>& callback, std::int64_t delay, int loopCount) {
-    auto timer = new Timer(callback, delay, loopCount);
+std::int64_t TimerQueue::schedule(const std::function<void()>& callback, std::int64_t delay, int loopCount) {
+    auto timer = new Timer(callback, delay, loopCount, genTimerId());
     m_loop->runInLoop(std::bind(&TimerQueue::scheduleInLoop, this, timer));
-    return reinterpret_cast<std::uint64_t>(timer);
+    return timer->timerId;
 }
 
-void TimerQueue::cancel(std::uint64_t timerId) {
+void TimerQueue::cancel(std::int64_t timerId) {
     m_loop->runInLoop(std::bind(&TimerQueue::cancelTimerInLoop, this, timerId));
 }
 
@@ -111,12 +113,28 @@ void TimerQueue::handleTimerEvent(std::int64_t now) {
     }
 }
 
-void TimerQueue::scheduleInLoop(Timer* timer) { m_timerHeap->push(timer); }
+void TimerQueue::scheduleInLoop(Timer* timer) {
+    m_timerHeap->push(timer);
+    m_timersTable[timer->timerId] = timer;
+}
 
-void TimerQueue::cancelTimerInLoop(std::uint64_t timerId) {
-    auto timer = reinterpret_cast<Timer*>(timerId);
+void TimerQueue::cancelTimerInLoop(std::int64_t timerId) {
+    auto it = m_timersTable.find(timerId);
+    if (it == m_timersTable.end()) {
+        return;
+    }
+    auto timer = it->second;
+    m_timersTable.erase(it);
     m_timerHeap->remove(timer);
     delete timer;
+}
+
+std::int64_t TimerQueue::genTimerId() {
+    auto id = m_timerIdGen.fetch_add(1);
+    if (id <= 0) {
+        id = m_timerIdGen.fetch_add(1);
+    }
+    return id;
 }
 
 } // namespace flute
