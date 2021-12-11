@@ -10,7 +10,7 @@
 #include <flute/noncopyable.h>
 
 #include <atomic>
-#include <map>
+#include <unordered_map>
 #include <memory>
 
 namespace flute {
@@ -52,7 +52,7 @@ private:
     EventLoopGroup* m_eventLoopGroup;
     std::atomic<ServerState> m_state;
     std::unique_ptr<Acceptor> m_acceptor;
-    std::map<flute::socket_type, TcpConnectionPtr> m_connections;
+    std::unordered_map<flute::socket_type, TcpConnectionPtr> m_connections;
 
     MessageCallback m_messageCallback;
     WriteCompleteCallback m_writeCompleteCallback;
