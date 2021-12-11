@@ -14,17 +14,19 @@
 namespace flute {
 
 struct Timer {
-    Timer(std::function<void()>&& callback, std::int64_t delay, int loopCount)
+    Timer(std::function<void()>&& callback, std::int64_t delay, int loopCount, std::int64_t timerId)
         : loopCount(loopCount)
         , index(-1)
+        , timerId(timerId)
         , startTime(currentMilliseconds())
         , delay(delay)
         , callback(std::move(callback)) {}
-    Timer(const std::function<void()>& callback, std::int64_t delay, int loopCount)
-        : loopCount(loopCount), index(-1), startTime(currentMilliseconds()), delay(delay), callback(callback) {}
+    Timer(const std::function<void()>& callback, std::int64_t delay, int loopCount, std::int64_t timerId)
+        : loopCount(loopCount), index(-1), timerId(timerId), startTime(currentMilliseconds()), delay(delay), callback(callback) {}
 
     int loopCount;
     int index;
+    const std::int64_t timerId;
     std::int64_t startTime;
     std::int64_t delay;
     std::function<void()> callback;
