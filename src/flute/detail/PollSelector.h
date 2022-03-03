@@ -11,7 +11,7 @@
 #include <sys/poll.h>
 
 #include <cassert>
-#include <map>
+#include <unordered_map>
 
 namespace flute {
 namespace detail {
@@ -110,7 +110,7 @@ private:
         void* data;
     };
     std::vector<pollfd> m_events;
-    std::map<socket_type, PollSelectorData*> m_dataMap;
+    std::unordered_map<socket_type, PollSelectorData*> m_dataMap;
 };
 
 } // namespace detail

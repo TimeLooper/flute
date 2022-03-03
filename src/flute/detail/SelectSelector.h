@@ -15,7 +15,7 @@
 #include <sys/select.h>
 #endif
 
-#include <map>
+#include <unordered_map>
 #include <set>
 
 namespace flute {
@@ -127,7 +127,7 @@ private:
     DescriptorSet m_writeSet;
     DescriptorSet m_readSetOut;
     DescriptorSet m_writeSetOut;
-    std::map<socket_type, void*> m_dataMap;
+    std::unordered_map<socket_type, void*> m_dataMap;
 };
 
 } // namespace detail
