@@ -22,7 +22,12 @@ struct Timer {
         , delay(delay)
         , callback(std::move(callback)) {}
     Timer(const std::function<void()>& callback, std::int64_t delay, int loopCount, std::int64_t timerId)
-        : loopCount(loopCount), index(-1), timerId(timerId), startTime(currentMilliseconds()), delay(delay), callback(callback) {}
+        : loopCount(loopCount)
+        , index(-1)
+        , timerId(timerId)
+        , startTime(currentMilliseconds())
+        , delay(delay)
+        , callback(callback) {}
 
     int loopCount;
     int index;
