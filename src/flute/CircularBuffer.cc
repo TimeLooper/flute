@@ -379,13 +379,15 @@ void CircularBuffer::expand(flute::ssize_t length) {
     if (!new_buffer) {
         LOG_ERROR << "out of memory";
     } else {
-        if (readableBytes() > m_capacity - m_readIndex) {
-            auto headCnt = readableBytes() + m_readIndex - m_capacity;
-            if (headCnt <= capacity - m_capacity) {
-                std::memmove(new_buffer + m_capacity, m_buffer, headCnt);
-            } else {
-                std::memmove(new_buffer + m_capacity, m_buffer, capacity - m_capacity);
-                std::memmove(new_buffer, m_buffer + capacity - m_capacity, headCnt + m_capacity - capacity);
+        if (new_buffer != m_buffer) {
+            if (readableBytes() > m_capacity - m_readIndex) {
+                auto headCnt = readableBytes() + m_readIndex - m_capacity;
+                if (headCnt <= capacity - m_capacity) {
+                    std::memmove(new_buffer + m_capacity, m_buffer, headCnt);
+                } else {
+                    std::memmove(new_buffer + m_capacity, m_buffer, capacity - m_capacity);
+                    std::memmove(new_buffer, m_buffer + capacity - m_capacity, headCnt + m_capacity - capacity);
+                }
             }
         }
         m_buffer = new_buffer;
