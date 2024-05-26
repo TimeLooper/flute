@@ -86,26 +86,25 @@ std::int8_t CircularBuffer::peekInt8() const {
 std::int16_t CircularBuffer::peekInt16() const {
     std::int16_t result = 0;
     peek(reinterpret_cast<std::uint8_t *>(&result), sizeof(result));
-    return flute::network2Host(result);
+    return result;
 }
 
 std::int32_t CircularBuffer::peekInt32() const {
     std::int32_t result = 0;
     peek(reinterpret_cast<std::uint8_t *>(&result), sizeof(result));
-    return flute::network2Host(result);
+    return result;
 }
 
 std::int64_t CircularBuffer::peekInt64() const {
     std::int64_t result = 0;
     peek(reinterpret_cast<std::uint8_t *>(&result), sizeof(result));
-    return flute::network2Host(result);
+    return result;
 }
 
 float CircularBuffer::peekFloat() const {
     float result = 0.0f;
     auto p = reinterpret_cast<std::uint32_t *>(&result);
     peek(p, sizeof(result));
-    *p = network2Host(*p);
     return result;
 }
 
@@ -113,7 +112,6 @@ double CircularBuffer::peekDouble() const {
     double result = 0.0f;
     auto p = reinterpret_cast<std::uint64_t *>(&result);
     peek(p, sizeof(result));
-    *p = network2Host(*p);
     return result;
 }
 
@@ -225,30 +223,23 @@ void CircularBuffer::append(ByteBuffer &buffer) {
 void CircularBuffer::appendInt8(std::int8_t value) { append(reinterpret_cast<std::uint8_t *>(&value), sizeof(value)); }
 
 void CircularBuffer::appendInt16(std::int16_t value) {
-    value = host2Network(value);
     append(reinterpret_cast<std::uint8_t *>(&value), sizeof(value));
 }
 
 void CircularBuffer::appendInt32(std::int32_t value) {
-    value = host2Network(value);
     append(reinterpret_cast<std::uint8_t *>(&value), sizeof(value));
 }
 
 void CircularBuffer::appendInt64(std::int64_t value) {
-    value = host2Network(value);
     append(reinterpret_cast<std::uint8_t *>(&value), sizeof(value));
 }
 
 void CircularBuffer::appendFloat(float value) {
-    auto p = reinterpret_cast<std::uint32_t *>(&value);
-    *p = host2Network(*p);
-    append(reinterpret_cast<std::uint8_t *>(p), sizeof(value));
+    append(reinterpret_cast<std::uint8_t *>(&value), sizeof(value));
 }
 
 void CircularBuffer::appendDouble(double value) {
-    auto p = reinterpret_cast<std::uint64_t *>(&value);
-    *p = host2Network(*p);
-    append(reinterpret_cast<std::uint8_t *>(p), sizeof(value));
+    append(reinterpret_cast<std::uint8_t *>(&value), sizeof(value));
 }
 
 flute::ssize_t CircularBuffer::readFromSocket(socket_type descriptor) {
