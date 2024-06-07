@@ -54,13 +54,13 @@ typedef ::ssize_t ssize_t;
 
 class TcpConnection;
 class UdpConnection;
-class CircularBuffer;
+class RingBuffer;
 class InetAddress;
 class UdpServer;
 
 typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
 
-typedef std::function<void(const TcpConnectionPtr&, CircularBuffer&)> MessageCallback;
+typedef std::function<void(const TcpConnectionPtr&, RingBuffer&)> MessageCallback;
 typedef std::function<void(const TcpConnectionPtr&)> CloseCallback;
 typedef std::function<void(const TcpConnectionPtr&)> WriteCompleteCallback;
 typedef std::function<void(const TcpConnectionPtr&, flute::ssize_t)> HighWaterMarkCallback;
@@ -69,7 +69,7 @@ typedef std::function<void(const TcpConnectionPtr&)> ConnectionDestroyCallback;
 typedef std::function<void(const socket_type)> AcceptCallback;
 typedef std::function<void(const socket_type)> ConnectCallback;
 
-typedef std::function<void(const std::shared_ptr<UdpServer>&, const InetAddress& address, CircularBuffer& buffer)>
+typedef std::function<void(const std::shared_ptr<UdpServer>&, const InetAddress& address, RingBuffer& buffer)>
     UdpMessageCallback;
 
 } // namespace flute

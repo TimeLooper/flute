@@ -2,14 +2,14 @@
 // Created by why on 2020/01/06.
 //
 
-#include <flute/CircularBuffer.h>
+#include <flute/RingBuffer.h>
 #include <flute/EventLoopGroup.h>
 #include <flute/InetAddress.h>
 #include <flute/Logger.h>
 #include <flute/UdpServer.h>
 
 void handleMessage(const std::shared_ptr<flute::UdpServer>& server, const flute::InetAddress& address,
-                   flute::CircularBuffer& buffer) {
+                   flute::RingBuffer& buffer) {
     char temp[4096] = {0};
     auto length = buffer.read(temp, static_cast<flute::ssize_t>(sizeof(temp)));
     LOG_DEBUG << "receive message from " << address.toString() << " -> " << temp;

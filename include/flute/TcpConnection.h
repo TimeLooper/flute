@@ -5,7 +5,7 @@
 #ifndef FLUTE_TCP_CONNECTION_H
 #define FLUTE_TCP_CONNECTION_H
 
-#include <flute/CircularBuffer.h>
+#include <flute/RingBuffer.h>
 #include <flute/InetAddress.h>
 #include <flute/Socket.h>
 #include <flute/flute_types.h>
@@ -77,8 +77,8 @@ private:
     HighWaterMarkCallback m_highWaterMarkCallback;
     ConnectionEstablishedCallback m_connectionEstablishedCallback;
     ConnectionDestroyCallback m_connectionDestroyCallback;
-    CircularBuffer m_inputBuffer;
-    CircularBuffer m_outputBuffer;
+    RingBuffer m_inputBuffer;
+    RingBuffer m_outputBuffer;
 
     void handleRead();
     void handleWrite();

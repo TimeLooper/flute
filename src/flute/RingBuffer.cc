@@ -3,7 +3,7 @@
 //
 
 #include <flute/ByteBuffer.h>
-#include <flute/CircularBuffer.h>
+#include <flute/RingBuffer.h>
 #include <flute/InetAddress.h>
 #include <flute/Logger.h>
 #include <flute/endian.h>
@@ -43,16 +43,16 @@ inline flute::ssize_t getCapacity(flute::ssize_t length, flute::ssize_t capacity
     return result;
 }
 
-CircularBuffer::CircularBuffer(flute::ssize_t size)
+RingBuffer::RingBuffer(flute::ssize_t size)
     : m_readIndex(0), m_writeIndex(0), m_bufferSize(0), m_capacity(size), m_buffer(nullptr) {
     if (m_capacity > 0) {
         m_buffer = static_cast<std::uint8_t *>(std::malloc(sizeof(std::uint8_t) * size));
     }
 }
 
-CircularBuffer::CircularBuffer(CircularBuffer &&buffer) noexcept : CircularBuffer(0) { this->swap(buffer); }
+RingBuffer::RingBuffer(RingBuffer &&buffer) noexcept : RingBuffer(0) { this->swap(buffer); }
 
-CircularBuffer::~CircularBuffer() {
+RingBuffer::~RingBuffer() {
     if (m_buffer) {
         std::free(m_buffer);
         m_buffer = nullptr;
@@ -60,12 +60,12 @@ CircularBuffer::~CircularBuffer() {
     }
 }
 
-CircularBuffer &CircularBuffer::operator=(CircularBuffer &&buffer) noexcept {
+RingBuffer &RingBuffer::operator=(RingBuffer &&buffer) noexcept {
     this->swap(buffer);
     return *this;
 }
 
-void CircularBuffer::swap(CircularBuffer &buf) {
+void RingBuffer::swap(RingBuffer &buf) {
     std::swap(m_readIndex, buf.m_readIndex);
     std::swap(m_writeIndex, buf.m_writeIndex);
     std::swap(m_bufferSize, buf.m_bufferSize);
@@ -73,35 +73,35 @@ void CircularBuffer::swap(CircularBuffer &buf) {
     std::swap(m_buffer, buf.m_buffer);
 }
 
-flute::ssize_t CircularBuffer::readableBytes() const { return m_bufferSize; }
+flute::ssize_t RingBuffer::readableBytes() const { return m_bufferSize; }
 
-flute::ssize_t CircularBuffer::writeableBytes() const { return m_capacity - m_bufferSize; }
+flute::ssize_t RingBuffer::writeableBytes() const { return m_capacity - m_bufferSize; }
 
-std::int8_t CircularBuffer::peekInt8() const {
+std::int8_t RingBuffer::peekInt8() const {
     std::int8_t result = 0;
     peek(reinterpret_cast<std::uint8_t *>(&result), sizeof(result));
     return result;
 }
 
-std::int16_t CircularBuffer::peekInt16() const {
+std::int16_t RingBuffer::peekInt16() const {
     std::int16_t result = 0;
     peek(reinterpret_cast<std::uint8_t *>(&result), sizeof(result));
     return flute::network2Host(result);
 }
 
-std::int32_t CircularBuffer::peekInt32() const {
+std::int32_t RingBuffer::peekInt32() const {
     std::int32_t result = 0;
     peek(reinterpret_cast<std::uint8_t *>(&result), sizeof(result));
     return flute::network2Host(result);
 }
 
-std::int64_t CircularBuffer::peekInt64() const {
+std::int64_t RingBuffer::peekInt64() const {
     std::int64_t result = 0;
     peek(reinterpret_cast<std::uint8_t *>(&result), sizeof(result));
     return flute::network2Host(result);
 }
 
-float CircularBuffer::peekFloat() const {
+float RingBuffer::peekFloat() const {
     float result = 0.0f;
     auto p = reinterpret_cast<std::uint32_t *>(&result);
     peek(p, sizeof(result));
@@ -109,7 +109,7 @@ float CircularBuffer::peekFloat() const {
     return result;
 }
 
-double CircularBuffer::peekDouble() const {
+double RingBuffer::peekDouble() const {
     double result = 0.0f;
     auto p = reinterpret_cast<std::uint64_t *>(&result);
     peek(p, sizeof(result));
@@ -117,7 +117,7 @@ double CircularBuffer::peekDouble() const {
     return result;
 }
 
-flute::ssize_t CircularBuffer::peek(void *buffer, flute::ssize_t length) const {
+flute::ssize_t RingBuffer::peek(void *buffer, flute::ssize_t length) const {
     // assert(length <= readableBytes());
     auto bytesAvaliable = readableBytes();
     length = length > bytesAvaliable ? bytesAvaliable : length;
@@ -131,49 +131,49 @@ flute::ssize_t CircularBuffer::peek(void *buffer, flute::ssize_t length) const {
     return length;
 }
 
-std::int8_t CircularBuffer::readInt8() {
+std::int8_t RingBuffer::readInt8() {
     auto result = peekInt8();
     UPDATE_READ_INDEX(m_capacity, m_readIndex, m_writeIndex, m_bufferSize, sizeof(result));
     return result;
 }
 
-std::int16_t CircularBuffer::readInt16() {
+std::int16_t RingBuffer::readInt16() {
     auto result = peekInt16();
     UPDATE_READ_INDEX(m_capacity, m_readIndex, m_writeIndex, m_bufferSize, sizeof(result));
     return result;
 }
 
-std::int32_t CircularBuffer::readInt32() {
+std::int32_t RingBuffer::readInt32() {
     auto result = peekInt32();
     UPDATE_READ_INDEX(m_capacity, m_readIndex, m_writeIndex, m_bufferSize, sizeof(result));
     return result;
 }
 
-std::int64_t CircularBuffer::readInt64() {
+std::int64_t RingBuffer::readInt64() {
     auto result = peekInt64();
     UPDATE_READ_INDEX(m_capacity, m_readIndex, m_writeIndex, m_bufferSize, sizeof(result));
     return result;
 }
 
-float CircularBuffer::readFloat() {
+float RingBuffer::readFloat() {
     auto result = peekFloat();
     UPDATE_READ_INDEX(m_capacity, m_readIndex, m_writeIndex, m_bufferSize, sizeof(result));
     return result;
 }
 
-double CircularBuffer::readDouble() {
+double RingBuffer::readDouble() {
     auto result = peekDouble();
     UPDATE_READ_INDEX(m_capacity, m_readIndex, m_writeIndex, m_bufferSize, sizeof(result));
     return result;
 }
 
-flute::ssize_t CircularBuffer::read(void *buffer, flute::ssize_t length) {
+flute::ssize_t RingBuffer::read(void *buffer, flute::ssize_t length) {
     auto count = peek(buffer, length);
     UPDATE_READ_INDEX(m_capacity, m_readIndex, m_writeIndex, m_bufferSize, count);
     return count;
 }
 
-void CircularBuffer::read(ByteBuffer &buffer, flute::ssize_t length) {
+void RingBuffer::read(ByteBuffer &buffer, flute::ssize_t length) {
     if (buffer.m_capacity < length) {
         buffer.expand(length);
     }
@@ -182,19 +182,19 @@ void CircularBuffer::read(ByteBuffer &buffer, flute::ssize_t length) {
     return;
 }
 
-void CircularBuffer::append(CircularBuffer &buffer) {
+void RingBuffer::append(RingBuffer &buffer) {
     appendInternal(buffer, buffer.readableBytes());
     UPDATE_WRITE_INDEX(m_capacity, m_writeIndex, m_bufferSize, buffer.readableBytes());
     buffer.m_readIndex = buffer.m_writeIndex = buffer.m_bufferSize = 0;
 }
 
-void CircularBuffer::append(CircularBuffer &buffer, flute::ssize_t length) {
+void RingBuffer::append(RingBuffer &buffer, flute::ssize_t length) {
     appendInternal(buffer, length);
     UPDATE_WRITE_INDEX(m_capacity, m_writeIndex, m_bufferSize, buffer.readableBytes());
     buffer.m_readIndex = buffer.m_writeIndex = buffer.m_bufferSize = 0;
 }
 
-void CircularBuffer::append(const void *buffer, flute::ssize_t length) {
+void RingBuffer::append(const void *buffer, flute::ssize_t length) {
     if (length > writeableBytes()) {
         // expand buffer
         expand(length);
@@ -213,7 +213,7 @@ void CircularBuffer::append(const void *buffer, flute::ssize_t length) {
     UPDATE_WRITE_INDEX(m_capacity, m_writeIndex, m_bufferSize, length);
 }
 
-void CircularBuffer::append(ByteBuffer &buffer) {
+void RingBuffer::append(ByteBuffer &buffer) {
     auto nbytes = buffer.readableBytes();
     if (nbytes <= 0) {
         return;
@@ -222,36 +222,36 @@ void CircularBuffer::append(ByteBuffer &buffer) {
     buffer.clear();
 }
 
-void CircularBuffer::appendInt8(std::int8_t value) { append(reinterpret_cast<std::uint8_t *>(&value), sizeof(value)); }
+void RingBuffer::appendInt8(std::int8_t value) { append(reinterpret_cast<std::uint8_t *>(&value), sizeof(value)); }
 
-void CircularBuffer::appendInt16(std::int16_t value) {
+void RingBuffer::appendInt16(std::int16_t value) {
     value = host2Network(value);
     append(reinterpret_cast<std::uint8_t *>(&value), sizeof(value));
 }
 
-void CircularBuffer::appendInt32(std::int32_t value) {
+void RingBuffer::appendInt32(std::int32_t value) {
     value = host2Network(value);
     append(reinterpret_cast<std::uint8_t *>(&value), sizeof(value));
 }
 
-void CircularBuffer::appendInt64(std::int64_t value) {
+void RingBuffer::appendInt64(std::int64_t value) {
     value = host2Network(value);
     append(reinterpret_cast<std::uint8_t *>(&value), sizeof(value));
 }
 
-void CircularBuffer::appendFloat(float value) {
+void RingBuffer::appendFloat(float value) {
     auto p = reinterpret_cast<std::uint32_t *>(&value);
     *p = host2Network(*p);
     append(reinterpret_cast<std::uint8_t *>(p), sizeof(value));
 }
 
-void CircularBuffer::appendDouble(double value) {
+void RingBuffer::appendDouble(double value) {
     auto p = reinterpret_cast<std::uint64_t *>(&value);
     *p = host2Network(*p);
     append(reinterpret_cast<std::uint8_t *>(p), sizeof(value));
 }
 
-flute::ssize_t CircularBuffer::readFromSocket(socket_type descriptor) {
+flute::ssize_t RingBuffer::readFromSocket(socket_type descriptor) {
     auto writeableSize = writeableBytes();
     auto bytesAvailable = flute::getByteAvaliableOnSocket(descriptor);
     if (bytesAvailable >= writeableSize) {
@@ -284,7 +284,7 @@ flute::ssize_t CircularBuffer::readFromSocket(socket_type descriptor) {
     return result;
 }
 
-flute::ssize_t CircularBuffer::sendToSocket(socket_type descriptor) {
+flute::ssize_t RingBuffer::sendToSocket(socket_type descriptor) {
     auto length = readableBytes();
     iovec vec[2]{};
     int count;
@@ -306,7 +306,7 @@ flute::ssize_t CircularBuffer::sendToSocket(socket_type descriptor) {
     return result;
 }
 
-flute::ssize_t CircularBuffer::readFromSocket(socket_type descriptor, InetAddress &address) {
+flute::ssize_t RingBuffer::readFromSocket(socket_type descriptor, InetAddress &address) {
     auto writeableSize = writeableBytes();
     auto bytesAvailable = flute::getByteAvaliableOnSocket(descriptor);
     if (bytesAvailable >= writeableSize) {
@@ -344,7 +344,7 @@ flute::ssize_t CircularBuffer::readFromSocket(socket_type descriptor, InetAddres
     return result;
 }
 
-flute::ssize_t CircularBuffer::sendToSocket(socket_type descriptor, const InetAddress &address) {
+flute::ssize_t RingBuffer::sendToSocket(socket_type descriptor, const InetAddress &address) {
     auto length = readableBytes();
     iovec vec[2]{};
     int count;
@@ -371,9 +371,9 @@ flute::ssize_t CircularBuffer::sendToSocket(socket_type descriptor, const InetAd
     return result;
 }
 
-void CircularBuffer::clear() { m_readIndex = m_writeIndex = m_bufferSize = 0; }
+void RingBuffer::clear() { m_readIndex = m_writeIndex = m_bufferSize = 0; }
 
-void CircularBuffer::expand(flute::ssize_t length) {
+void RingBuffer::expand(flute::ssize_t length) {
     auto capacity = getCapacity(length, m_capacity);
     auto new_buffer = static_cast<std::uint8_t *>(std::realloc(m_buffer, capacity));
     if (!new_buffer) {
@@ -396,7 +396,7 @@ void CircularBuffer::expand(flute::ssize_t length) {
     }
 }
 
-void CircularBuffer::appendInternal(const CircularBuffer &buffer, flute::ssize_t length) {
+void RingBuffer::appendInternal(const RingBuffer &buffer, flute::ssize_t length) {
     if (length > writeableBytes()) {
         // expand buffer
         expand(length);

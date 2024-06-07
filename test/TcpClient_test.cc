@@ -2,7 +2,7 @@
 // Created by why on 2020/01/05.
 //
 
-#include <flute/CircularBuffer.h>
+#include <flute/RingBuffer.h>
 #include <flute/EventLoopGroup.h>
 #include <flute/InetAddress.h>
 #include <flute/Logger.h>
@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
     flute::initialize();
     flute::EventLoopGroup group(0);
     flute::TcpClient client(&group, flute::InetAddress("127.0.0.1", 9999));
-    client.setMessageCallback([&](const std::shared_ptr<flute::TcpConnection>& conn, flute::CircularBuffer& buffer) {
+    client.setMessageCallback([&](const std::shared_ptr<flute::TcpConnection>& conn, flute::RingBuffer& buffer) {
         char temp[4096] = { 0 };
         auto length = buffer.read(temp, static_cast<flute::ssize_t>(sizeof(temp)));
         LOG_DEBUG << "receive message from " << conn->getRemoteAddress().toString() << ":" << temp;

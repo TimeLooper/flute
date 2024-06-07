@@ -62,7 +62,7 @@ private:
     void expand(flute::ssize_t length);
     void appendInternal(const ByteBuffer& buffer, flute::ssize_t length);
 
-    friend class CircularBuffer;
+    friend class RingBuffer;
 };
 
 } // namespace flute

@@ -17,14 +17,14 @@ namespace flute {
 class InetAddress;
 class ByteBuffer;
 
-class CircularBuffer : private noncopyable {
+class RingBuffer : private noncopyable {
 public:
-    FLUTE_API_DECL CircularBuffer(flute::ssize_t size);
-    FLUTE_API_DECL CircularBuffer(CircularBuffer&& buffer) noexcept;
-    FLUTE_API_DECL ~CircularBuffer();
+    FLUTE_API_DECL RingBuffer(flute::ssize_t size);
+    FLUTE_API_DECL RingBuffer(RingBuffer&& buffer) noexcept;
+    FLUTE_API_DECL ~RingBuffer();
 
-    FLUTE_API_DECL CircularBuffer& operator=(CircularBuffer&& buffer) noexcept;
-    FLUTE_API_DECL void swap(CircularBuffer& buffer);
+    FLUTE_API_DECL RingBuffer& operator=(RingBuffer&& buffer) noexcept;
+    FLUTE_API_DECL void swap(RingBuffer& buffer);
 
     FLUTE_API_DECL flute::ssize_t readableBytes() const;
     FLUTE_API_DECL flute::ssize_t writeableBytes() const;
@@ -43,8 +43,8 @@ public:
     FLUTE_API_DECL double readDouble();
     FLUTE_API_DECL flute::ssize_t read(void* buffer, flute::ssize_t length);
     FLUTE_API_DECL void read(ByteBuffer& buffer, flute::ssize_t length);
-    FLUTE_API_DECL void append(CircularBuffer& buffer);
-    FLUTE_API_DECL void append(CircularBuffer& buffer, flute::ssize_t length);
+    FLUTE_API_DECL void append(RingBuffer& buffer);
+    FLUTE_API_DECL void append(RingBuffer& buffer, flute::ssize_t length);
     FLUTE_API_DECL void append(const void* buffer, flute::ssize_t length);
     FLUTE_API_DECL void append(ByteBuffer& buffer);
     FLUTE_API_DECL void appendInt8(std::int8_t value);
@@ -67,7 +67,7 @@ private:
     std::uint8_t* m_buffer;
 
     void expand(flute::ssize_t length);
-    void appendInternal(const CircularBuffer& buffer, flute::ssize_t length);
+    void appendInternal(const RingBuffer& buffer, flute::ssize_t length);
 };
 
 } // namespace flute

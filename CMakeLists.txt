@@ -82,7 +82,7 @@ set(FLUTE_HEADERS
         include/flute/Acceptor.h
         include/flute/ByteBuffer.h
         include/flute/Channel.h
-        include/flute/CircularBuffer.h
+        include/flute/RingBuffer.h
         include/flute/config.h
         include/flute/Connector.h
         include/flute/copyable.h
@@ -116,7 +116,7 @@ set(FLUTE_SOURCES
         src/flute/EventLoopInterruptor.cc
         src/flute/Channel.cc
         src/flute/InetAddress.cc
-        src/flute/CircularBuffer.cc
+        src/flute/RingBuffer.cc
         src/flute/ByteBuffer.cc
         src/flute/TcpConnection.cc
         src/flute/Socket.cc
