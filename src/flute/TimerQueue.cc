@@ -43,19 +43,19 @@ TimerQueue::~TimerQueue() {
     delete m_timerHeap;
 }
 
-std::int64_t TimerQueue::schedule(std::function<void()>&& callback, std::int64_t delay, int loopCount) {
+std::uint64_t TimerQueue::schedule(std::function<void()>&& callback, std::int64_t delay, int loopCount) {
     auto timer = new Timer(std::move(callback), delay, loopCount, genTimerId());
     m_loop->runInLoop(std::bind(&TimerQueue::scheduleInLoop, this, timer));
     return timer->timerId;
 }
 
-std::int64_t TimerQueue::schedule(const std::function<void()>& callback, std::int64_t delay, int loopCount) {
+std::uint64_t TimerQueue::schedule(const std::function<void()>& callback, std::int64_t delay, int loopCount) {
     auto timer = new Timer(callback, delay, loopCount, genTimerId());
     m_loop->runInLoop(std::bind(&TimerQueue::scheduleInLoop, this, timer));
     return timer->timerId;
 }
 
-void TimerQueue::cancel(std::int64_t timerId) {
+void TimerQueue::cancel(std::uint64_t timerId) {
     m_loop->runInLoop(std::bind(&TimerQueue::cancelTimerInLoop, this, timerId));
 }
 
@@ -118,7 +118,7 @@ void TimerQueue::scheduleInLoop(Timer* timer) {
     m_timersTable[timer->timerId] = timer;
 }
 
-void TimerQueue::cancelTimerInLoop(std::int64_t timerId) {
+void TimerQueue::cancelTimerInLoop(std::uint64_t timerId) {
     auto it = m_timersTable.find(timerId);
     if (it == m_timersTable.end()) {
         return;
@@ -129,7 +129,7 @@ void TimerQueue::cancelTimerInLoop(std::int64_t timerId) {
     delete timer;
 }
 
-std::int64_t TimerQueue::genTimerId() {
+std::uint64_t TimerQueue::genTimerId() {
     auto id = m_timerIdGen.fetch_add(1);
     if (id <= 0) {
         id = m_timerIdGen.fetch_add(1);
