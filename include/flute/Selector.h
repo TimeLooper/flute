@@ -21,6 +21,7 @@ struct SelectorEvent {
 
     int events;
     void* data;
+    SelectorEvent();
 };
 
 class Selector : private noncopyable {

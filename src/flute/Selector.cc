@@ -23,6 +23,11 @@
 
 namespace flute {
 
+SelectorEvent::SelectorEvent()
+    : events(0)
+    , data(nullptr) {
+}
+
 Selector* Selector::createSelector() {
 #ifdef FLUTE_HAVE_EPOLL
     return new detail::EpollSelector();
