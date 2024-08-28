@@ -30,9 +30,9 @@ public:
     explicit TimerQueue(EventLoop* loop);
     ~TimerQueue();
 
-    std::int64_t schedule(std::function<void()>&& callback, std::int64_t delay, int loopCount);
-    std::int64_t schedule(const std::function<void()>& callback, std::int64_t delay, int loopCount);
-    void cancel(std::int64_t timerId);
+    std::uint64_t schedule(std::function<void()>&& callback, std::int64_t delay, int loopCount);
+    std::uint64_t schedule(const std::function<void()>& callback, std::int64_t delay, int loopCount);
+    void cancel(std::uint64_t timerId);
     std::int64_t searchNearestTime(std::int64_t now);
     void handleTimerEvent(std::int64_t now);
 
@@ -42,12 +42,12 @@ private:
     Channel* m_channel;
 #endif
     TimerHeap* m_timerHeap;
-    std::atomic<std::int64_t> m_timerIdGen;
-    std::unordered_map<std::int64_t, Timer*> m_timersTable;
+    std::atomic<std::uint64_t> m_timerIdGen;
+    std::unordered_map<std::uint64_t, Timer*> m_timersTable;
 
     void scheduleInLoop(Timer* timer);
-    void cancelTimerInLoop(std::int64_t timerId);
-    std::int64_t genTimerId();
+    void cancelTimerInLoop(std::uint64_t timerId);
+    std::uint64_t genTimerId();
 };
 
 } // namespace flute
