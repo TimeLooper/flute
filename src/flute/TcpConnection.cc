@@ -40,7 +40,6 @@ TcpConnection::~TcpConnection() { assert(m_state == ConnectionState::DISCONNECTE
 
 void TcpConnection::shutdown() {
     if (m_state == ConnectionState::CONNECTED) {
-        m_state = ConnectionState::DISCONNECTING;
         m_loop->runInLoop(std::bind(&TcpConnection::shutdownInLoop, this));
     }
 }
@@ -162,6 +161,9 @@ void TcpConnection::handleError() {
 
 void TcpConnection::shutdownInLoop() {
     m_loop->assertInLoopThread();
+    m_state = ConnectionState::DISCONNECTING;
+    if (m_channel->isWriteable())
+        return;
     m_socket->shutdownWrite();
 }
 
