@@ -108,6 +108,7 @@ void TimerQueue::handleTimerEvent(std::int64_t now) {
             timer->startTime = now;
             m_timerHeap->push(timer);
         } else {
+            m_timersTable.erase(timer->timerId);
             delete timer;
         }
     }
