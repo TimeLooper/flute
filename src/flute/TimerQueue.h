@@ -42,12 +42,12 @@ private:
     Channel* m_channel;
 #endif
     TimerHeap* m_timerHeap;
-    std::atomic<std::uint64_t> m_timerIdGen;
+    static std::atomic<std::uint64_t> s_timerIdGen;
     std::unordered_map<std::uint64_t, Timer*> m_timersTable;
 
     void scheduleInLoop(Timer* timer);
     void cancelTimerInLoop(std::uint64_t timerId);
-    std::uint64_t genTimerId();
+    static std::uint64_t genTimerId();
 };
 
 } // namespace flute

@@ -14,13 +14,15 @@
 
 namespace flute {
 
+
+std::atomic<std::uint64_t> TimerQueue::s_timerIdGen;
+
 TimerQueue::TimerQueue(flute::EventLoop* loop)
     : m_loop(loop)
 #ifdef USING_TIMERFD
     , m_channel(nullptr)
 #endif
     , m_timerHeap(new TimerHeap())
-    , m_timerIdGen(0)
     , m_timersTable() {
 #ifdef USING_TIMERFD
     auto descriptor = ::timerfd_create(CLOCK_MONOTONIC, TFD_CLOEXEC | TFD_NONBLOCK);
@@ -131,9 +133,9 @@ void TimerQueue::cancelTimerInLoop(std::uint64_t timerId) {
 }
 
 std::uint64_t TimerQueue::genTimerId() {
-    auto id = m_timerIdGen.fetch_add(1);
+    auto id = s_timerIdGen.fetch_add(1);
     if (id <= 0) {
-        id = m_timerIdGen.fetch_add(1);
+        id = s_timerIdGen.fetch_add(1);
     }
     return id;
 }
