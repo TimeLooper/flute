@@ -86,25 +86,26 @@ std::int8_t RingBuffer::peekInt8() const {
 std::int16_t RingBuffer::peekInt16() const {
     std::int16_t result = 0;
     peek(reinterpret_cast<std::uint8_t *>(&result), sizeof(result));
-    return result;
+    return flute::network2Host(result);
 }
 
 std::int32_t RingBuffer::peekInt32() const {
     std::int32_t result = 0;
     peek(reinterpret_cast<std::uint8_t *>(&result), sizeof(result));
-    return result;
+    return flute::network2Host(result);
 }
 
 std::int64_t RingBuffer::peekInt64() const {
     std::int64_t result = 0;
     peek(reinterpret_cast<std::uint8_t *>(&result), sizeof(result));
-    return result;
+    return flute::network2Host(result);
 }
 
 float RingBuffer::peekFloat() const {
     float result = 0.0f;
     auto p = reinterpret_cast<std::uint32_t *>(&result);
     peek(p, sizeof(result));
+    *p = network2Host(*p);
     return result;
 }
 
@@ -112,6 +113,7 @@ double RingBuffer::peekDouble() const {
     double result = 0.0f;
     auto p = reinterpret_cast<std::uint64_t *>(&result);
     peek(p, sizeof(result));
+    *p = network2Host(*p);
     return result;
 }
 
@@ -223,23 +225,30 @@ void RingBuffer::append(ByteBuffer &buffer) {
 void RingBuffer::appendInt8(std::int8_t value) { append(reinterpret_cast<std::uint8_t *>(&value), sizeof(value)); }
 
 void RingBuffer::appendInt16(std::int16_t value) {
+    value = host2Network(value);
     append(reinterpret_cast<std::uint8_t *>(&value), sizeof(value));
 }
 
 void RingBuffer::appendInt32(std::int32_t value) {
+    value = host2Network(value);
     append(reinterpret_cast<std::uint8_t *>(&value), sizeof(value));
 }
 
 void RingBuffer::appendInt64(std::int64_t value) {
+    value = host2Network(value);
     append(reinterpret_cast<std::uint8_t *>(&value), sizeof(value));
 }
 
 void RingBuffer::appendFloat(float value) {
-    append(reinterpret_cast<std::uint8_t *>(&value), sizeof(value));
+    auto p = reinterpret_cast<std::uint32_t *>(&value);
+    *p = host2Network(*p);
+    append(reinterpret_cast<std::uint8_t *>(p), sizeof(value));
 }
 
 void RingBuffer::appendDouble(double value) {
-    append(reinterpret_cast<std::uint8_t *>(&value), sizeof(value));
+    auto p = reinterpret_cast<std::uint64_t *>(&value);
+    *p = host2Network(*p);
+    append(reinterpret_cast<std::uint8_t *>(p), sizeof(value));
 }
 
 flute::ssize_t RingBuffer::readFromSocket(socket_type descriptor) {
