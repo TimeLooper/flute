@@ -14,10 +14,20 @@
 namespace flute {
 
 class EventLoop;
+class AsyncIoService;
+
+struct EventLoopGroupConfigure {
+    bool useAsyncIo;
+    std::size_t childLoopSize;
+    std::size_t asyncIoWorkThreadCount;
+    EventLoopGroupConfigure() : useAsyncIo(false), childLoopSize(0), asyncIoWorkThreadCount(0) {}
+    EventLoopGroupConfigure(bool useAsyncIo, std::size_t childLoopSize, std::size_t asyncIoWorkThreadCount)
+        : useAsyncIo(useAsyncIo), childLoopSize(childLoopSize), asyncIoWorkThreadCount(asyncIoWorkThreadCount) {}
+};
 
 class EventLoopGroup : private noncopyable {
 public:
-    FLUTE_API_DECL explicit EventLoopGroup(std::size_t childLoopSize);
+    FLUTE_API_DECL explicit EventLoopGroup(const EventLoopGroupConfigure& configure);
     FLUTE_API_DECL ~EventLoopGroup();
 
     FLUTE_API_DECL void shutdown();
@@ -25,11 +35,12 @@ public:
     FLUTE_API_DECL EventLoop* getMasterEventLoop();
     FLUTE_API_DECL void dispatch();
 
-    inline std::size_t getChildLoopSize() const { return m_childLoopSize; }
+    inline std::size_t getChildLoopSize() const { return m_configure.childLoopSize; }
 
 private:
-    std::size_t m_childLoopSize;
     EventLoop* m_masterEventLoop;
+    AsyncIoService* m_asyncIoService;
+    EventLoopGroupConfigure m_configure;
     std::vector<EventLoop*> m_slaveEventLoops;
     ThreadPool m_threadPool;
 };

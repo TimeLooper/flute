@@ -20,6 +20,7 @@ class Selector;
 class TimerQueue;
 class EventLoopInterruptor;
 class Channel;
+class AsyncIoService;
 
 class EventLoop : private noncopyable {
 public:
@@ -41,9 +42,13 @@ public:
     FLUTE_API_DECL void cancel(std::uint64_t timerId);
     FLUTE_API_DECL void assertInLoopThread() const;
     FLUTE_API_DECL void abortNotInLoopThread() const;
+    FLUTE_API_DECL void setAsyncIoService(AsyncIoService* asyncIoService);
+    FLUTE_API_DECL AsyncIoService* getAsyncIoService() const;
+    FLUTE_API_DECL bool isAsyncIo() const;
 
 private:
     Selector* m_selector;
+    AsyncIoService* m_asyncIoService;
     const std::thread::id m_tid;
     EventLoopInterruptor* m_interruptor;
     TimerQueue* m_timerQueue;

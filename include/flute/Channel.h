@@ -17,7 +17,7 @@ namespace flute {
 
 class Channel : private noncopyable {
 public:
-    FLUTE_API_DECL Channel(socket_type descriptor, EventLoop* loop);
+    FLUTE_API_DECL Channel(socket_type descriptor, EventLoop* loop, bool autoUseAsyncIo = false);
     FLUTE_API_DECL ~Channel();
 
     FLUTE_API_DECL void handleEvent(int events);
@@ -37,6 +37,7 @@ public:
     inline bool isReadable() const { return m_events & SelectorEvent::EVENT_READ; }
 
 private:
+    bool m_autoUseAsyncIo;
     int m_events;
     socket_type m_descriptor;
     EventLoop* m_loop;

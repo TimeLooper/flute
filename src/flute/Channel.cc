@@ -9,8 +9,9 @@
 
 namespace flute {
 
-Channel::Channel(socket_type descriptor, EventLoop* loop)
-    : m_events(SelectorEvent::EVENT_NONE)
+Channel::Channel(socket_type descriptor, EventLoop* loop, bool autoUseAsyncIo)
+    : m_autoUseAsyncIo(autoUseAsyncIo)
+    , m_events(SelectorEvent::EVENT_NONE)
     , m_descriptor(descriptor)
     , m_loop(loop)
     , m_readCallback()
@@ -29,35 +30,45 @@ void Channel::handleEvent(int events) {
 
 void Channel::disableRead() {
     if (m_events & SelectorEvent::EVENT_READ) {
-        m_loop->removeEvent(this, SelectorEvent::EVENT_READ);
+        if (!(m_autoUseAsyncIo && m_loop->getAsyncIoService() != nullptr)) {
+            m_loop->removeEvent(this, SelectorEvent::EVENT_READ);
+        }
         m_events &= (~SelectorEvent::EVENT_READ);
     }
 }
 
 void Channel::enableRead() {
     if (!(m_events & SelectorEvent::EVENT_READ)) {
-        m_loop->addEvent(this, SelectorEvent::EVENT_READ);
+        if (!(m_autoUseAsyncIo && m_loop->getAsyncIoService() != nullptr)) {
+            m_loop->addEvent(this, SelectorEvent::EVENT_READ);
+        }
         m_events |= SelectorEvent::EVENT_READ;
     }
 }
 
 void Channel::disableWrite() {
     if (m_events & SelectorEvent::EVENT_WRITE) {
-        m_loop->removeEvent(this, SelectorEvent::EVENT_WRITE);
+        if (!(m_autoUseAsyncIo && m_loop->getAsyncIoService() != nullptr)) {
+            m_loop->removeEvent(this, SelectorEvent::EVENT_WRITE);
+        }
         m_events &= (~SelectorEvent::EVENT_WRITE);
     }
 }
 
 void Channel::enableWrite() {
     if (!(m_events & SelectorEvent::EVENT_WRITE)) {
-        m_loop->addEvent(this, SelectorEvent::EVENT_WRITE);
+        if (!(m_autoUseAsyncIo && m_loop->getAsyncIoService() != nullptr)) {
+            m_loop->addEvent(this, SelectorEvent::EVENT_WRITE);
+        }
         m_events |= SelectorEvent::EVENT_WRITE;
     }
 }
 
 void Channel::disableAll() {
     if (m_events & (SelectorEvent::EVENT_READ | SelectorEvent::EVENT_WRITE)) {
-        m_loop->removeEvent(this, m_events);
+        if (!(m_autoUseAsyncIo && m_loop->getAsyncIoService() != nullptr)) {
+            m_loop->removeEvent(this, m_events);
+        }
         m_events = SelectorEvent::EVENT_NONE;
     }
 }

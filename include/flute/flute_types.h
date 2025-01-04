@@ -40,6 +40,41 @@ typedef int socket_type;
 
 const socket_type FLUTE_INVALID_SOCKET = static_cast<socket_type>(~0);
 
+#ifdef FLUTE_HAVE_SYS_UIO_H
+using ::iovec;
+using ::msghdr;
+#else
+struct iovec {
+    void* iov_base; /* Pointer to data.  */
+    size_t iov_len; /* Length of data.  */
+};
+/* Structure describing messages sent by
+   `sendmsg' and received by `recvmsg'.  */
+struct msghdr {
+    void* msg_name;        /* Address to send to/receive from.  */
+    socklen_t msg_namelen; /* Length of address data.  */
+
+    struct iovec* msg_iov; /* Vector of data to send/receive into.  */
+    size_t msg_iovlen;     /* Number of elements in the vector.  */
+
+    void* msg_control;     /* Ancillary data (eg BSD filedesc passing). */
+    size_t msg_controllen; /* Ancillary data buffer length.
+                  !! The type should be socklen_t but the
+                  definition of the kernel is incompatible
+                  with this.  */
+
+    DWORD msg_flags; /* Flags on received message.  */
+};
+#endif
+
+enum SocketOpCode {
+    None,
+    Read,
+    Write,
+    Connect,
+    Accept
+};
+
 #ifdef WIN32
 #if FLUTE_SIZEOF_PTR == 4
 typedef int ssize_t;

@@ -11,6 +11,7 @@
 #include <flute/flute_types.h>
 #include <flute/noncopyable.h>
 #include <flute/socket_ops.h>
+#include <flute/AsyncIoService.h>
 
 #include <atomic>
 #include <cstddef>
@@ -66,7 +67,12 @@ private:
     enum class ConnectionState { DISCONNECTED, CONNECTING, CONNECTED, DISCONNECTING };
     flute::ssize_t m_highWaterMark;
     EventLoop* m_loop;
+    AsyncIoContext* m_readAsyncIoContext;
+    AsyncIoContext* m_writeAsyncIoContext;
+    std::uint8_t* m_readBuffer;
     std::atomic<ConnectionState> m_state;
+    std::atomic<bool> m_reading;
+    std::atomic<bool> m_writing;
     std::unique_ptr<Channel> m_channel;
     std::unique_ptr<Socket> m_socket;
     const InetAddress m_localAddress;
@@ -79,6 +85,7 @@ private:
     ConnectionDestroyCallback m_connectionDestroyCallback;
     RingBuffer m_inputBuffer;
     RingBuffer m_outputBuffer;
+    RingBuffer m_asyncIoWriteBuffer;
 
     void handleRead();
     void handleWrite();
@@ -90,6 +97,8 @@ private:
     void handleConnectionEstablishedInLoop();
     void handleConnectionDestroyInLoop();
     void forceCloseInLoop();
+    void handleAsyncIoComplete(AsyncIoCode code, ssize_t bytes, AsyncIoContext* ioContext);
+    void handleAsyncIoCompleteInLoop(AsyncIoCode code, ssize_t bytes, AsyncIoContext* ioContext);
 };
 
 } // namespace flute

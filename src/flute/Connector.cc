@@ -5,6 +5,8 @@
 #include <flute/Channel.h>
 #include <flute/Connector.h>
 #include <flute/Logger.h>
+#include <flute/AsyncIoService.h>
+#include <flute/flute_types.h>
 
 #include <algorithm>
 #include <cassert>
@@ -17,17 +19,22 @@ const int Connector::DEFALUT_RETRY_DELAY = 500;
 
 Connector::Connector(EventLoop* loop, const InetAddress& address)
     : m_retryDelay(DEFALUT_RETRY_DELAY)
+    , m_timer(0)
     , m_loop(loop)
     , m_channel(nullptr)
+    , m_ioContext(nullptr)
     , m_serverAddress(address)
     , m_state(ConnectorState::DISCONNECTED)
     , m_isConnect(false)
-    , m_connectCallback() {}
+    , m_connectCallback() {
+}
 
 Connector::Connector(EventLoop* loop, InetAddress&& address)
     : m_retryDelay(DEFALUT_RETRY_DELAY)
+    , m_timer(0)
     , m_loop(loop)
     , m_channel(nullptr)
+    , m_ioContext(nullptr)
     , m_serverAddress(std::move(address))
     , m_state(ConnectorState::DISCONNECTED)
     , m_isConnect(false)
@@ -39,6 +46,11 @@ Connector::~Connector() {
         m_channel->disableAll();
         delete m_channel;
         m_channel = nullptr;
+    }
+    auto asyncIoService = m_loop->getAsyncIoService();
+    if (m_ioContext && asyncIoService) {
+        asyncIoService->destroyIoContext(m_ioContext);
+        m_ioContext = nullptr;
     }
 }
 
@@ -66,13 +78,33 @@ void Connector::stopInLoop() {
     m_loop->assertInLoopThread();
     if (m_state == ConnectorState::CONNECTING) {
         m_state = ConnectorState::DISCONNECTED;
-        socket_type sockfd = removeAndResetChannel();
-        retry(sockfd);
+        auto asyncIoService = m_loop->getAsyncIoService();
+        if (asyncIoService) {
+            retry(m_ioContext->socket);
+        } else {
+            socket_type sockfd = removeAndResetChannel();
+            retry(sockfd);
+        }
+        if (m_timer) {
+            m_loop->cancel(m_timer);
+            m_timer = 0;
+        }
     }
 }
 
 void Connector::connect() {
     auto descriptor = flute::createNonblockingSocket(m_serverAddress.family(), SocketType::STREAM_SOCKET);
+    auto asyncIoService = m_loop->getAsyncIoService();
+    if (asyncIoService) {
+        m_ioContext = asyncIoService->createIoContext();
+        m_ioContext->socket = descriptor;
+        m_ioContext->opCode = SocketOpCode::Connect;
+        m_ioContext->userData = m_serverAddress.getSocketAddress();
+        m_ioContext->ioCompleteCallback = std::bind(&Connector::handleAsyncConnect, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+        asyncIoService->bindIoService(descriptor);
+        asyncIoService->post(m_ioContext);
+        return;
+    }
     int ret = flute::connect(descriptor, m_serverAddress);
     auto savedErrno = (ret == 0) ? 0 : flute::getSocketError(descriptor);
     switch (savedErrno) {
@@ -124,9 +156,16 @@ void Connector::restart() {
 void Connector::connecting(socket_type descriptor) {
     m_state = ConnectorState::CONNECTING;
     assert(!m_channel);
-    m_channel = new Channel(descriptor, m_loop);
+    m_channel = new Channel(descriptor, m_loop, m_loop->getAsyncIoService() != nullptr);
     m_channel->setWriteCallback(std::bind(&Connector::handleWrite, this));
     m_channel->enableWrite();
+#ifdef _WIN32
+    if (m_timer) {
+        m_loop->cancel(m_timer);
+        m_timer = 0;
+    }
+    m_timer = m_loop->schedule(std::bind(&Connector::handleTimeout, this), 500, 1);
+#endif // _WIN32
 }
 
 void Connector::handleWrite() {
@@ -150,6 +189,15 @@ void Connector::handleWrite() {
             flute::closeSocket(descriptor);
         }
     }
+}
+
+void Connector::handleTimeout() {
+    if (m_state != ConnectorState::CONNECTING) {
+        assert(m_state == ConnectorState::DISCONNECTED);
+        return;
+    }
+    auto descriptor = removeAndResetChannel();
+    retry(descriptor);
 }
 
 void Connector::resetChannel() {
@@ -179,6 +227,19 @@ void Connector::retry(socket_type descriptor) {
         m_retryDelay = std::min(m_retryDelay << 1, MAX_RETRY_DELAY);
     } else {
         LOG_DEBUG << "do not connect.";
+    }
+}
+
+void Connector::handleAsyncConnect(AsyncIoCode code, ssize_t bytes, AsyncIoContext* ioContext) {
+    if (m_state == ConnectorState::CONNECTING) {
+        if (code == AsyncIoCode::IoCodeSuccess) {
+            m_state = ConnectorState::CONNECTED;
+            if (m_isConnect && m_connectCallback) {
+                m_connectCallback(ioContext->socket);
+            }
+        }
+    } else if (code == AsyncIoCode::IoCodeFailed) {
+        retry(ioContext->socket);
     }
 }
 

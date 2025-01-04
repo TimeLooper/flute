@@ -9,6 +9,7 @@
 #include <flute/config.h>
 #include <flute/flute_types.h>
 #include <flute/noncopyable.h>
+#include <flute/AsyncIoService.h>
 
 #include <atomic>
 #include <memory>
@@ -35,8 +36,10 @@ public:
 private:
     enum class ConnectorState { DISCONNECTED, CONNECTING, CONNECTED };
     int m_retryDelay;
+    std::uint64_t m_timer;
     EventLoop* m_loop;
     Channel* m_channel;
+    AsyncIoContext* m_ioContext;
     InetAddress m_serverAddress;
     std::atomic<ConnectorState> m_state;
     std::atomic<bool> m_isConnect;
@@ -53,8 +56,10 @@ private:
     void connecting(socket_type descriptor);
     void retry(socket_type descriptor);
     void handleWrite();
+    void handleTimeout();
     void resetChannel();
     socket_type removeAndResetChannel();
+    void handleAsyncConnect(AsyncIoCode code, ssize_t bytes, AsyncIoContext* ioContext);
 };
 
 } // namespace flute

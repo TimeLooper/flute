@@ -373,6 +373,24 @@ flute::ssize_t RingBuffer::sendToSocket(socket_type descriptor, const InetAddres
 
 void RingBuffer::clear() { m_readIndex = m_writeIndex = m_bufferSize = 0; }
 
+void RingBuffer::getBufferIoVec(std::vector<iovec>& vecs) {
+    auto length = readableBytes();
+    if (m_capacity - m_readIndex >= length) {
+        iovec vec;
+        vec.iov_base = reinterpret_cast<char *>(m_buffer + m_readIndex);
+        vec.iov_len = length;
+        vecs.push_back(vec);
+    } else {
+        iovec vec[2]{};
+        vec[0].iov_base = reinterpret_cast<char *>(m_buffer + m_readIndex);
+        vec[0].iov_len = m_capacity - m_readIndex;
+        vec[1].iov_base = reinterpret_cast<char *>(m_buffer);
+        vec[1].iov_len = length + m_readIndex - m_capacity;
+        vecs.push_back(vec[0]);
+        vecs.push_back(vec[1]);
+    }
+}
+
 void RingBuffer::expand(flute::ssize_t length) {
     auto capacity = getCapacity(length, m_capacity);
     auto new_buffer = static_cast<std::uint8_t *>(std::realloc(m_buffer, capacity));

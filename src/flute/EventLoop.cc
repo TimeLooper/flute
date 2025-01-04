@@ -14,6 +14,7 @@ namespace flute {
 
 EventLoop::EventLoop()
     : m_selector(Selector::createSelector())
+    , m_asyncIoService(nullptr)
     , m_tid(std::this_thread::get_id())
     , m_interruptor(new EventLoopInterruptor(this))
     , m_timerQueue(new TimerQueue(this))
@@ -126,6 +127,14 @@ void EventLoop::assertInLoopThread() const {
 void EventLoop::abortNotInLoopThread() const {
     LOG_FATAL << "EventLoop " << this << " was create in thread " << m_tid << ", current thread id "
               << std::this_thread::get_id() << ".";
+}
+
+void EventLoop::setAsyncIoService(AsyncIoService* ioService) {
+    m_asyncIoService = ioService;
+}
+
+AsyncIoService* EventLoop::getAsyncIoService() const {
+    return m_asyncIoService;
 }
 
 void EventLoop::executeTasks() {

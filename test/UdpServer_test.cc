@@ -18,7 +18,8 @@ void handleMessage(const std::shared_ptr<flute::UdpServer>& server, const flute:
 
 int main(int argc, char* argv[]) {
     flute::initialize();
-    flute::EventLoopGroup group(0);
+    flute::EventLoopGroupConfigure configure(false, 0, 0);
+    flute::EventLoopGroup group(configure);
     std::shared_ptr<flute::UdpServer> server(new flute::UdpServer(&group));
     flute::InetAddress address(9999);
     server->bind(address);

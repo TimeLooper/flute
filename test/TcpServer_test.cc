@@ -7,10 +7,12 @@
 #include <flute/InetAddress.h>
 #include <flute/TcpConnection.h>
 #include <flute/TcpServer.h>
+#include <flute/Logger.h>
 
 int main(int argc, char* argv[]) {
     flute::initialize();
-    flute::EventLoopGroup loopGroup(0);
+    flute::EventLoopGroupConfigure configure(true, 4, 4);
+    flute::EventLoopGroup loopGroup(configure);
     flute::TcpServer server(&loopGroup);
     server.bind(flute::InetAddress(9999));
     server.setMessageCallback(

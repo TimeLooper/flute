@@ -9,6 +9,7 @@
 #include <flute/config.h>
 #include <flute/flute_types.h>
 #include <flute/noncopyable.h>
+#include <flute/AsyncIoService.h>
 
 namespace flute {
 
@@ -34,15 +35,21 @@ public:
     FLUTE_API_DECL void close();
 
 private:
+    static const int kIoContextSize = 1;
     bool m_listening;
     bool m_reuseAddress;
     bool m_reusePort;
+    int m_family;
     Socket* m_socket;
     EventLoop* m_loop;
     Channel* m_channel;
     AcceptCallback m_acceptCallback;
+    AsyncIoContext* m_ioContext[kIoContextSize];
+    char* m_buffer;
 
     void handleRead();
+    void handleAsyncAccept(AsyncIoCode code, ssize_t bytes, AsyncIoContext* ioContext);
+    void handleAsyncAcceptInLoop(socket_type socket);
 };
 
 } // namespace flute
