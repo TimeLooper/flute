@@ -15,8 +15,8 @@
 #include <sys/select.h>
 #endif
 
-#include <unordered_map>
 #include <set>
+#include <unordered_map>
 
 namespace flute {
 namespace detail {

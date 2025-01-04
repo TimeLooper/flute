@@ -5,13 +5,13 @@
 #ifndef FLUTE_TCP_CONNECTION_H
 #define FLUTE_TCP_CONNECTION_H
 
-#include <flute/RingBuffer.h>
+#include <flute/AsyncIoService.h>
 #include <flute/InetAddress.h>
+#include <flute/RingBuffer.h>
 #include <flute/Socket.h>
 #include <flute/flute_types.h>
 #include <flute/noncopyable.h>
 #include <flute/socket_ops.h>
-#include <flute/AsyncIoService.h>
 
 #include <atomic>
 #include <cstddef>

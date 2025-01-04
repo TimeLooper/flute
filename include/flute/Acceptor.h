@@ -5,11 +5,11 @@
 #ifndef FLUTE_ACCEPTOR_H
 #define FLUTE_ACCEPTOR_H
 
+#include <flute/AsyncIoService.h>
 #include <flute/Logger.h>
 #include <flute/config.h>
 #include <flute/flute_types.h>
 #include <flute/noncopyable.h>
-#include <flute/AsyncIoService.h>
 
 namespace flute {
 

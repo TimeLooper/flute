@@ -22,9 +22,7 @@ Acceptor::Acceptor(EventLoop* loop)
     , m_loop(loop)
     , m_channel(nullptr)
     , m_acceptCallback()
-    , m_ioContext()
-{
-}
+    , m_ioContext() {}
 
 Acceptor::~Acceptor() {
     assert(!m_socket);
@@ -93,7 +91,8 @@ void Acceptor::listen() {
             vec.iov_base = buffer;
             vec.iov_len = bufflen;
             asyncIoService->setIoContextBuffer(context, &vec, 1);
-            context->ioCompleteCallback = std::bind(&Acceptor::handleAsyncAccept, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+            context->ioCompleteCallback = std::bind(&Acceptor::handleAsyncAccept, this, std::placeholders::_1,
+                                                    std::placeholders::_2, std::placeholders::_3);
             m_ioContext[i] = context;
             asyncIoService->bindIoService(m_socket->descriptor());
             asyncIoService->post(context);

@@ -5,11 +5,11 @@
 #ifndef FLUTE_CONNECTOR_H
 #define FLUTE_CONNECTOR_H
 
+#include <flute/AsyncIoService.h>
 #include <flute/InetAddress.h>
 #include <flute/config.h>
 #include <flute/flute_types.h>
 #include <flute/noncopyable.h>
-#include <flute/AsyncIoService.h>
 
 #include <atomic>
 #include <memory>

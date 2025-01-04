@@ -14,7 +14,6 @@
 
 namespace flute {
 
-
 std::atomic<std::uint64_t> TimerQueue::s_timerIdGen;
 
 TimerQueue::TimerQueue(flute::EventLoop* loop)

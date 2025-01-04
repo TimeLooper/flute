@@ -1,8 +1,8 @@
 #ifndef FLUTE_ASYNC_IO_SERVICE_H
 #define FLUTE_ASYNC_IO_SERVICE_H
 
-#include <flute/flute_types.h>
 #include <flute/config.h>
+#include <flute/flute_types.h>
 #include <flute/noncopyable.h>
 
 namespace flute {
@@ -22,7 +22,12 @@ struct AsyncIoContext {
     socket_type acceptSocket;
     SocketOpCode opCode;
     std::function<void(AsyncIoCode, flute::ssize_t, AsyncIoContext*)> ioCompleteCallback;
-    AsyncIoContext() : userData(nullptr), socket(FLUTE_INVALID_SOCKET), acceptSocket(FLUTE_INVALID_SOCKET), opCode(SocketOpCode::None), ioCompleteCallback() {}
+    AsyncIoContext()
+        : userData(nullptr)
+        , socket(FLUTE_INVALID_SOCKET)
+        , acceptSocket(FLUTE_INVALID_SOCKET)
+        , opCode(SocketOpCode::None)
+        , ioCompleteCallback() {}
 };
 
 class AsyncIoService : private noncopyable {
@@ -35,6 +40,7 @@ public:
     virtual void setIoContextBuffer(AsyncIoContext* context, iovec* vec, flute::ssize_t count) = 0;
     virtual void bindIoService(socket_type socket) = 0;
     static AsyncIoService* createAsyncIoService(std::size_t asyncIoWorkThreadCount);
+    virtual ~AsyncIoService() = default;
 };
 
 } // namespace flute

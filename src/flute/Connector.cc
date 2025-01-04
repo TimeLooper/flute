@@ -2,10 +2,10 @@
 // Created by why on 2020/01/05.
 //
 
+#include <flute/AsyncIoService.h>
 #include <flute/Channel.h>
 #include <flute/Connector.h>
 #include <flute/Logger.h>
-#include <flute/AsyncIoService.h>
 #include <flute/flute_types.h>
 
 #include <algorithm>
@@ -26,8 +26,7 @@ Connector::Connector(EventLoop* loop, const InetAddress& address)
     , m_serverAddress(address)
     , m_state(ConnectorState::DISCONNECTED)
     , m_isConnect(false)
-    , m_connectCallback() {
-}
+    , m_connectCallback() {}
 
 Connector::Connector(EventLoop* loop, InetAddress&& address)
     : m_retryDelay(DEFALUT_RETRY_DELAY)
@@ -100,7 +99,8 @@ void Connector::connect() {
         m_ioContext->socket = descriptor;
         m_ioContext->opCode = SocketOpCode::Connect;
         m_ioContext->userData = m_serverAddress.getSocketAddress();
-        m_ioContext->ioCompleteCallback = std::bind(&Connector::handleAsyncConnect, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+        m_ioContext->ioCompleteCallback = std::bind(&Connector::handleAsyncConnect, this, std::placeholders::_1,
+                                                    std::placeholders::_2, std::placeholders::_3);
         asyncIoService->bindIoService(descriptor);
         asyncIoService->post(m_ioContext);
         return;

@@ -10,8 +10,8 @@
 #include <flute/noncopyable.h>
 
 #include <atomic>
-#include <unordered_map>
 #include <memory>
+#include <unordered_map>
 
 namespace flute {
 

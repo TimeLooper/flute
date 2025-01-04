@@ -3,9 +3,9 @@
 //
 
 #include <flute/ByteBuffer.h>
-#include <flute/RingBuffer.h>
 #include <flute/InetAddress.h>
 #include <flute/Logger.h>
+#include <flute/RingBuffer.h>
 #include <flute/endian.h>
 #include <flute/socket_ops.h>
 
@@ -373,7 +373,7 @@ flute::ssize_t RingBuffer::sendToSocket(socket_type descriptor, const InetAddres
 
 void RingBuffer::clear() { m_readIndex = m_writeIndex = m_bufferSize = 0; }
 
-void RingBuffer::getBufferIoVec(std::vector<iovec>& vecs) {
+void RingBuffer::getBufferIoVec(std::vector<iovec> &vecs) {
     auto length = readableBytes();
     if (m_capacity - m_readIndex >= length) {
         iovec vec;

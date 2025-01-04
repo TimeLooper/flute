@@ -45,13 +45,15 @@ TcpConnection::TcpConnection(socket_type descriptor, EventLoop* loop, const Inet
         m_readAsyncIoContext = asyncIoService->createIoContext();
         m_readAsyncIoContext->opCode = SocketOpCode::Read;
         m_readAsyncIoContext->socket = descriptor;
-        m_readAsyncIoContext->ioCompleteCallback = std::bind(&TcpConnection::handleAsyncIoComplete, this, std::placeholders::_1,
-                                                           std::placeholders::_2, std::placeholders::_3);
+        m_readAsyncIoContext->ioCompleteCallback =
+            std::bind(&TcpConnection::handleAsyncIoComplete, this, std::placeholders::_1, std::placeholders::_2,
+                      std::placeholders::_3);
         m_writeAsyncIoContext = asyncIoService->createIoContext();
         m_writeAsyncIoContext->opCode = SocketOpCode::Write;
         m_writeAsyncIoContext->socket = descriptor;
-        m_writeAsyncIoContext->ioCompleteCallback = std::bind(&TcpConnection::handleAsyncIoComplete, this, std::placeholders::_1,
-                                                           std::placeholders::_2, std::placeholders::_3);
+        m_writeAsyncIoContext->ioCompleteCallback =
+            std::bind(&TcpConnection::handleAsyncIoComplete, this, std::placeholders::_1, std::placeholders::_2,
+                      std::placeholders::_3);
         m_readBuffer = new std::uint8_t[65536];
         iovec vec{};
         vec.iov_base = reinterpret_cast<char*>(m_readBuffer);
@@ -61,7 +63,7 @@ TcpConnection::TcpConnection(socket_type descriptor, EventLoop* loop, const Inet
     }
 }
 
-TcpConnection::~TcpConnection() { 
+TcpConnection::~TcpConnection() {
     assert(m_state == ConnectionState::DISCONNECTED);
     auto asyncIoService = m_loop->getAsyncIoService();
     if (m_readAsyncIoContext && asyncIoService) {
@@ -91,7 +93,9 @@ void TcpConnection::send(const void* buffer, flute::ssize_t length) {
         sendInLoop(buffer, length);
     } else {
         void (TcpConnection::*func)(const std::string&) = &TcpConnection::sendInLoop;
-        m_loop->runInLoop(std::bind(func, shared_from_this(), std::move(std::string(static_cast<const char*>(buffer), static_cast<std::size_t>(length)))));
+        m_loop->runInLoop(
+            std::bind(func, shared_from_this(),
+                      std::move(std::string(static_cast<const char*>(buffer), static_cast<std::size_t>(length)))));
     }
 }
 
@@ -201,8 +205,7 @@ void TcpConnection::handleError() {
 void TcpConnection::shutdownInLoop() {
     m_loop->assertInLoopThread();
     m_state = ConnectionState::DISCONNECTING;
-    if (m_channel->isWriteable())
-        return;
+    if (m_channel->isWriteable()) return;
     m_socket->shutdownWrite();
 }
 
@@ -224,7 +227,8 @@ void TcpConnection::sendInLoop(const void* buffer, flute::ssize_t length) {
             m_outputBuffer.getBufferIoVec(vecs);
             m_outputBuffer.clear();
             m_asyncIoWriteBuffer.swap(m_outputBuffer);
-            asyncIoService->setIoContextBuffer(m_writeAsyncIoContext, vecs.data(), static_cast<flute::ssize_t>(vecs.size()));
+            asyncIoService->setIoContextBuffer(m_writeAsyncIoContext, vecs.data(),
+                                               static_cast<flute::ssize_t>(vecs.size()));
             asyncIoService->post(m_writeAsyncIoContext);
             remain = 0;
         } else {
@@ -345,7 +349,8 @@ void TcpConnection::handleAsyncIoCompleteInLoop(AsyncIoCode code, ssize_t bytes,
                 m_outputBuffer.getBufferIoVec(vecs);
                 m_outputBuffer.clear();
                 m_asyncIoWriteBuffer.swap(m_outputBuffer);
-                asyncIoService->setIoContextBuffer(m_writeAsyncIoContext, vecs.data(), static_cast<flute::ssize_t>(vecs.size()));
+                asyncIoService->setIoContextBuffer(m_writeAsyncIoContext, vecs.data(),
+                                                   static_cast<flute::ssize_t>(vecs.size()));
                 asyncIoService->post(m_writeAsyncIoContext);
             }
         } else {

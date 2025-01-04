@@ -129,13 +129,9 @@ void EventLoop::abortNotInLoopThread() const {
               << std::this_thread::get_id() << ".";
 }
 
-void EventLoop::setAsyncIoService(AsyncIoService* ioService) {
-    m_asyncIoService = ioService;
-}
+void EventLoop::setAsyncIoService(AsyncIoService* ioService) { m_asyncIoService = ioService; }
 
-AsyncIoService* EventLoop::getAsyncIoService() const {
-    return m_asyncIoService;
-}
+AsyncIoService* EventLoop::getAsyncIoService() const { return m_asyncIoService; }
 
 void EventLoop::executeTasks() {
     std::vector<std::function<void()>> temp;

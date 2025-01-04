@@ -3,10 +3,10 @@
 //
 
 #include <flute/Channel.h>
-#include <flute/RingBuffer.h>
 #include <flute/EventLoopGroup.h>
 #include <flute/InetAddress.h>
 #include <flute/Logger.h>
+#include <flute/RingBuffer.h>
 #include <flute/Socket.h>
 #include <flute/UdpServer.h>
 #include <flute/socket_ops.h>

@@ -67,13 +67,7 @@ struct msghdr {
 };
 #endif
 
-enum SocketOpCode {
-    None,
-    Read,
-    Write,
-    Connect,
-    Accept
-};
+enum SocketOpCode { None, Read, Write, Connect, Accept };
 
 #ifdef WIN32
 #if FLUTE_SIZEOF_PTR == 4
