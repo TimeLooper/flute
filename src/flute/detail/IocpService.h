@@ -83,10 +83,14 @@ public:
                 if (ok && bytes) {
                     iocpOverlapped->context.ioCompleteCallback(AsyncIoCode::IoCodeSuccess, bytes, &iocpOverlapped->context);
                 } else if (!ok) {
-                    iocpOverlapped->context.ioCompleteCallback(AsyncIoCode::IoCodeFailed, 0,  &iocpOverlapped->context);
+                    if (!bytes) {
+                        iocpOverlapped->context.ioCompleteCallback(AsyncIoCode::IoCodeEof, 0,  &iocpOverlapped->context);
+                    } else {
+                        iocpOverlapped->context.ioCompleteCallback(AsyncIoCode::IoCodeFailed, 0,  &iocpOverlapped->context);
+                    }
                 } else if (!bytes && iocpOverlapped->context.opCode == SocketOpCode::Accept) {
                     iocpOverlapped->context.ioCompleteCallback(AsyncIoCode::IoCodeSuccess, 0,  &iocpOverlapped->context);
-                } else {
+                } else if (!bytes) {
                     iocpOverlapped->context.ioCompleteCallback(AsyncIoCode::IoCodeEof, 0,  &iocpOverlapped->context);
                 }
             } else if (!overlapped) {
