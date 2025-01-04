@@ -23,7 +23,6 @@ struct AsyncIoContext {
     SocketOpCode opCode;
     std::function<void(AsyncIoCode, flute::ssize_t, AsyncIoContext*)> ioCompleteCallback;
     AsyncIoContext() : userData(nullptr), socket(FLUTE_INVALID_SOCKET), acceptSocket(FLUTE_INVALID_SOCKET), opCode(SocketOpCode::None), ioCompleteCallback() {}
-    virtual ~AsyncIoContext() {}
 };
 
 class AsyncIoService : private noncopyable {

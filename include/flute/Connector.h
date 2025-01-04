@@ -60,6 +60,7 @@ private:
     void resetChannel();
     socket_type removeAndResetChannel();
     void handleAsyncConnect(AsyncIoCode code, ssize_t bytes, AsyncIoContext* ioContext);
+    void handleAsyncConnectInLoop(AsyncIoCode code, ssize_t bytes, AsyncIoContext* ioContext);
 };
 
 } // namespace flute

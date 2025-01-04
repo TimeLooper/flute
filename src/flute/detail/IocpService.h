@@ -20,11 +20,12 @@ namespace detail {
 
 #define NOTIFICATION_KEY ((ULONG_PTR)-1)
 
-struct IocpOverlapped : public AsyncIoContext {
+struct IocpOverlapped {
     OVERLAPPED overlapped;
+    AsyncIoContext context;
     WSABUF* wsaBuf;
     DWORD bufferCount;
-    IocpOverlapped() : AsyncIoContext(), overlapped(), wsaBuf(nullptr), bufferCount(0) {
+    IocpOverlapped() : overlapped(), context(), wsaBuf(nullptr), bufferCount(0) {
         std::memset(&overlapped, 0, sizeof(OVERLAPPED));
     }
 };
@@ -73,20 +74,20 @@ public:
             if (key != NOTIFICATION_KEY && overlapped) {
                 auto iocpOverlapped =
                     reinterpret_cast<IocpOverlapped *>(CONTAINING_RECORD(overlapped, IocpOverlapped, overlapped));
-                if (iocpOverlapped->opCode == SocketOpCode::Accept) {
-                    setsockopt(iocpOverlapped->acceptSocket, SOL_SOCKET, SO_UPDATE_ACCEPT_CONTEXT,
-                               (char *)&iocpOverlapped->socket, sizeof(iocpOverlapped->socket));
-                } else if (iocpOverlapped->opCode == SocketOpCode::Connect) {
-                    setsockopt(iocpOverlapped->socket, SOL_SOCKET, SO_UPDATE_CONNECT_CONTEXT, nullptr, 0);
+                if (iocpOverlapped->context.opCode == SocketOpCode::Accept) {
+                    setsockopt(iocpOverlapped->context.acceptSocket, SOL_SOCKET, SO_UPDATE_ACCEPT_CONTEXT,
+                               (char *)&iocpOverlapped->context.socket, sizeof(iocpOverlapped->context.socket));
+                } else if (iocpOverlapped->context.opCode == SocketOpCode::Connect) {
+                    setsockopt(iocpOverlapped->context.socket, SOL_SOCKET, SO_UPDATE_CONNECT_CONTEXT, nullptr, 0);
                 }
                 if (ok && bytes) {
-                    iocpOverlapped->ioCompleteCallback(AsyncIoCode::IoCodeSuccess, bytes, iocpOverlapped);
+                    iocpOverlapped->context.ioCompleteCallback(AsyncIoCode::IoCodeSuccess, bytes, &iocpOverlapped->context);
                 } else if (!ok) {
-                    iocpOverlapped->ioCompleteCallback(AsyncIoCode::IoCodeFailed, 0, iocpOverlapped);
-                } else if (!bytes && iocpOverlapped->opCode == SocketOpCode::Accept) {
-                    iocpOverlapped->ioCompleteCallback(AsyncIoCode::IoCodeSuccess, 0, iocpOverlapped);
+                    iocpOverlapped->context.ioCompleteCallback(AsyncIoCode::IoCodeFailed, 0,  &iocpOverlapped->context);
+                } else if (!bytes && iocpOverlapped->context.opCode == SocketOpCode::Accept) {
+                    iocpOverlapped->context.ioCompleteCallback(AsyncIoCode::IoCodeSuccess, 0,  &iocpOverlapped->context);
                 } else {
-                    iocpOverlapped->ioCompleteCallback(AsyncIoCode::IoCodeEof, 0, iocpOverlapped);
+                    iocpOverlapped->context.ioCompleteCallback(AsyncIoCode::IoCodeEof, 0,  &iocpOverlapped->context);
                 }
             } else if (!overlapped) {
                 break;
@@ -100,7 +101,7 @@ public:
         m_threadPool.shutdown();
     }
     bool post(AsyncIoContext* context) override {
-        auto iocpOverlapped = reinterpret_cast<IocpOverlapped*>(context);
+        auto iocpOverlapped = reinterpret_cast<IocpOverlapped *>(CONTAINING_RECORD(context, IocpOverlapped, context));
         if (context->opCode == SocketOpCode::Read) {
             DWORD bytesRead;
 	        DWORD flags = 0;
@@ -165,15 +166,15 @@ public:
         return true;
     }
     AsyncIoContext* createIoContext() override {
-        // auto overlapped = new IocpOverlapped();
-        // return new AsyncIoContext(overlapped, nullptr, nullptr, 0, FLUTE_INVALID_SOCKET, FLUTE_INVALID_SOCKET, SocketOpCode::None, nullptr);
-        return new IocpOverlapped();
+        auto overlapped = new IocpOverlapped();
+        return &overlapped->context;
     }
     void destroyIoContext(AsyncIoContext* context) override {
-        delete context;
+        auto iocpOverlapped = reinterpret_cast<IocpOverlapped *>(CONTAINING_RECORD(context, IocpOverlapped, context));
+        delete iocpOverlapped;
     }
     void setIoContextBuffer(AsyncIoContext* context, iovec* vec, flute::ssize_t count) override {
-        auto iocpOverlapped = reinterpret_cast<IocpOverlapped*>(context);
+        auto iocpOverlapped = reinterpret_cast<IocpOverlapped *>(CONTAINING_RECORD(context, IocpOverlapped, context));
         if (iocpOverlapped) {
             if (iocpOverlapped->wsaBuf && iocpOverlapped->bufferCount != count) {
                 delete[] iocpOverlapped->wsaBuf;

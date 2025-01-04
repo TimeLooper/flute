@@ -63,11 +63,14 @@ TcpConnection::TcpConnection(socket_type descriptor, EventLoop* loop, const Inet
 
 TcpConnection::~TcpConnection() { 
     assert(m_state == ConnectionState::DISCONNECTED);
-    if (m_readAsyncIoContext) {
-        delete m_readAsyncIoContext;
+    auto asyncIoService = m_loop->getAsyncIoService();
+    if (m_readAsyncIoContext && asyncIoService) {
+        asyncIoService->destroyIoContext(m_readAsyncIoContext);
+        m_readAsyncIoContext = nullptr;
     }
-    if (m_writeAsyncIoContext) {
-        delete m_writeAsyncIoContext;
+    if (m_writeAsyncIoContext && asyncIoService) {
+        asyncIoService->destroyIoContext(m_writeAsyncIoContext);
+        m_writeAsyncIoContext = nullptr;
     }
     if (m_readBuffer) {
         delete[] m_readBuffer;

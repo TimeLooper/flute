@@ -160,11 +160,13 @@ void Connector::connecting(socket_type descriptor) {
     m_channel->setWriteCallback(std::bind(&Connector::handleWrite, this));
     m_channel->enableWrite();
 #ifdef _WIN32
-    if (m_timer) {
-        m_loop->cancel(m_timer);
-        m_timer = 0;
+    if (!m_loop->getAsyncIoService()) {
+        if (m_timer) {
+            m_loop->cancel(m_timer);
+            m_timer = 0;
+        }
+        m_timer = m_loop->schedule(std::bind(&Connector::handleTimeout, this), 500, 1);
     }
-    m_timer = m_loop->schedule(std::bind(&Connector::handleTimeout, this), 500, 1);
 #endif // _WIN32
 }
 
@@ -188,6 +190,10 @@ void Connector::handleWrite() {
         } else {
             flute::closeSocket(descriptor);
         }
+    }
+    if (m_timer) {
+        m_loop->cancel(m_timer);
+        m_timer = 0;
     }
 }
 
@@ -231,6 +237,10 @@ void Connector::retry(socket_type descriptor) {
 }
 
 void Connector::handleAsyncConnect(AsyncIoCode code, ssize_t bytes, AsyncIoContext* ioContext) {
+    m_loop->runInLoop(std::bind(&Connector::handleAsyncConnectInLoop, this, code, bytes, ioContext));
+}
+
+void Connector::handleAsyncConnectInLoop(AsyncIoCode code, ssize_t bytes, AsyncIoContext* ioContext) {
     if (m_state == ConnectorState::CONNECTING) {
         if (code == AsyncIoCode::IoCodeSuccess) {
             m_state = ConnectorState::CONNECTED;
