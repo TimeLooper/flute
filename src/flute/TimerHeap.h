@@ -9,8 +9,8 @@
 
 #include <cstdint>
 #include <functional>
-#include <vector>
 #include <memory>
+#include <vector>
 
 namespace flute {
 
