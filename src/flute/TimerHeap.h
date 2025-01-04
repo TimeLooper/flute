@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <functional>
 #include <vector>
+#include <memory>
 
 namespace flute {
 
@@ -37,7 +38,7 @@ struct Timer {
     std::function<void()> callback;
 };
 
-static inline bool compare(const Timer* lhs, const Timer* rhs) {
+static inline bool compare(const std::shared_ptr<Timer> lhs, const std::shared_ptr<Timer> rhs) {
     if (lhs->loopCount == 0 && rhs->loopCount != 0) {
         return true;
     }
@@ -49,26 +50,26 @@ static inline bool compare(const Timer* lhs, const Timer* rhs) {
 
 class TimerHeap {
 public:
-    using size_type = typename std::vector<Timer*>::size_type;
+    using size_type = typename std::vector<std::shared_ptr<Timer>>::size_type;
 
     TimerHeap() = default;
     ~TimerHeap() = default;
 
-    Timer* top();
+    std::shared_ptr<Timer> top();
     void pop();
-    void remove(Timer* timer);
-    void update(Timer* timer);
-    void push(Timer* timer);
+    void remove(std::shared_ptr<Timer> timer);
+    void update(std::shared_ptr<Timer> timer);
+    void push(std::shared_ptr<Timer> timer);
     bool empty() const;
 
 private:
-    std::vector<Timer*> m_timers;
+    std::vector<std::shared_ptr<Timer>> m_timers;
 
     void shift_down(size_type index);
     void shift_up(size_type index);
 };
 
-Timer* TimerHeap::top() { return m_timers.front(); }
+std::shared_ptr<Timer> TimerHeap::top() { return m_timers.front(); }
 
 void TimerHeap::pop() {
     if (m_timers.empty()) {
@@ -84,7 +85,7 @@ void TimerHeap::pop() {
     shift_down(0);
 }
 
-void TimerHeap::remove(Timer* timer) {
+void TimerHeap::remove(std::shared_ptr<Timer> timer) {
     if (timer->index < 0 || static_cast<size_type>(timer->index) >= m_timers.size()) {
         return;
     }
@@ -102,7 +103,7 @@ void TimerHeap::remove(Timer* timer) {
     timer->index = -1;
 }
 
-void TimerHeap::update(Timer* timer) {
+void TimerHeap::update(std::shared_ptr<Timer> timer) {
     auto parent = (timer->index & 1 ? timer->index - 1 : timer->index - 2) / 2;
     if (timer->index > 0 && compare(m_timers[parent], timer)) {
         shift_up(timer->index);
@@ -111,7 +112,7 @@ void TimerHeap::update(Timer* timer) {
     }
 }
 
-void TimerHeap::push(Timer* timer) {
+void TimerHeap::push(std::shared_ptr<Timer> timer) {
     m_timers.push_back(timer);
     shift_up(m_timers.size() - 1);
 }

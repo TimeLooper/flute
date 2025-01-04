@@ -43,9 +43,9 @@ private:
 #endif
     TimerHeap* m_timerHeap;
     static std::atomic<std::uint64_t> s_timerIdGen;
-    std::unordered_map<std::uint64_t, Timer*> m_timersTable;
+    std::unordered_map<std::uint64_t, std::shared_ptr<Timer>> m_timersTable;
 
-    void scheduleInLoop(Timer* timer);
+    void scheduleInLoop(std::shared_ptr<Timer> timer);
     void cancelTimerInLoop(std::uint64_t timerId);
     static std::uint64_t genTimerId();
 };

@@ -45,13 +45,13 @@ TimerQueue::~TimerQueue() {
 }
 
 std::uint64_t TimerQueue::schedule(std::function<void()>&& callback, std::int64_t delay, int loopCount) {
-    auto timer = new Timer(std::move(callback), delay, loopCount, genTimerId());
+    auto timer = std::shared_ptr<Timer>(new Timer(std::move(callback), delay, loopCount, genTimerId()));
     m_loop->runInLoop(std::bind(&TimerQueue::scheduleInLoop, this, timer));
     return timer->timerId;
 }
 
 std::uint64_t TimerQueue::schedule(const std::function<void()>& callback, std::int64_t delay, int loopCount) {
-    auto timer = new Timer(callback, delay, loopCount, genTimerId());
+    auto timer = std::shared_ptr<Timer>(new Timer(callback, delay, loopCount, genTimerId()));
     m_loop->runInLoop(std::bind(&TimerQueue::scheduleInLoop, this, timer));
     return timer->timerId;
 }
@@ -87,7 +87,7 @@ void TimerQueue::handleTimerEvent(std::int64_t now) {
     if (m_timerHeap->empty()) {
         return;
     }
-    std::vector<Timer*> timers;
+    std::vector<std::shared_ptr<Timer>> timers;
     while (!m_timerHeap->empty()) {
         auto timer = m_timerHeap->top();
         auto offset = timer->delay + timer->startTime - now;
@@ -110,12 +110,11 @@ void TimerQueue::handleTimerEvent(std::int64_t now) {
             m_timerHeap->push(timer);
         } else {
             m_timersTable.erase(timer->timerId);
-            delete timer;
         }
     }
 }
 
-void TimerQueue::scheduleInLoop(Timer* timer) {
+void TimerQueue::scheduleInLoop(std::shared_ptr<Timer> timer) {
     m_timerHeap->push(timer);
     m_timersTable[timer->timerId] = timer;
 }
@@ -128,7 +127,6 @@ void TimerQueue::cancelTimerInLoop(std::uint64_t timerId) {
     auto timer = it->second;
     m_timersTable.erase(it);
     m_timerHeap->remove(timer);
-    delete timer;
 }
 
 std::uint64_t TimerQueue::genTimerId() {
