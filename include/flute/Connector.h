@@ -36,7 +36,6 @@ public:
 private:
     enum class ConnectorState { DISCONNECTED, CONNECTING, CONNECTED };
     int m_retryDelay;
-    std::uint64_t m_timer;
     EventLoop* m_loop;
     Channel* m_channel;
     AsyncIoContext* m_ioContext;

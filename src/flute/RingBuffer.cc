@@ -17,6 +17,8 @@
 
 namespace flute {
 
+#define DETAULT_BUFFER_SIZE 1024
+
 #define UPDATE_READ_INDEX(capacity, readIndex, writeIndex, bufferSize, size) \
     do {                                                                     \
         if (bufferSize <= static_cast<flute::ssize_t>(size)) {               \
@@ -260,7 +262,7 @@ flute::ssize_t RingBuffer::readFromSocket(socket_type descriptor) {
     }
     iovec vec[2]{};
     int count = 1;
-    if (m_readIndex <= m_writeIndex) {
+    if (m_readIndex <= m_writeIndex && m_writeIndex != 0) {
         if (m_capacity - m_writeIndex >= bytesAvailable) {
             vec[0].iov_base = reinterpret_cast<char *>(m_buffer + m_writeIndex);
             vec[0].iov_len = writeableBytes();
@@ -315,7 +317,7 @@ flute::ssize_t RingBuffer::readFromSocket(socket_type descriptor, InetAddress &a
     }
     iovec vec[2]{};
     int count = 1;
-    if (m_readIndex <= m_writeIndex) {
+    if (m_readIndex <= m_writeIndex && m_writeIndex != 0) {
         if (m_capacity - m_writeIndex >= bytesAvailable) {
             vec[0].iov_base = reinterpret_cast<char *>(m_buffer + m_writeIndex);
             vec[0].iov_len = writeableBytes();
@@ -373,7 +375,7 @@ flute::ssize_t RingBuffer::sendToSocket(socket_type descriptor, const InetAddres
 
 void RingBuffer::clear() { m_readIndex = m_writeIndex = m_bufferSize = 0; }
 
-void RingBuffer::getBufferIoVec(std::vector<iovec> &vecs) {
+void RingBuffer::getReadableBuffer(std::vector<iovec> &vecs) {
     auto length = readableBytes();
     if (m_capacity - m_readIndex >= length) {
         iovec vec;
@@ -381,14 +383,45 @@ void RingBuffer::getBufferIoVec(std::vector<iovec> &vecs) {
         vec.iov_len = length;
         vecs.push_back(vec);
     } else {
-        iovec vec[2]{};
-        vec[0].iov_base = reinterpret_cast<char *>(m_buffer + m_readIndex);
-        vec[0].iov_len = m_capacity - m_readIndex;
-        vec[1].iov_base = reinterpret_cast<char *>(m_buffer);
-        vec[1].iov_len = length + m_readIndex - m_capacity;
-        vecs.push_back(vec[0]);
-        vecs.push_back(vec[1]);
+        iovec vec{};
+        vec.iov_base = reinterpret_cast<char *>(m_buffer + m_readIndex);
+        vec.iov_len = m_capacity - m_readIndex;
+        vecs.push_back(vec);
+        vec.iov_base = reinterpret_cast<char *>(m_buffer);
+        vec.iov_len = length + m_readIndex - m_capacity;
+        vecs.push_back(vec);
     }
+}
+
+void RingBuffer::getWriteableBuffer(std::vector<iovec> &vecs) {
+    auto writeableSize = writeableBytes();
+    if (writeableSize <= 0) {
+        // expand buffer
+        auto size = m_capacity;
+        if (size == 0) {
+            size = DETAULT_BUFFER_SIZE;
+        }
+        expand(size);
+    }
+    writeableSize = writeableBytes();
+    if (m_readIndex <= m_writeIndex && m_writeIndex != 0) {
+        iovec vec{};
+        vec.iov_base = reinterpret_cast<char *>(m_buffer + m_writeIndex);
+        vec.iov_len = m_capacity - m_writeIndex;
+        vecs.push_back(vec);
+        vec.iov_base = reinterpret_cast<char *>(m_buffer);
+        vec.iov_len = writeableSize + m_writeIndex - m_capacity;
+        vecs.push_back(vec);
+    } else {
+        iovec vec{};
+        vec.iov_base = reinterpret_cast<char *>(m_buffer + m_writeIndex);
+        vec.iov_len = writeableSize;
+        vecs.push_back(vec);
+    }
+}
+
+void RingBuffer::updateWriteIndex(flute::ssize_t length) {
+    UPDATE_WRITE_INDEX(m_capacity, m_writeIndex, m_bufferSize, length);
 }
 
 void RingBuffer::expand(flute::ssize_t length) {

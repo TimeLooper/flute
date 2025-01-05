@@ -59,7 +59,9 @@ public:
     FLUTE_API_DECL flute::ssize_t readFromSocket(socket_type descriptor, InetAddress& address);
     FLUTE_API_DECL flute::ssize_t sendToSocket(socket_type descriptor, const InetAddress& address);
     FLUTE_API_DECL void clear();
-    FLUTE_API_DECL void getBufferIoVec(std::vector<iovec>& vecs);
+    FLUTE_API_DECL void getReadableBuffer(std::vector<iovec>& vecs);
+    FLUTE_API_DECL void getWriteableBuffer(std::vector<iovec>& vecs);
+    FLUTE_API_DECL void updateWriteIndex(flute::ssize_t length);
 
 private:
     flute::ssize_t m_readIndex;

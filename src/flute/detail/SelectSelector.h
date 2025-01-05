@@ -31,6 +31,7 @@ public:
         , m_writeSet()
         , m_readSetOut()
         , m_writeSetOut()
+        , m_errorSetOut()
         , m_dataMap() {}
     ~SelectSelector() = default;
 
@@ -85,6 +86,7 @@ public:
     int select(std::vector<SelectorEvent>& events, int timeout) override {
         m_readSetOut = m_readSet;
         m_writeSetOut = m_writeSet;
+        m_errorSetOut = m_writeSet;
         struct timeval* tv = nullptr;
         struct timeval timeoutSpec;
         if (timeout > 0) {
@@ -93,7 +95,7 @@ public:
             tv = &timeoutSpec;
         }
 #ifdef _WIN32
-        auto count = ::select(0, m_readSetOut.getRawSet(), m_writeSetOut.getRawSet(), nullptr, tv);
+        auto count = ::select(0, m_readSetOut.getRawSet(), m_writeSetOut.getRawSet(), m_errorSetOut.getRawSet(), tv);
 #else
         auto count = ::select(m_maxDescriptor + 1, m_readSetOut.getRawSet(), m_writeSetOut.getRawSet(), nullptr, tv);
 #endif
@@ -108,6 +110,7 @@ public:
             auto sev = 0;
             if (m_readSetOut.containes(i)) sev |= SelectorEvent::EVENT_READ;
             if (m_writeSetOut.containes(i)) sev |= SelectorEvent::EVENT_WRITE;
+            if (m_errorSetOut.containes(i)) sev |= SelectorEvent::EVENT_WRITE;
             if (sev) {
                 auto& e = events[index];
                 auto it = m_dataMap.find(i);
@@ -127,6 +130,7 @@ private:
     DescriptorSet m_writeSet;
     DescriptorSet m_readSetOut;
     DescriptorSet m_writeSetOut;
+    DescriptorSet m_errorSetOut;
     std::unordered_map<socket_type, void*> m_dataMap;
 };
 

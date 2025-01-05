@@ -19,7 +19,6 @@ const int Connector::DEFALUT_RETRY_DELAY = 500;
 
 Connector::Connector(EventLoop* loop, const InetAddress& address)
     : m_retryDelay(DEFALUT_RETRY_DELAY)
-    , m_timer(0)
     , m_loop(loop)
     , m_channel(nullptr)
     , m_ioContext(nullptr)
@@ -30,7 +29,6 @@ Connector::Connector(EventLoop* loop, const InetAddress& address)
 
 Connector::Connector(EventLoop* loop, InetAddress&& address)
     : m_retryDelay(DEFALUT_RETRY_DELAY)
-    , m_timer(0)
     , m_loop(loop)
     , m_channel(nullptr)
     , m_ioContext(nullptr)
@@ -83,10 +81,6 @@ void Connector::stopInLoop() {
         } else {
             socket_type sockfd = removeAndResetChannel();
             retry(sockfd);
-        }
-        if (m_timer) {
-            m_loop->cancel(m_timer);
-            m_timer = 0;
         }
     }
 }
@@ -159,15 +153,6 @@ void Connector::connecting(socket_type descriptor) {
     m_channel = new Channel(descriptor, m_loop, m_loop->getAsyncIoService() != nullptr);
     m_channel->setWriteCallback(std::bind(&Connector::handleWrite, this));
     m_channel->enableWrite();
-#ifdef _WIN32
-    if (!m_loop->getAsyncIoService()) {
-        if (m_timer) {
-            m_loop->cancel(m_timer);
-            m_timer = 0;
-        }
-        m_timer = m_loop->schedule(std::bind(&Connector::handleTimeout, this), 500, 1);
-    }
-#endif // _WIN32
 }
 
 void Connector::handleWrite() {
@@ -190,10 +175,6 @@ void Connector::handleWrite() {
         } else {
             flute::closeSocket(descriptor);
         }
-    }
-    if (m_timer) {
-        m_loop->cancel(m_timer);
-        m_timer = 0;
     }
 }
 

@@ -322,8 +322,9 @@ int closeSocket(socket_type descriptor) {
 InetAddress getLocalAddr(socket_type descriptor) {
     sockaddr_in6 addr{};
     socklen_t size = static_cast<socklen_t>(sizeof(sockaddr_in6));
-    if (::getsockname(descriptor, reinterpret_cast<sockaddr*>(&addr), &size) < 0) {
-        LOG_ERROR << "getdescriptorname(" << descriptor << ") failed.";
+    auto result = ::getsockname(descriptor, reinterpret_cast<sockaddr*>(&addr), &size);
+    if (result < 0) {
+        LOG_ERROR << "getdsockname(" << descriptor << ") error" << result << " failed.";
     }
     return InetAddress(addr);
 }
@@ -331,8 +332,9 @@ InetAddress getLocalAddr(socket_type descriptor) {
 InetAddress getRemoteAddr(socket_type descriptor) {
     sockaddr_in6 addr{};
     socklen_t size = static_cast<socklen_t>(sizeof(sockaddr_in6));
-    if (::getpeername(descriptor, reinterpret_cast<sockaddr*>(&addr), &size) < 0) {
-        LOG_ERROR << "getpeername(" << descriptor << ") failed.";
+    auto result = ::getpeername(descriptor, reinterpret_cast<sockaddr*>(&addr), &size);
+    if (result < 0) {
+        LOG_ERROR << "getpeername(" << descriptor << ") error" << result << " failed.";
     }
     return InetAddress(addr);
 }
@@ -386,7 +388,15 @@ void toIpPort(const sockaddr* addr, char* dst, std::size_t size) {
 
 int getSocketError(socket_type descriptor) {
 #ifdef _WIN32
-    return FLUTE_SOCKET_ERROR();
+    auto result = FLUTE_SOCKET_ERROR();
+    if (result) return result;
+    int optval;
+    socklen_t optlen = static_cast<socklen_t>(sizeof optval);
+    if (::getsockopt(descriptor, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&optval), &optlen) == SOCKET_ERROR) {
+        return WSAGetLastError();
+    } else {
+        return optval;
+    }
 #else
     int optval;
     socklen_t optlen = static_cast<socklen_t>(sizeof optval);

@@ -25,7 +25,8 @@ struct IocpOverlapped {
     AsyncIoContext context;
     WSABUF *wsaBuf;
     DWORD bufferCount;
-    IocpOverlapped() : overlapped(), context(), wsaBuf(nullptr), bufferCount(0) {
+    DWORD maxBufferCount;
+    IocpOverlapped() : overlapped(), context(), wsaBuf(nullptr), bufferCount(0), maxBufferCount(0) {
         std::memset(&overlapped, 0, sizeof(OVERLAPPED));
     }
 };
@@ -182,12 +183,13 @@ public:
     void setIoContextBuffer(AsyncIoContext *context, iovec *vec, flute::ssize_t count) override {
         auto iocpOverlapped = reinterpret_cast<IocpOverlapped *>(CONTAINING_RECORD(context, IocpOverlapped, context));
         if (iocpOverlapped) {
-            if (iocpOverlapped->wsaBuf && iocpOverlapped->bufferCount != count) {
+            if (iocpOverlapped->wsaBuf && static_cast<flute::ssize_t>(iocpOverlapped->maxBufferCount) < count) {
                 delete[] iocpOverlapped->wsaBuf;
                 iocpOverlapped->wsaBuf = nullptr;
             }
             if (!iocpOverlapped->wsaBuf) {
                 iocpOverlapped->wsaBuf = new WSABUF[count];
+                iocpOverlapped->maxBufferCount = count;
             }
             for (auto i = 0; i < count; ++i) {
                 iocpOverlapped->wsaBuf[i].len = static_cast<ULONG>(vec[i].iov_len);
