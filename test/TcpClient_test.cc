@@ -12,7 +12,7 @@
 
 int main(int argc, char* argv[]) {
     flute::initialize();
-    flute::EventLoopGroupConfigure configure(false, 0, 1);
+    flute::EventLoopGroupConfigure configure(true, 0, 1);
     flute::EventLoopGroup group(configure);
     flute::TcpClient client(&group, flute::InetAddress("127.0.0.1", 9999));
     client.setMessageCallback([&](const std::shared_ptr<flute::TcpConnection>& conn, flute::RingBuffer& buffer) {

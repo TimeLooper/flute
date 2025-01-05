@@ -314,7 +314,7 @@ void TcpConnection::handleAsyncIoComplete(AsyncIoCode code, ssize_t bytes, Async
         } else {
             m_loop->queueInLoop(std::bind(&TcpConnection::handleAsyncIoCompleteInLoop, this, code, bytes, ioContext));
         }
-    } else if (code == AsyncIoCode::IoCodeEof || code == AsyncIoCode::IoCodeFailed) {
+    } else if (code == AsyncIoCode::IoCodeFailed) {
         if (m_loop->isInLoopThread()) {
             handleClose();
         } else {

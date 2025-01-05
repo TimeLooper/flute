@@ -12,7 +12,6 @@ class AsyncIoService;
 enum AsyncIoCode {
     IoCodeSuccess = 0,
     IoCodeFailed = 1,
-    IoCodeEof = 2,
 };
 
 // do not new this object

@@ -97,6 +97,7 @@ void Connector::connect() {
                                                     std::placeholders::_2, std::placeholders::_3);
         asyncIoService->bindIoService(descriptor);
         asyncIoService->post(m_ioContext);
+        m_state = ConnectorState::CONNECTING;
         return;
     }
     int ret = flute::connect(descriptor, m_serverAddress);
@@ -178,15 +179,6 @@ void Connector::handleWrite() {
     }
 }
 
-void Connector::handleTimeout() {
-    if (m_state != ConnectorState::CONNECTING) {
-        assert(m_state == ConnectorState::DISCONNECTED);
-        return;
-    }
-    auto descriptor = removeAndResetChannel();
-    retry(descriptor);
-}
-
 void Connector::resetChannel() {
     if (m_channel) {
         delete m_channel;
@@ -228,10 +220,10 @@ void Connector::handleAsyncConnectInLoop(AsyncIoCode code, ssize_t bytes, AsyncI
             if (m_isConnect && m_connectCallback) {
                 m_connectCallback(ioContext->socket);
             }
+            return;
         }
-    } else if (code == AsyncIoCode::IoCodeFailed) {
-        retry(ioContext->socket);
     }
+    retry(ioContext->socket);
 }
 
 } // namespace flute

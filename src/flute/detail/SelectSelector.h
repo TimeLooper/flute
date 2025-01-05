@@ -17,6 +17,7 @@
 
 #include <set>
 #include <unordered_map>
+#include <map>
 
 namespace flute {
 namespace detail {
@@ -106,6 +107,29 @@ public:
         if (count > 0 && static_cast<std::size_t>(count) > events.size()) {
             events.resize(count);
         }
+#ifdef _WIN32
+        std::map<socket_type, int> eventsMap;
+#define XX(fdSet, ev)                                                               \
+        do {                                                                        \
+            fd_set* set = fdSet.getRawSet();                                        \
+            for (unsigned int i = 0; i < set->fd_count; ++i) {                      \
+                eventsMap[set->fd_array[i]] |= ev;                                  \
+            }                                                                       \
+        } while (0)
+        XX(m_readSetOut, SelectorEvent::EVENT_READ);
+        XX(m_writeSetOut, SelectorEvent::EVENT_WRITE);
+        XX(m_errorSetOut, SelectorEvent::EVENT_WRITE);
+        auto index = 0;
+        for (const auto& pair : eventsMap) {
+            auto& e = events[index];
+            auto it = m_dataMap.find(pair.first);
+            e.data = it->second;
+            e.events = pair.second;
+            index += 1;
+        }
+#undef XX
+        return index;
+#else
         auto index = 0;
         for (socket_type i = m_minDescriptor; i <= m_maxDescriptor; ++i) {
             auto sev = 0;
@@ -121,6 +145,7 @@ public:
             }
         }
         return index;
+#endif // _WIN32
     }
 
 private:

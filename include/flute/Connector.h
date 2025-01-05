@@ -55,7 +55,6 @@ private:
     void connecting(socket_type descriptor);
     void retry(socket_type descriptor);
     void handleWrite();
-    void handleTimeout();
     void resetChannel();
     socket_type removeAndResetChannel();
     void handleAsyncConnect(AsyncIoCode code, ssize_t bytes, AsyncIoContext* ioContext);
