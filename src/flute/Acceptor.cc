@@ -22,7 +22,8 @@ Acceptor::Acceptor(EventLoop* loop)
     , m_loop(loop)
     , m_channel(nullptr)
     , m_acceptCallback()
-    , m_ioContext() {}
+    , m_ioContext()
+    , m_buffer(nullptr) {}
 
 Acceptor::~Acceptor() {
     assert(!m_socket);
@@ -101,13 +102,13 @@ void Acceptor::listen() {
 }
 
 void Acceptor::close() {
+    m_listening = false;
     m_channel->disableAll();
     m_socket->close();
     delete m_channel;
     delete m_socket;
     m_channel = nullptr;
     m_socket = nullptr;
-    m_listening = false;
 }
 
 void Acceptor::handleRead() {
@@ -125,6 +126,9 @@ void Acceptor::handleRead() {
 }
 
 void Acceptor::handleAsyncAccept(AsyncIoCode code, ssize_t bytes, AsyncIoContext* ioContext) {
+    if (!m_listening) {
+        return;
+    }
     auto asyncIoService = m_loop->getAsyncIoService();
     if (asyncIoService) {
         if (code == AsyncIoCode::IoCodeSuccess) {

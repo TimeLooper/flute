@@ -9,7 +9,16 @@
 #include <flute/TcpServer.h>
 #include <flute/Logger.h>
 
+#include <csignal>
+static std::function<void()> h;
+void handler(int sig) {
+    if (sig == SIGINT) {
+        h();
+    }
+}
+
 int main(int argc, char* argv[]) {
+    std::signal(SIGINT, handler);
     flute::initialize();
     flute::EventLoopGroupConfigure configure(true, 4, 4);
     flute::EventLoopGroup loopGroup(configure);
@@ -21,6 +30,10 @@ int main(int argc, char* argv[]) {
             auto length = buffer.read(temp, static_cast<flute::ssize_t>(sizeof(temp)));
             conn->send(temp, length);
     });
+    h = [&] {
+        server.close();
+        loopGroup.shutdown();
+    };
     loopGroup.dispatch();
     flute::deinitialize();
     return 0;

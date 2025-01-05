@@ -60,6 +60,7 @@ private:
     ConnectionDestroyCallback m_connectionDestroyCallback;
     ConnectionEstablishedCallback m_connectionEstablishedCallback;
     CloseCallback m_closeCallback;
+    std::promise<void> m_close_promise;
 
     void handleConnectionClose(const TcpConnectionPtr& conn);
     void handleAcceptConnection(socket_type descriptor);

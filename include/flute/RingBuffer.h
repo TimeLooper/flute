@@ -56,7 +56,7 @@ public:
     FLUTE_API_DECL void appendDouble(double value);
     FLUTE_API_DECL flute::ssize_t readFromSocket(socket_type descriptor);
     FLUTE_API_DECL flute::ssize_t sendToSocket(socket_type descriptor);
-    FLUTE_API_DECL flute::ssize_t readFromSocket(socket_type descriptor, InetAddress& address);
+    FLUTE_API_DECL flute::ssize_t readFromSocket(socket_type descriptor, const InetAddress& address);
     FLUTE_API_DECL flute::ssize_t sendToSocket(socket_type descriptor, const InetAddress& address);
     FLUTE_API_DECL void clear();
     FLUTE_API_DECL void getReadableBuffer(std::vector<iovec>& vecs);

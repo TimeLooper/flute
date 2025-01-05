@@ -35,7 +35,7 @@ public:
     FLUTE_API_DECL void close();
 
 private:
-    static const int kIoContextSize = 1;
+    static const int kIoContextSize = 4;
     bool m_listening;
     bool m_reuseAddress;
     bool m_reusePort;

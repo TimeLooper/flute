@@ -308,7 +308,7 @@ flute::ssize_t RingBuffer::sendToSocket(socket_type descriptor) {
     return result;
 }
 
-flute::ssize_t RingBuffer::readFromSocket(socket_type descriptor, InetAddress &address) {
+flute::ssize_t RingBuffer::readFromSocket(socket_type descriptor, const InetAddress &address) {
     auto writeableSize = writeableBytes();
     auto bytesAvailable = flute::getByteAvaliableOnSocket(descriptor);
     if (bytesAvailable >= writeableSize) {
@@ -335,7 +335,7 @@ flute::ssize_t RingBuffer::readFromSocket(socket_type descriptor, InetAddress &a
         count = 1;
     }
     msghdr message{};
-    message.msg_name = address.getSocketAddress();
+    message.msg_name = const_cast<sockaddr*>(address.getSocketAddress());
     message.msg_namelen = static_cast<socklen_t>(address.getSocketLength());
     message.msg_iov = vec;
     message.msg_iovlen = count;

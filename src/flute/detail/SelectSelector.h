@@ -123,6 +123,7 @@ public:
         for (const auto& pair : eventsMap) {
             auto& e = events[index];
             auto it = m_dataMap.find(pair.first);
+            if (it == m_dataMap.end()) continue;
             e.data = it->second;
             e.events = pair.second;
             index += 1;

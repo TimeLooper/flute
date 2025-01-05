@@ -22,10 +22,10 @@ TcpServer::TcpServer(flute::EventLoopGroup* eventLoopGroup)
     , m_writeCompleteCallback()
     , m_highWaterMarkCallback()
     , m_connectionDestroyCallback()
-    , m_closeCallback() {}
+    , m_closeCallback()
+    , m_close_promise() {}
 
 TcpServer::~TcpServer() {
-    LOG_TRACE << "deconstruct TcpServer " << this;
     for (auto& it : m_connections) {
         auto conn = it.second;
         conn->handleConnectionDestroy();
@@ -56,6 +56,7 @@ void TcpServer::close() {
     for (auto& it : m_connections) {
         it.second->shutdown();
     }
+    m_close_promise.get_future().get();
 }
 
 void TcpServer::handleConnectionClose(const std::shared_ptr<flute::TcpConnection>& conn) {
@@ -106,6 +107,9 @@ void TcpServer::handleConnectionDestroyInLoop(const std::shared_ptr<flute::TcpCo
         m_state = ServerState::STOPPED;
     }
     LOG_TRACE << "remove connection " << conn->getRemoteAddress().toString() << " live count " << m_connections.size();
+    if (m_connections.empty()) {
+        m_close_promise.set_value();
+    }
 }
 
 } // namespace flute
