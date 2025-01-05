@@ -51,11 +51,7 @@ void TcpServer::close() {
     if (m_state == ServerState::STOPPING) {
         return;
     }
-    m_state = ServerState::STOPPING;
-    m_acceptor->close();
-    for (auto& it : m_connections) {
-        it.second->shutdown();
-    }
+    m_eventLoopGroup->getMasterEventLoop()->queueInLoop(std::bind(&TcpServer::closeInLoop, this));
     m_close_promise.get_future().get();
 }
 
@@ -108,6 +104,19 @@ void TcpServer::handleConnectionDestroyInLoop(const std::shared_ptr<flute::TcpCo
     }
     LOG_TRACE << "remove connection " << conn->getRemoteAddress().toString() << " live count " << m_connections.size();
     if (m_connections.empty()) {
+        m_close_promise.set_value();
+    }
+}
+
+void TcpServer::closeInLoop() {
+    m_state = ServerState::STOPPING;
+    m_acceptor->close();
+    auto isEmpty = m_connections.empty();
+    for (auto& it : m_connections) {
+        it.second->shutdown();
+    }
+    if (isEmpty) {
+        m_state = ServerState::STOPPED;
         m_close_promise.set_value();
     }
 }

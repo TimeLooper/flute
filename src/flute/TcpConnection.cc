@@ -19,7 +19,6 @@ TcpConnection::TcpConnection(socket_type descriptor, EventLoop* loop, const Inet
     , m_loop(loop)
     , m_readAsyncIoContext(nullptr)
     , m_writeAsyncIoContext(nullptr)
-    , m_readBuffer(nullptr)
     , m_state(ConnectionState::DISCONNECTED)
     , m_reading(false)
     , m_writing(false)
@@ -54,11 +53,6 @@ TcpConnection::TcpConnection(socket_type descriptor, EventLoop* loop, const Inet
         m_writeAsyncIoContext->ioCompleteCallback =
             std::bind(&TcpConnection::handleAsyncIoComplete, this, std::placeholders::_1, std::placeholders::_2,
                       std::placeholders::_3);
-        // m_readBuffer = new std::uint8_t[65536];
-        // iovec vec{};
-        // vec.iov_base = reinterpret_cast<char*>(m_readBuffer);
-        // vec.iov_len = 65536;
-        // asyncIoService->setIoContextBuffer(m_readAsyncIoContext, &vec, 1);
         asyncIoService->bindIoService(descriptor);
     }
 }
@@ -73,9 +67,6 @@ TcpConnection::~TcpConnection() {
     if (m_writeAsyncIoContext && asyncIoService) {
         asyncIoService->destroyIoContext(m_writeAsyncIoContext);
         m_writeAsyncIoContext = nullptr;
-    }
-    if (m_readBuffer) {
-        delete[] m_readBuffer;
     }
 }
 

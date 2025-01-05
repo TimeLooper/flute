@@ -69,7 +69,6 @@ private:
     EventLoop* m_loop;
     AsyncIoContext* m_readAsyncIoContext;
     AsyncIoContext* m_writeAsyncIoContext;
-    std::uint8_t* m_readBuffer;
     std::atomic<ConnectionState> m_state;
     std::atomic<bool> m_reading;
     std::atomic<bool> m_writing;

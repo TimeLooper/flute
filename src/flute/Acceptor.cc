@@ -71,6 +71,7 @@ void Acceptor::listen() {
     m_channel->enableRead();
     auto asyncIoService = m_loop->getAsyncIoService();
     if (asyncIoService) {
+        asyncIoService->bindIoService(m_socket->descriptor());
         for (auto i = 0; i < kIoContextSize; ++i) {
             auto socket = flute::createNonblockingSocket(m_family, SocketType::STREAM_SOCKET);
             auto addrlen = 0;
@@ -95,7 +96,6 @@ void Acceptor::listen() {
             context->ioCompleteCallback = std::bind(&Acceptor::handleAsyncAccept, this, std::placeholders::_1,
                                                     std::placeholders::_2, std::placeholders::_3);
             m_ioContext[i] = context;
-            asyncIoService->bindIoService(m_socket->descriptor());
             asyncIoService->post(context);
         }
     }
