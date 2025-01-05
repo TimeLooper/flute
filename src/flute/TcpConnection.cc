@@ -283,8 +283,7 @@ void TcpConnection::handleConnectionEstablishedInLoop() {
     if (asyncIoService) {
         std::vector<iovec> vecs;
         m_inputBuffer.getWriteableBuffer(vecs);
-        asyncIoService->setIoContextBuffer(m_readAsyncIoContext, vecs.data(),
-                                           static_cast<flute::ssize_t>(vecs.size()));
+        asyncIoService->setIoContextBuffer(m_readAsyncIoContext, vecs.data(), static_cast<flute::ssize_t>(vecs.size()));
         asyncIoService->post(m_readAsyncIoContext);
     }
 }
@@ -328,7 +327,7 @@ void TcpConnection::handleAsyncIoCompleteInLoop(AsyncIoCode code, ssize_t bytes,
     m_loop->assertInLoopThread();
     if (ioContext->opCode == SocketOpCode::Read) {
         if (bytes > 0) {
-            //m_inputBuffer.append(m_readBuffer, bytes);
+            // m_inputBuffer.append(m_readBuffer, bytes);
             m_inputBuffer.updateWriteIndex(bytes);
             if (m_messageCallback) {
                 m_messageCallback(shared_from_this(), m_inputBuffer);
@@ -338,7 +337,7 @@ void TcpConnection::handleAsyncIoCompleteInLoop(AsyncIoCode code, ssize_t bytes,
                 std::vector<iovec> vecs;
                 m_inputBuffer.getWriteableBuffer(vecs);
                 asyncIoService->setIoContextBuffer(m_readAsyncIoContext, vecs.data(),
-                                                            static_cast<flute::ssize_t>(vecs.size()));
+                                                   static_cast<flute::ssize_t>(vecs.size()));
                 asyncIoService->post(m_readAsyncIoContext);
             }
         } else {

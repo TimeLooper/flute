@@ -97,7 +97,8 @@ public:
 #ifdef _WIN32
         auto count = ::select(0, m_readSetOut.getRawSet(), m_writeSetOut.getRawSet(), m_errorSetOut.getRawSet(), tv);
 #else
-        auto count = ::select(m_maxDescriptor + 1, m_readSetOut.getRawSet(), m_writeSetOut.getRawSet(), nullptr, tv);
+        auto count = ::select(m_maxDescriptor + 1, m_readSetOut.getRawSet(), m_writeSetOut.getRawSet(),
+                              m_errorSetOut.getRawSet(), tv);
 #endif
         if (count == -1) {
             return -1;
