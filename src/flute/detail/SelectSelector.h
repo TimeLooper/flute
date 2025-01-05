@@ -15,9 +15,9 @@
 #include <sys/select.h>
 #endif
 
+#include <map>
 #include <set>
 #include <unordered_map>
-#include <map>
 
 namespace flute {
 namespace detail {
@@ -109,13 +109,13 @@ public:
         }
 #ifdef _WIN32
         std::map<socket_type, int> eventsMap;
-#define XX(fdSet, ev)                                                               \
-        do {                                                                        \
-            fd_set* set = fdSet.getRawSet();                                        \
-            for (unsigned int i = 0; i < set->fd_count; ++i) {                      \
-                eventsMap[set->fd_array[i]] |= ev;                                  \
-            }                                                                       \
-        } while (0)
+#define XX(fdSet, ev)                                      \
+    do {                                                   \
+        fd_set* set = fdSet.getRawSet();                   \
+        for (unsigned int i = 0; i < set->fd_count; ++i) { \
+            eventsMap[set->fd_array[i]] |= ev;             \
+        }                                                  \
+    } while (0)
         XX(m_readSetOut, SelectorEvent::EVENT_READ);
         XX(m_writeSetOut, SelectorEvent::EVENT_WRITE);
         XX(m_errorSetOut, SelectorEvent::EVENT_WRITE);

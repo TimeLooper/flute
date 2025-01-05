@@ -82,7 +82,8 @@ public:
                                                                &iocpOverlapped->context);
                 } else if (!ok) {
                     iocpOverlapped->context.ioCompleteCallback(AsyncIoCode::IoCodeFailed, 0, &iocpOverlapped->context);
-                } else if (!bytes && (iocpOverlapped->context.opCode == SocketOpCode::Accept || iocpOverlapped->context.opCode == SocketOpCode::Connect)) {
+                } else if (!bytes && (iocpOverlapped->context.opCode == SocketOpCode::Accept ||
+                                      iocpOverlapped->context.opCode == SocketOpCode::Connect)) {
                     iocpOverlapped->context.ioCompleteCallback(AsyncIoCode::IoCodeSuccess, 0, &iocpOverlapped->context);
                 } else if (!bytes) {
                     iocpOverlapped->context.ioCompleteCallback(AsyncIoCode::IoCodeFailed, 0, &iocpOverlapped->context);
