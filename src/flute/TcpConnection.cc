@@ -114,6 +114,9 @@ void TcpConnection::handleConnectionEstablished() {
 }
 
 void TcpConnection::handleConnectionDestroy() {
+    if (m_state == ConnectionState::DISCONNECTED) {
+        return;
+    }
     m_loop->runInLoop(std::bind(&TcpConnection::handleConnectionDestroyInLoop, this));
 }
 
