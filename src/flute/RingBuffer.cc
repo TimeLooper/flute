@@ -335,7 +335,7 @@ flute::ssize_t RingBuffer::readFromSocket(socket_type descriptor, const InetAddr
         count = 1;
     }
     msghdr message{};
-    message.msg_name = const_cast<sockaddr*>(address.getSocketAddress());
+    message.msg_name = const_cast<sockaddr *>(address.getSocketAddress());
     message.msg_namelen = static_cast<socklen_t>(address.getSocketLength());
     message.msg_iov = vec;
     message.msg_iovlen = count;

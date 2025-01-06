@@ -47,11 +47,8 @@ void TcpServer::bind(const InetAddress& address) {
 }
 
 void TcpServer::close() {
-    assert(m_state != ServerState::STOPPING);
-    if (m_state == ServerState::STOPPING) {
-        return;
-    }
-    m_eventLoopGroup->getMasterEventLoop()->queueInLoop(std::bind(&TcpServer::closeInLoop, this));
+    auto baseLoop = m_eventLoopGroup->getMasterEventLoop();
+    baseLoop->runInLoop(std::bind(&TcpServer::handleCloseInLoop, this));
     m_close_promise.get_future().get();
 }
 
@@ -108,7 +105,11 @@ void TcpServer::handleConnectionDestroyInLoop(const std::shared_ptr<flute::TcpCo
     }
 }
 
-void TcpServer::closeInLoop() {
+void TcpServer::handleCloseInLoop() {
+    assert(m_state != ServerState::STOPPING);
+    if (m_state == ServerState::STOPPING) {
+        return;
+    }
     m_state = ServerState::STOPPING;
     m_acceptor->close();
     auto isEmpty = m_connections.empty();
@@ -116,7 +117,6 @@ void TcpServer::closeInLoop() {
         it.second->shutdown();
     }
     if (isEmpty) {
-        m_state = ServerState::STOPPED;
         m_close_promise.set_value();
     }
 }

@@ -34,7 +34,7 @@ int main(int argc, char* argv[]) {
         server.close();
         loopGroup.shutdown();
     };
-    loopGroup.dispatch();
+    loopGroup.wait();
     flute::deinitialize();
     return 0;
 }

@@ -33,7 +33,7 @@ public:
     FLUTE_API_DECL void shutdown();
     FLUTE_API_DECL EventLoop* chooseSlaveEventLoop(std::uint64_t hash);
     FLUTE_API_DECL EventLoop* getMasterEventLoop();
-    FLUTE_API_DECL void dispatch();
+    FLUTE_API_DECL void wait();
 
     inline std::size_t getChildLoopSize() const { return m_configure.childLoopSize; }
 
@@ -43,6 +43,7 @@ private:
     EventLoopGroupConfigure m_configure;
     std::vector<EventLoop*> m_slaveEventLoops;
     ThreadPool m_threadPool;
+    std::thread m_main_thread;
 };
 
 } // namespace flute

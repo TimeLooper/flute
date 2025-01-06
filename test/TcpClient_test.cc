@@ -25,7 +25,7 @@ int main(int argc, char* argv[]) {
         conn->send("hello\n");
     });
     client.connect();
-    group.dispatch();
+    group.wait();
     flute::deinitialize();
     return 0;
 }
