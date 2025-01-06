@@ -100,7 +100,7 @@ void TcpServer::handleConnectionDestroyInLoop(const std::shared_ptr<flute::TcpCo
         m_state = ServerState::STOPPED;
     }
     LOG_TRACE << "remove connection " << conn->getRemoteAddress().toString() << " live count " << m_connections.size();
-    if (m_connections.empty()) {
+    if (m_state == ServerState::STOPPED) {
         m_close_promise.set_value();
     }
 }

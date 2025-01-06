@@ -44,6 +44,7 @@ private:
     std::vector<EventLoop*> m_slaveEventLoops;
     ThreadPool m_threadPool;
     std::thread m_main_thread;
+    std::promise<void> m_close_promise;
 };
 
 } // namespace flute

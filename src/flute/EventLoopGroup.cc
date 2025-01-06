@@ -12,7 +12,7 @@
 namespace flute {
 
 EventLoopGroup::EventLoopGroup(const EventLoopGroupConfigure& configure)
-    : m_masterEventLoop(nullptr), m_asyncIoService(nullptr), m_slaveEventLoops(), m_threadPool(), m_main_thread() {
+    : m_masterEventLoop(nullptr), m_asyncIoService(nullptr), m_slaveEventLoops(), m_threadPool(), m_main_thread(), m_close_promise() {
     m_threadPool.start(configure.childLoopSize);
     m_slaveEventLoops.reserve(configure.childLoopSize);
     for (std::size_t i = 0; i < configure.childLoopSize; ++i) {
@@ -67,6 +67,7 @@ EventLoop* EventLoopGroup::chooseSlaveEventLoop(std::uint64_t hash) {
 EventLoop* EventLoopGroup::getMasterEventLoop() { return m_masterEventLoop; }
 
 void EventLoopGroup::wait() {
+    m_close_promise.get_future().get();
     m_threadPool.shutdown();
     if (m_asyncIoService) {
         m_asyncIoService->shutdown();
@@ -81,6 +82,7 @@ void EventLoopGroup::shutdown() {
         loop->quit();
     }
     m_masterEventLoop->quit();
+    m_close_promise.set_value();
 }
 
 } // namespace flute
