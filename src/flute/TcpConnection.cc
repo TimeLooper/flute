@@ -14,7 +14,7 @@
 namespace flute {
 
 TcpConnection::TcpConnection(socket_type descriptor, EventLoop* loop, const InetAddress& localAddress,
-                             const InetAddress& remoteAddress)
+                             const InetAddress& remoteAddress, bool isClient)
     : m_highWaterMark(0)
     , m_loop(loop)
     , m_readAsyncIoContext(nullptr)
@@ -53,7 +53,8 @@ TcpConnection::TcpConnection(socket_type descriptor, EventLoop* loop, const Inet
         m_writeAsyncIoContext->ioCompleteCallback =
             std::bind(&TcpConnection::handleAsyncIoComplete, this, std::placeholders::_1, std::placeholders::_2,
                       std::placeholders::_3);
-        asyncIoService->bindIoService(descriptor);
+        if (!isClient)
+            asyncIoService->bindIoService(descriptor);
     }
 }
 

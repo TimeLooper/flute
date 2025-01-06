@@ -10,6 +10,7 @@
 #include <flute/Logger.h>
 
 #include <csignal>
+
 static std::function<void()> h;
 void handler(int sig) {
     if (sig == SIGINT) {

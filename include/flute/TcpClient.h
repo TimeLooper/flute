@@ -28,7 +28,6 @@ public:
     FLUTE_API_DECL ~TcpClient();
 
     FLUTE_API_DECL void connect();
-    FLUTE_API_DECL void disconnect();
     FLUTE_API_DECL void stop();
 
     inline void setConnectionEstablishedCallback(ConnectionEstablishedCallback&& callback) {
@@ -54,9 +53,14 @@ private:
     ConnectionEstablishedCallback m_connectionEstablishedCallback;
     MessageCallback m_messageCallback;
     WriteCompleteCallback m_writeCompleteCallback;
+    std::promise<void> m_stop_promise;
+    std::atomic<bool> m_isStop;
 
+    void stopInLoop();
     void onConnectSuccess(socket_type descriptor);
     void removeConnection(const TcpConnectionPtr& connection);
+    void handleConnectionDestroy(const TcpConnectionPtr& conn);
+    void handleConnectionDestroyInLoop(const TcpConnectionPtr& conn);
 };
 
 } // namespace flute

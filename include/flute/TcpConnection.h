@@ -25,7 +25,7 @@ class Channel;
 class TcpConnection : private noncopyable, public std::enable_shared_from_this<TcpConnection> {
 public:
     FLUTE_API_DECL TcpConnection(socket_type descriptor, EventLoop* loop, const InetAddress& localAddress,
-                                 const InetAddress& remoteAddress);
+                                 const InetAddress& remoteAddress, bool isClient = false);
     FLUTE_API_DECL ~TcpConnection();
 
     FLUTE_API_DECL void shutdown();

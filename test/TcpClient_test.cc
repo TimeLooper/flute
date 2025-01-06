@@ -10,7 +10,17 @@
 #include <flute/TcpConnection.h>
 #include <flute/flute_types.h>
 
+#include <csignal>
+
+static std::function<void()> h;
+void handler(int sig) {
+    if (sig == SIGINT) {
+        h();
+    }
+}
+
 int main(int argc, char* argv[]) {
+    std::signal(SIGINT, handler);
     flute::initialize();
     flute::EventLoopGroupConfigure configure(true, 0, 1);
     flute::EventLoopGroup group(configure);
@@ -25,7 +35,12 @@ int main(int argc, char* argv[]) {
         conn->send("hello\n");
     });
     client.connect();
+    h = [&] {
+        client.stop();
+        group.shutdown();
+    };
     group.wait();
+    LOG_INFO << "client exit";
     flute::deinitialize();
     return 0;
 }

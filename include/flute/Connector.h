@@ -13,6 +13,7 @@
 
 #include <atomic>
 #include <memory>
+#include <future>
 
 namespace flute {
 
@@ -43,6 +44,7 @@ private:
     std::atomic<ConnectorState> m_state;
     std::atomic<bool> m_isConnect;
     ConnectCallback m_connectCallback;
+    std::promise<void> m_stop_promise;
 
     // 30 * 1000
     static const int MAX_RETRY_DELAY;

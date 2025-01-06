@@ -59,6 +59,7 @@ void TcpServer::handleConnectionClose(const std::shared_ptr<flute::TcpConnection
 
 void TcpServer::handleAcceptConnection(flute::socket_type descriptor) {
     if (m_state != ServerState::STARTED) {
+        flute::closeSocket(descriptor);
         return;
     }
     EventLoop* ioLoop = m_eventLoopGroup->chooseSlaveEventLoop(m_connections.size());
