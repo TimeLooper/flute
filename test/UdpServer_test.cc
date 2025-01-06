@@ -24,7 +24,7 @@ int main(int argc, char* argv[]) {
     flute::InetAddress address(9999);
     server->bind(address);
     server->setMessageCallback(handleMessage);
-    group.dispatch();
+    group.wait();
     flute::deinitialize();
     return 0;
 }

@@ -47,15 +47,8 @@ void TcpServer::bind(const InetAddress& address) {
 }
 
 void TcpServer::close() {
-    assert(m_state != ServerState::STOPPING);
-    if (m_state == ServerState::STOPPING) {
-        return;
-    }
-    m_state = ServerState::STOPPING;
-    m_acceptor->close();
-    for (auto& it : m_connections) {
-        it.second->shutdown();
-    }
+    auto baseLoop = m_eventLoopGroup->getMasterEventLoop();
+    baseLoop->runInLoop(std::bind(&TcpServer::handleCloseInLoop, this));
     m_close_promise.get_future().get();
 }
 
@@ -108,6 +101,22 @@ void TcpServer::handleConnectionDestroyInLoop(const std::shared_ptr<flute::TcpCo
     }
     LOG_TRACE << "remove connection " << conn->getRemoteAddress().toString() << " live count " << m_connections.size();
     if (m_connections.empty()) {
+        m_close_promise.set_value();
+    }
+}
+
+void TcpServer::handleCloseInLoop() {
+    assert(m_state != ServerState::STOPPING);
+    if (m_state == ServerState::STOPPING) {
+        return;
+    }
+    m_state = ServerState::STOPPING;
+    m_acceptor->close();
+    auto isEmpty = m_connections.empty();
+    for (auto& it : m_connections) {
+        it.second->shutdown();
+    }
+    if (isEmpty) {
         m_close_promise.set_value();
     }
 }

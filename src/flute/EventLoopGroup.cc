@@ -12,7 +12,7 @@
 namespace flute {
 
 EventLoopGroup::EventLoopGroup(const EventLoopGroupConfigure& configure)
-    : m_masterEventLoop(new EventLoop()), m_asyncIoService(nullptr), m_slaveEventLoops(), m_threadPool() {
+    : m_masterEventLoop(nullptr), m_asyncIoService(nullptr), m_slaveEventLoops(), m_threadPool(), m_main_thread() {
     m_threadPool.start(configure.childLoopSize);
     m_slaveEventLoops.reserve(configure.childLoopSize);
     for (std::size_t i = 0; i < configure.childLoopSize; ++i) {
@@ -25,6 +25,13 @@ EventLoopGroup::EventLoopGroup(const EventLoopGroupConfigure& configure)
         auto loop = p.get_future().get();
         m_slaveEventLoops.emplace_back(loop);
     }
+    std::promise<EventLoop*> p;
+    m_main_thread = std::thread([this, &p] {
+        auto loop = new EventLoop();
+        p.set_value(loop);
+        loop->dispatch();
+    });
+    m_masterEventLoop = p.get_future().get();
     if (configure.useAsyncIo) {
         m_asyncIoService = AsyncIoService::createAsyncIoService(configure.asyncIoWorkThreadCount);
         m_masterEventLoop->setAsyncIoService(m_asyncIoService);
@@ -59,17 +66,21 @@ EventLoop* EventLoopGroup::chooseSlaveEventLoop(std::uint64_t hash) {
 
 EventLoop* EventLoopGroup::getMasterEventLoop() { return m_masterEventLoop; }
 
-void EventLoopGroup::dispatch() { m_masterEventLoop->dispatch(); }
+void EventLoopGroup::wait() {
+    m_threadPool.shutdown();
+    if (m_asyncIoService) {
+        m_asyncIoService->shutdown();
+    }
+    if (m_main_thread.joinable()) {
+        m_main_thread.join();
+    }
+}
 
 void EventLoopGroup::shutdown() {
     for (auto& loop : m_slaveEventLoops) {
         loop->quit();
     }
-    m_threadPool.shutdown();
     m_masterEventLoop->quit();
-    if (m_asyncIoService) {
-        m_asyncIoService->shutdown();
-    }
 }
 
 } // namespace flute
