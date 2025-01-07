@@ -174,6 +174,12 @@ public:
     }
     void destroyIoContext(AsyncIoContext *context) override {
         auto iocpOverlapped = reinterpret_cast<IocpOverlapped *>(CONTAINING_RECORD(context, IocpOverlapped, context));
+        if (iocpOverlapped->wsaBuf) {
+            delete[] iocpOverlapped->wsaBuf;
+            iocpOverlapped->wsaBuf = nullptr;
+            iocpOverlapped->bufferCount = 0;
+            iocpOverlapped->maxBufferCount = 0;
+        }
         delete iocpOverlapped;
     }
     void setIoContextBuffer(AsyncIoContext *context, iovec *vec, flute::ssize_t count) override {
