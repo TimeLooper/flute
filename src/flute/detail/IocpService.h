@@ -203,7 +203,6 @@ public:
 
 private:
     int m_asyncIoWorkThreadCount;
-    ;
     HANDLE m_iocp;
     ThreadPool m_threadPool;
 
