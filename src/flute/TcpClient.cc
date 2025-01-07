@@ -22,7 +22,9 @@ TcpClient::TcpClient(EventLoopGroup* loopGroup, const InetAddress& address)
     , m_connector(new Connector(loopGroup->getMasterEventLoop(), address))
     , m_connectionEstablishedCallback()
     , m_messageCallback()
-    , m_writeCompleteCallback() {
+    , m_writeCompleteCallback()
+    , m_stop_promise()
+    , m_isStop(false) {
     m_connector->setConnectCallback(std::bind(&TcpClient::onConnectSuccess, this, std::placeholders::_1));
 }
 
@@ -34,27 +36,30 @@ TcpClient::TcpClient(EventLoopGroup* loopGroup, InetAddress&& address)
     , m_connector(new Connector(loopGroup->getMasterEventLoop(), std::move(address)))
     , m_connectionEstablishedCallback()
     , m_messageCallback()
-    , m_writeCompleteCallback() {
+    , m_writeCompleteCallback()
+    , m_stop_promise()
+    , m_isStop(false) {
     m_connector->setConnectCallback(std::bind(&TcpClient::onConnectSuccess, this, std::placeholders::_1));
 }
 
 TcpClient::~TcpClient() {
-    TcpConnectionPtr conn;
-    bool unique = false;
-    {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        unique = m_connection.unique();
-        conn = m_connection;
-    }
-    if (conn) {
-        conn->getEventLoop()->runInLoop(
-            [=] { conn->setCloseCallback(std::bind(&TcpConnection::handleConnectionDestroy, std::placeholders::_1)); });
-        if (unique) {
-            conn->forceClose();
-        }
-    } else {
-        m_connector->stop();
-    }
+    // TcpConnectionPtr conn;
+    // bool unique = false;
+    //{
+    //    std::lock_guard<std::mutex> lock(m_mutex);
+    //    unique = m_connection.unique();
+    //    conn = m_connection;
+    //}
+    // if (conn) {
+    //    conn->getEventLoop()->runInLoop(
+    //        [=] { conn->setCloseCallback(std::bind(&TcpConnection::handleConnectionDestroy, std::placeholders::_1));
+    //        });
+    //    if (unique) {
+    //        conn->forceClose();
+    //    }
+    //} else {
+    //    m_connector->stop();
+    //}
 }
 
 void TcpClient::connect() {
@@ -63,31 +68,44 @@ void TcpClient::connect() {
     m_connector->start();
 }
 
-void TcpClient::disconnect() {
+void TcpClient::stop() {
+    if (m_isStop) {
+        return;
+    }
     m_isConnect = false;
+    m_isStop = true;
+    m_connector->stop();
+    m_loopGroup->getMasterEventLoop()->runInLoop(std::bind(&TcpClient::stopInLoop, this));
+    m_stop_promise.get_future().get();
+}
+
+void TcpClient::stopInLoop() {
+    m_loopGroup->getMasterEventLoop()->assertInLoopThread();
     {
         std::lock_guard<std::mutex> lock(m_mutex);
         if (m_connection) {
             m_connection->shutdown();
+        } else if (m_isConnect) {
+            m_stop_promise.set_value();
         }
     }
 }
 
-void TcpClient::stop() {
-    m_isConnect = false;
-    m_connector->stop();
-}
-
 void TcpClient::onConnectSuccess(socket_type descriptor) {
+    if (m_isStop) {
+        flute::closeSocket(descriptor);
+        return;
+    }
     m_loopGroup->getMasterEventLoop()->assertInLoopThread();
     auto remoteAddress = flute::getRemoteAddr(descriptor);
     auto localAddress = flute::getLocalAddr(descriptor);
-    TcpConnectionPtr conn(
-        new TcpConnection(descriptor, m_loopGroup->chooseSlaveEventLoop(descriptor), localAddress, remoteAddress));
+    TcpConnectionPtr conn(new TcpConnection(descriptor, m_loopGroup->chooseSlaveEventLoop(descriptor), localAddress,
+                                            remoteAddress, true));
     conn->setConnectionEstablishedCallback(m_connectionEstablishedCallback);
     conn->setMessageCallback(m_messageCallback);
     conn->setWriteCompleteCallback(m_writeCompleteCallback);
     conn->setCloseCallback(std::bind(&TcpClient::removeConnection, this, std::placeholders::_1));
+    conn->setConnectionDestroyCallback(std::bind(&TcpClient::handleConnectionDestroy, this, std::placeholders::_1));
     {
         std::lock_guard<std::mutex> lock(m_mutex);
         m_connection = conn;
@@ -107,6 +125,15 @@ void TcpClient::removeConnection(const TcpConnectionPtr& connection) {
         LOG_INFO << "connection to " << connection->getRemoteAddress().toString();
         m_connector->restart();
     }
+}
+
+void TcpClient::handleConnectionDestroy(const TcpConnectionPtr& conn) {
+    m_loopGroup->getMasterEventLoop()->runInLoop(std::bind(&TcpClient::handleConnectionDestroyInLoop, this, conn));
+}
+
+void TcpClient::handleConnectionDestroyInLoop(const TcpConnectionPtr& conn) {
+    m_isConnect = false;
+    m_stop_promise.set_value();
 }
 
 } // namespace flute

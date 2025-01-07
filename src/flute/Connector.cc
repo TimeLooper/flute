@@ -25,7 +25,8 @@ Connector::Connector(EventLoop* loop, const InetAddress& address)
     , m_serverAddress(address)
     , m_state(ConnectorState::DISCONNECTED)
     , m_isConnect(false)
-    , m_connectCallback() {}
+    , m_connectCallback()
+    , m_stop_promise() {}
 
 Connector::Connector(EventLoop* loop, InetAddress&& address)
     : m_retryDelay(DEFALUT_RETRY_DELAY)
@@ -35,7 +36,8 @@ Connector::Connector(EventLoop* loop, InetAddress&& address)
     , m_serverAddress(std::move(address))
     , m_state(ConnectorState::DISCONNECTED)
     , m_isConnect(false)
-    , m_connectCallback() {}
+    , m_connectCallback()
+    , m_stop_promise() {}
 
 Connector::~Connector() {
     assert(!m_channel);
@@ -59,6 +61,7 @@ void Connector::start() {
 void Connector::stop() {
     m_isConnect = false;
     m_loop->queueInLoop(std::bind(&Connector::stopInLoop, this));
+    m_stop_promise.get_future().get();
 }
 
 void Connector::startInLoop() {
@@ -82,6 +85,9 @@ void Connector::stopInLoop() {
             socket_type sockfd = removeAndResetChannel();
             retry(sockfd);
         }
+        m_stop_promise.set_value();
+    } else {
+        m_stop_promise.set_value();
     }
 }
 
