@@ -18,7 +18,7 @@
 namespace flute {
 namespace detail {
 
-inline int create_epoll() {
+static inline int create_epoll() {
     int result = FLUTE_INVALID_SOCKET;
 #if defined(FLUTE_HAVE_EPOLL_CREATE1) && defined(EPOLL_CLOEXEC)
     result = ::epoll_create1(EPOLL_CLOEXEC);
