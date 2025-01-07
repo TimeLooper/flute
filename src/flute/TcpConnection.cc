@@ -53,8 +53,7 @@ TcpConnection::TcpConnection(socket_type descriptor, EventLoop* loop, const Inet
         m_writeAsyncIoContext->ioCompleteCallback =
             std::bind(&TcpConnection::handleAsyncIoComplete, this, std::placeholders::_1, std::placeholders::_2,
                       std::placeholders::_3);
-        if (!isClient)
-            asyncIoService->bindIoService(descriptor);
+        if (!isClient) asyncIoService->bindIoService(descriptor);
     }
 }
 

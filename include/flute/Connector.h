@@ -12,8 +12,8 @@
 #include <flute/noncopyable.h>
 
 #include <atomic>
-#include <memory>
 #include <future>
+#include <memory>
 
 namespace flute {
 

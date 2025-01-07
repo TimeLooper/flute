@@ -43,16 +43,17 @@ TcpClient::TcpClient(EventLoopGroup* loopGroup, InetAddress&& address)
 }
 
 TcpClient::~TcpClient() {
-    //TcpConnectionPtr conn;
-    //bool unique = false;
+    // TcpConnectionPtr conn;
+    // bool unique = false;
     //{
     //    std::lock_guard<std::mutex> lock(m_mutex);
     //    unique = m_connection.unique();
     //    conn = m_connection;
     //}
-    //if (conn) {
+    // if (conn) {
     //    conn->getEventLoop()->runInLoop(
-    //        [=] { conn->setCloseCallback(std::bind(&TcpConnection::handleConnectionDestroy, std::placeholders::_1)); });
+    //        [=] { conn->setCloseCallback(std::bind(&TcpConnection::handleConnectionDestroy, std::placeholders::_1));
+    //        });
     //    if (unique) {
     //        conn->forceClose();
     //    }
@@ -98,8 +99,8 @@ void TcpClient::onConnectSuccess(socket_type descriptor) {
     m_loopGroup->getMasterEventLoop()->assertInLoopThread();
     auto remoteAddress = flute::getRemoteAddr(descriptor);
     auto localAddress = flute::getLocalAddr(descriptor);
-    TcpConnectionPtr conn(
-        new TcpConnection(descriptor, m_loopGroup->chooseSlaveEventLoop(descriptor), localAddress, remoteAddress, true));
+    TcpConnectionPtr conn(new TcpConnection(descriptor, m_loopGroup->chooseSlaveEventLoop(descriptor), localAddress,
+                                            remoteAddress, true));
     conn->setConnectionEstablishedCallback(m_connectionEstablishedCallback);
     conn->setMessageCallback(m_messageCallback);
     conn->setWriteCompleteCallback(m_writeCompleteCallback);
@@ -127,8 +128,7 @@ void TcpClient::removeConnection(const TcpConnectionPtr& connection) {
 }
 
 void TcpClient::handleConnectionDestroy(const TcpConnectionPtr& conn) {
-    m_loopGroup->getMasterEventLoop()->runInLoop(
-        std::bind(&TcpClient::handleConnectionDestroyInLoop, this, conn));
+    m_loopGroup->getMasterEventLoop()->runInLoop(std::bind(&TcpClient::handleConnectionDestroyInLoop, this, conn));
 }
 
 void TcpClient::handleConnectionDestroyInLoop(const TcpConnectionPtr& conn) {
