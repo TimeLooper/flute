@@ -38,6 +38,8 @@ EventLoop::~EventLoop() {
     }
 }
 
+bool EventLoop::isInLoopThread() const { return m_tid == std::this_thread::get_id(); }
+
 void EventLoop::addEvent(Channel* channel, int events) {
     m_selector->addEvent(channel->descriptor(), channel->events(), events, channel);
 }

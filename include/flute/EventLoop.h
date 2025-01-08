@@ -27,7 +27,7 @@ public:
     FLUTE_API_DECL EventLoop();
     FLUTE_API_DECL ~EventLoop();
 
-    inline bool isInLoopThread() const { return m_tid == std::this_thread::get_id(); }
+    FLUTE_API_DECL bool isInLoopThread() const;
     FLUTE_API_DECL void addEvent(Channel* channel, int events);
     FLUTE_API_DECL void removeEvent(Channel* channel, int events);
     FLUTE_API_DECL void dispatch();
@@ -44,7 +44,6 @@ public:
     FLUTE_API_DECL void abortNotInLoopThread() const;
     FLUTE_API_DECL void setAsyncIoService(AsyncIoService* asyncIoService);
     FLUTE_API_DECL AsyncIoService* getAsyncIoService() const;
-    FLUTE_API_DECL bool isAsyncIo() const;
 
 private:
     Selector* m_selector;
