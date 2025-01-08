@@ -10,6 +10,7 @@
 #include <flute/noncopyable.h>
 
 #include <string>
+#include <cstdint>
 
 namespace flute {
 
