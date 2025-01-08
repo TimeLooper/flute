@@ -5,6 +5,7 @@
 #ifndef FLUTE_DETAIL_IOCP_SERVICE_H
 #define FLUTE_DETAIL_IOCP_SERVICE_H
 
+#include <MSWSock.h>
 #include <flute/AsyncIoService.h>
 #include <flute/Logger.h>
 #include <flute/ThreadPool.h>
@@ -13,12 +14,10 @@
 #include <flute/noncopyable.h>
 #include <flute/socket_ops.h>
 
-#include <MSWSock.h>
-
 namespace flute {
 namespace detail {
 
-#define NOTIFICATION_KEY ((ULONG_PTR)-1)
+#define NOTIFICATION_KEY ((ULONG_PTR) - 1)
 
 struct IocpOverlapped {
     OVERLAPPED overlapped;

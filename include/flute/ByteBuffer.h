@@ -9,8 +9,8 @@
 #include <flute/flute_types.h>
 #include <flute/noncopyable.h>
 
-#include <string>
 #include <cstdint>
+#include <string>
 
 namespace flute {
 
