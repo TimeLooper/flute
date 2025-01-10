@@ -17,7 +17,7 @@
 namespace flute {
 namespace detail {
 
-#define NOTIFICATION_KEY ((ULONG_PTR) - 1)
+#define NOTIFICATION_KEY ((ULONG_PTR)-1)
 
 struct IocpOverlapped {
     OVERLAPPED overlapped;
