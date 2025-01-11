@@ -21,7 +21,7 @@ class Connector;
 class TcpConnection;
 class InetAddress;
 
-class TcpClient : private noncopyable, public std::enable_shared_from_this<TcpClient> {
+class TcpClient : private noncopyable {
 public:
     FLUTE_API_DECL TcpClient(EventLoopGroup* loopGroup, const InetAddress& address);
     FLUTE_API_DECL TcpClient(EventLoopGroup* loopGroup, InetAddress&& address);

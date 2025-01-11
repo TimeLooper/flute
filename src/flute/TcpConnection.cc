@@ -117,7 +117,7 @@ void TcpConnection::handleConnectionDestroy() {
     if (m_state == ConnectionState::DISCONNECTED) {
         return;
     }
-    m_loop->runInLoop(std::bind(&TcpConnection::handleConnectionDestroyInLoop, this));
+    m_loop->runInLoop(std::bind(&TcpConnection::handleConnectionDestroyInLoop, shared_from_this()));
 }
 
 void TcpConnection::startRead() {

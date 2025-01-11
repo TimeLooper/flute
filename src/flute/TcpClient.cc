@@ -75,7 +75,7 @@ void TcpClient::stop() {
     m_isConnect = false;
     m_isStop = true;
     m_connector->stop();
-    m_loopGroup->getMasterEventLoop()->queueInLoop(std::bind(&TcpClient::stopInLoop, this));
+    m_loopGroup->getMasterEventLoop()->runInLoop(std::bind(&TcpClient::stopInLoop, this));
     m_stop_promise.get_future().get();
 }
 
@@ -133,7 +133,9 @@ void TcpClient::handleConnectionDestroy(const TcpConnectionPtr& conn) {
 
 void TcpClient::handleConnectionDestroyInLoop(const TcpConnectionPtr& conn) {
     m_isConnect = false;
-    m_stop_promise.set_value();
+    if (m_isStop) {
+        m_stop_promise.set_value();
+    }
 }
 
 } // namespace flute
