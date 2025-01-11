@@ -75,7 +75,7 @@ void TcpClient::stop() {
     m_isConnect = false;
     m_isStop = true;
     m_connector->stop();
-    m_loopGroup->getMasterEventLoop()->runInLoop(std::bind(&TcpClient::stopInLoop, this));
+    m_loopGroup->getMasterEventLoop()->queueInLoop(std::bind(&TcpClient::stopInLoop, this));
     m_stop_promise.get_future().get();
 }
 
@@ -85,7 +85,7 @@ void TcpClient::stopInLoop() {
         std::lock_guard<std::mutex> lock(m_mutex);
         if (m_connection) {
             m_connection->shutdown();
-        } else if (m_isConnect) {
+        } else {
             m_stop_promise.set_value();
         }
     }

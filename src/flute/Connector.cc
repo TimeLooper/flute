@@ -19,6 +19,7 @@ const int Connector::DEFALUT_RETRY_DELAY = 500;
 
 Connector::Connector(EventLoop* loop, const InetAddress& address)
     : m_retryDelay(DEFALUT_RETRY_DELAY)
+    , m_retry_timer_id(0)
     , m_loop(loop)
     , m_channel(nullptr)
     , m_ioContext(nullptr)
@@ -30,6 +31,7 @@ Connector::Connector(EventLoop* loop, const InetAddress& address)
 
 Connector::Connector(EventLoop* loop, InetAddress&& address)
     : m_retryDelay(DEFALUT_RETRY_DELAY)
+    , m_retry_timer_id(0)
     , m_loop(loop)
     , m_channel(nullptr)
     , m_ioContext(nullptr)
@@ -87,6 +89,10 @@ void Connector::stopInLoop() {
         }
         m_stop_promise.set_value();
     } else {
+        if (m_retry_timer_id) {
+            m_loop->cancel(m_retry_timer_id);
+            m_retry_timer_id = 0;
+        }
         m_stop_promise.set_value();
     }
 }
@@ -195,7 +201,7 @@ void Connector::resetChannel() {
 socket_type Connector::removeAndResetChannel() {
     m_channel->disableAll();
     auto descriptor = m_channel->descriptor();
-    m_loop->queueInLoop(std::bind(&Connector::resetChannel, this));
+    m_loop->runInLoop(std::bind(&Connector::resetChannel, this));
     return descriptor;
 }
 
@@ -206,9 +212,13 @@ socket_type Connector::removeAndResetChannel() {
 void Connector::retry(socket_type descriptor) {
     flute::closeSocket(descriptor);
     m_state = ConnectorState::DISCONNECTED;
+    if (m_retry_timer_id) {
+        m_loop->cancel(m_retry_timer_id);
+        m_retry_timer_id = 0;
+    }
     if (m_isConnect) {
         LOG_INFO << "retry connecting to " << m_serverAddress.toString() << " in " << m_retryDelay << " milliseconds.";
-        m_loop->schedule(std::bind(&Connector::startInLoop, shared_from_this()), m_retryDelay, 1);
+        m_retry_timer_id = m_loop->schedule(std::bind(&Connector::startInLoop, shared_from_this()), m_retryDelay, 1);
         m_retryDelay = std::min(m_retryDelay << 1, MAX_RETRY_DELAY);
     } else {
         LOG_DEBUG << "do not connect.";
