@@ -9,7 +9,7 @@ namespace flute {
 
 class AsyncIoService;
 
-enum AsyncIoCode {
+enum class AsyncIoCode {
     IoCodeSuccess = 0,
     IoCodeFailed = 1,
 };
