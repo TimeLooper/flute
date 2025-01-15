@@ -12,11 +12,17 @@
 #include <ctime>
 #include <iomanip>
 
+static inline const char* getCodeFileName(const char* file) {
+    const char* temp = nullptr;
+    char seprator = '/';
 #ifdef _WIN32
-#define filename(x) strrchr(x, '\\') ? strrchr(x, '\\') + 1 : x
-#else
-#define filename(x) strrchr(x, '/') ? strrchr(x, '/') + 1 : x
+    seprator = '\\';
 #endif
+    temp = strrchr(file, seprator);
+    if (!temp)
+        return file;
+    return temp + 1;
+}
 
 namespace flute {
 
@@ -55,7 +61,7 @@ LogLevel Logger::s_logLevel = LogLevel::LEVEL_TRACE;
 LogCallback Logger::s_logCallback = defaultCallback;
 
 Logger::LoggerImpl::LoggerImpl(LogLevel level, const char* sourceFile, int line, const char* func)
-    : m_line(line), m_logLevel(level), m_buffer(), m_sourceFile(filename(sourceFile)), m_function(func) {}
+    : m_line(line), m_logLevel(level), m_buffer(), m_sourceFile(getCodeFileName(sourceFile)), m_function(func) {}
 
 Logger::Logger(LogLevel level, const char* sourceFile, int line) : m_impl(new LoggerImpl(level, sourceFile, line, "")) {
     start();
