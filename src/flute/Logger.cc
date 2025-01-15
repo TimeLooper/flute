@@ -13,12 +13,12 @@
 #include <iomanip>
 
 static inline const char* getCodeFileName(const char* file) {
-    const char* temp = nullptr;
-    char seprator = '/';
 #ifdef _WIN32
-    seprator = '\\';
+    char seprator = '\\';
+#else
+    char seprator = '/';
 #endif
-    temp = strrchr(file, seprator);
+    const char* temp = strrchr(file, seprator);
     if (!temp)
         return file;
     return temp + 1;
