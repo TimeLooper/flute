@@ -19,8 +19,7 @@ static inline const char* getCodeFileName(const char* file) {
     char seprator = '/';
 #endif
     const char* temp = strrchr(file, seprator);
-    if (!temp)
-        return file;
+    if (!temp) return file;
     return temp + 1;
 }
 
