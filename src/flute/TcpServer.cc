@@ -37,13 +37,8 @@ void TcpServer::bind(const InetAddress& address) {
         return;
     }
     m_state = ServerState::STARTED;
-    m_acceptor.reset(new Acceptor(m_eventLoopGroup->getMasterEventLoop()));
-    m_acceptor->setReusePort(true);
-    m_acceptor->setReuseAddress(true);
-    m_acceptor->bind(address);
-    m_acceptor->setAcceptCallback(std::bind(&TcpServer::handleAcceptConnection, this, std::placeholders::_1));
-    assert(!m_acceptor->listening());
-    m_acceptor->listen();
+    auto baseLoop = m_eventLoopGroup->getMasterEventLoop();
+    baseLoop->runInLoop(std::bind(&TcpServer::bindInLoop, this, address));
 }
 
 void TcpServer::close() {
@@ -120,6 +115,16 @@ void TcpServer::handleCloseInLoop() {
     if (isEmpty) {
         m_close_promise.set_value();
     }
+}
+
+void TcpServer::bindInLoop(const InetAddress& address) {
+    m_acceptor.reset(new Acceptor(m_eventLoopGroup->getMasterEventLoop()));
+    m_acceptor->setReusePort(true);
+    m_acceptor->setReuseAddress(true);
+    m_acceptor->bind(address);
+    m_acceptor->setAcceptCallback(std::bind(&TcpServer::handleAcceptConnection, this, std::placeholders::_1));
+    assert(!m_acceptor->listening());
+    m_acceptor->listen();
 }
 
 } // namespace flute

@@ -8,7 +8,12 @@
 #include <flute/Logger.h>
 #include <flute/Selector.h>
 #include <flute/flute-config.h>
+
+#ifndef _WIN32
 #include <sys/poll.h>
+#else
+#define poll WSAPoll
+#endif
 
 #include <cassert>
 #include <unordered_map>
@@ -59,7 +64,7 @@ public:
         if (temp == SelectorEvent::EVENT_NONE) {
             auto selectorData = it->second;
             auto iterator = m_events.begin() + selectorData->index;
-            std::iter_swap(iterator, m_events.end() - 1);
+            std::swap(*iterator, *(m_events.end() - 1));
             auto& tmp = m_events[selectorData->index];
             auto tempIterator = m_dataMap.find(tmp.fd);
             tempIterator->second->index = selectorData->index;
@@ -74,7 +79,7 @@ public:
     }
 
     int select(std::vector<SelectorEvent>& events, int timeout) override {
-        auto count = ::poll(m_events.data(), m_events.size(), timeout);
+        auto count = ::poll(m_events.data(), static_cast<unsigned long>(m_events.size()), timeout);
         if (count == -1) {
             // auto error = getLastError();
             // LOG_ERROR << "poll error " << error << ":" << formatErrorString(error);
