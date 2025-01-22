@@ -68,6 +68,7 @@ private:
     void handleConnectionDestroy(const TcpConnectionPtr& conn);
     void handleConnectionDestroyInLoop(const TcpConnectionPtr& conn);
     void handleCloseInLoop();
+    void bindInLoop(const InetAddress& address);
 };
 
 } // namespace flute

@@ -14,7 +14,7 @@
 #ifdef FLUTE_HAVE_KQUEUE
 #include <flute/detail/KqueueSelector.h>
 #endif
-#ifdef FLUTE_HAVE_POLL
+#if defined(FLUTE_HAVE_POLL) || defined(_WIN32)
 #include <flute/detail/PollSelector.h>
 #endif
 #if defined(FLUTE_HAVE_SELECT) || defined(_WIN32)
@@ -32,7 +32,7 @@ Selector* Selector::createSelector() {
 #ifdef FLUTE_HAVE_KQUEUE
     return new detail::KqueueSelector();
 #endif
-#ifdef FLUTE_HAVE_POLL
+#if defined(FLUTE_HAVE_POLL) || defined(_WIN32)
     return new detail::PollSelector();
 #endif
 #if defined(FLUTE_HAVE_SELECT) || defined(_WIN32)

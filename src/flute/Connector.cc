@@ -108,8 +108,9 @@ void Connector::connect() {
         m_ioContext->ioCompleteCallback = std::bind(&Connector::handleAsyncConnect, this, std::placeholders::_1,
                                                     std::placeholders::_2, std::placeholders::_3);
         asyncIoService->bindIoService(descriptor);
-        asyncIoService->post(m_ioContext);
-        m_state = ConnectorState::CONNECTING;
+        if (asyncIoService->post(m_ioContext)) {
+            m_state = ConnectorState::CONNECTING;
+        }
         return;
     }
     int ret = flute::connect(descriptor, m_serverAddress);
