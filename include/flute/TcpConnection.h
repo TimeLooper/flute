@@ -30,7 +30,7 @@ public:
 
     FLUTE_API_DECL void shutdown();
     FLUTE_API_DECL void send(const void* buffer, flute::ssize_t length);
-    FLUTE_API_DECL void send(const std::string& message);
+    FLUTE_API_DECL void send(std::string message);
     FLUTE_API_DECL void handleConnectionEstablished();
     FLUTE_API_DECL void handleConnectionDestroy();
     FLUTE_API_DECL void startRead();
@@ -92,7 +92,7 @@ private:
     void handleError();
     void shutdownInLoop();
     void sendInLoop(const void* buffer, flute::ssize_t length);
-    void sendInLoop(const std::string& message);
+    void sendInLoop(std::string message);
     void handleConnectionEstablishedInLoop();
     void handleConnectionDestroyInLoop();
     void forceCloseInLoop();
