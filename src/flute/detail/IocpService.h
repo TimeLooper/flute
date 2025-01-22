@@ -68,8 +68,7 @@ public:
             LPOVERLAPPED overlapped = nullptr;
             BOOL ok = ::GetQueuedCompletionStatus(m_iocp, &bytes, &key, &overlapped, INFINITE);
             if (key != NOTIFICATION_KEY && overlapped) {
-                auto iocpOverlapped =
-                    reinterpret_cast<IocpOverlapped *>(CONTAINING_RECORD(overlapped, IocpOverlapped, overlapped));
+                auto iocpOverlapped = CONTAINING_RECORD(overlapped, IocpOverlapped, overlapped);
                 if (iocpOverlapped->context.opCode == SocketOpCode::Accept) {
                     setsockopt(iocpOverlapped->context.acceptSocket, SOL_SOCKET, SO_UPDATE_ACCEPT_CONTEXT,
                                (char *)&iocpOverlapped->context.socket, sizeof(iocpOverlapped->context.socket));
@@ -99,7 +98,7 @@ public:
         m_threadPool.shutdown();
     }
     bool post(AsyncIoContext *context) override {
-        auto iocpOverlapped = reinterpret_cast<IocpOverlapped *>(CONTAINING_RECORD(context, IocpOverlapped, context));
+        auto iocpOverlapped = CONTAINING_RECORD(context, IocpOverlapped, context);
         if (context->opCode == SocketOpCode::Read) {
             DWORD bytesRead;
             DWORD flags = 0;
