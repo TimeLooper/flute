@@ -30,7 +30,8 @@ public:
 
     FLUTE_API_DECL void shutdown();
     FLUTE_API_DECL void send(const void* buffer, flute::ssize_t length);
-    FLUTE_API_DECL void send(std::string message);
+    FLUTE_API_DECL void send(const std::string& message);
+    FLUTE_API_DECL void send(std::string&& message);
     FLUTE_API_DECL void handleConnectionEstablished();
     FLUTE_API_DECL void handleConnectionDestroy();
     FLUTE_API_DECL void startRead();

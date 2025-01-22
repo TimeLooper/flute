@@ -90,12 +90,24 @@ void TcpConnection::send(const void* buffer, flute::ssize_t length) {
     }
 }
 
-void TcpConnection::send(std::string message) {
+void TcpConnection::send(const std::string& message) {
     if (m_state != ConnectionState::CONNECTED) {
         return;
     }
     if (m_loop->isInLoopThread()) {
-        sendInLoop(std::move(message));
+        sendInLoop(message.c_str(), static_cast<flute::ssize_t>(message.size()));
+    } else {
+        void (TcpConnection::*func)(std::string) = &TcpConnection::sendInLoop;
+        m_loop->runInLoop(std::bind(func, shared_from_this(), message));
+    }
+}
+
+void TcpConnection::send(std::string&& message) {
+    if (m_state != ConnectionState::CONNECTED) {
+        return;
+    }
+    if (m_loop->isInLoopThread()) {
+        sendInLoop(message.c_str(), static_cast<flute::ssize_t>(message.size()));
     } else {
         void (TcpConnection::*func)(std::string) = &TcpConnection::sendInLoop;
         m_loop->runInLoop(std::bind(func, shared_from_this(), std::move(message)));
@@ -262,7 +274,7 @@ void TcpConnection::sendInLoop(const void* buffer, flute::ssize_t length) {
 }
 
 void TcpConnection::sendInLoop(std::string message) {
-    sendInLoop(message.c_str(), static_cast<flute::ssize_t>(message.length()));
+    sendInLoop(message.c_str(), static_cast<flute::ssize_t>(message.size()));
 }
 
 void TcpConnection::handleConnectionEstablishedInLoop() {
