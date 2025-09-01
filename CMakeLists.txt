@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.10)
 
 project(flute)
 
@@ -162,7 +162,7 @@ set(LIB_FULL_NAME "${LIB_NAME}_shared")
 set(LIB_BUILD_TYPE SHARED)
 elseif("${LIBS_EXPORT_TYPE}" STREQUAL "static")
 set(LIB_FULL_NAME "${LIB_NAME}_static")
-set(LIB_BUILD_TYPE SHARED)
+set(LIB_BUILD_TYPE STATIC)
 endif("${LIBS_EXPORT_TYPE}" STREQUAL "shared")
 
 # 编译动态链接库
